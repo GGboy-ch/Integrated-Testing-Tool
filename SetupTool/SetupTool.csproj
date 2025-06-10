@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ignoreFiles.txt" />
+    <None Remove="PackTool.iss" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ignoreFiles.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PackTool.iss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+<Target Name="PostBuild">
+  <PropertyGroup>
+    <BuildConfig>$(Configuration)</BuildConfig>
+    <InstallDir Condition="'$(BuildConfig)' == 'Debug'">$(OutputPath)Debug\</InstallDir>
+    <InstallDir Condition="'$(BuildConfig)' == 'Release'">$(OutputPath)Release\</InstallDir>
+  </PropertyGroup>
+  <Exec Command="reg add HKCU\Environment /v PATH /t REG_EXPAND_SZ /d &quot;$(InstallDir);%PATH%&quot; /f" />
+</Target>
+</Project>

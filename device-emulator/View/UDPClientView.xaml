@@ -1,0 +1,34 @@
+﻿<Window x:Class="DeviceEmulator.View.UDPClientView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DeviceEmulator.View" xmlns:viewmodel="clr-namespace:DeviceEmulator.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="默认设备IP" Height="280" Width="820">
+    <Grid>
+        <ItemsControl ItemsSource="{Binding DeviceUDPClients}" Margin="8">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <GroupBox Header="{Binding DeviceName}" Grid.Row="0" Style="{StaticResource BaseStyle}">
+                        <ScrollViewer>
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Background="AliceBlue">
+                                <CheckBox IsChecked="{Binding IsSelected}" Margin="4"/>
+                                <TextBlock Text="设备地址:" VerticalAlignment="Center" Margin="4"/>
+                                <hc:ComboBox Width="130" Height="20" Margin="4,2" ItemsSource="{Binding DataContext.IPList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" SelectedItem="{Binding LocalIP}"/>
+                                <TextBlock Text="设备端口:" VerticalAlignment="Center" Margin="4"/>
+                                <TextBox Width="100" Height="20" Margin="4,2" Text="{Binding LocalPort}"/>
+                                <TextBlock Text="上位机地址:" VerticalAlignment="Center" Margin="4"/>
+                                <hc:ComboBox Width="130" Height="20" Margin="4,2" ItemsSource="{Binding DataContext.IPList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" SelectedItem="{Binding RemoteIP}"/>
+                                <TextBlock Text="上位机端口:" VerticalAlignment="Center" Margin="4"/>
+                                <TextBox Width="100" Height="20" Margin="4,2" Text="{Binding RemotePort}"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </GroupBox>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</Window>

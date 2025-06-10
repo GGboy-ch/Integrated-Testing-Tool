@@ -1,0 +1,26 @@
+﻿{
+    "Code": 200,
+    "Message": null,
+    "BoxCodeList": [
+        {
+            "BoxCode": "BG20250418302320",
+            "ChuteCode": "2",
+            "desc": "Catano"
+        },
+        {
+            "BoxCode": "BG20250418302321",
+            "ChuteCode": "3",
+            "desc": "Catano"
+        },
+        {
+            "BoxCode": "BG20250418302322",
+            "ChuteCode": "4",
+            "desc": "Catano"
+        },
+        {
+            "BoxCode": "BG20250418302323",
+            "ChuteCode": "5",
+            "desc": "Catano"
+        }
+    ]
+}

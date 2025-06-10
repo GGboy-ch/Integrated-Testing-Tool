@@ -1,0 +1,18 @@
+﻿{
+    "Code": 200,
+    "Message": "WAC_DFW",
+    "Label": {
+        "Success": false,
+        "ErrorCode": null,
+        "Message": "DBU��ӡϵͳû�з��ظ�ڴ��Ʊ�ǩ����",
+        "Data": null,
+        "Data2": null,
+        "api_elapsed_time": null,
+        "server_channelid": null,
+        "server_id": null,
+        "request_id": null,
+        "label_file_type": null,
+        "zpl_content": null,
+        "zpl_content2": null
+    }
+}

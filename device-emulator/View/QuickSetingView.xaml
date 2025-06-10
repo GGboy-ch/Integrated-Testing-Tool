@@ -1,0 +1,136 @@
+﻿<Window x:Class="DeviceEmulator.View.QuickSetingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:DeviceEmulator.View" 
+        xmlns:viewmodel="clr-namespace:DeviceEmulator.ViewModel" 
+        d:DataContext="{d:DesignInstance Type=viewmodel:QuickSetingVM}"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d"
+        Title="快捷命令设置界面" Height="360" Width="600">
+    <Window.Resources>
+        <Style TargetType="GroupBox" BasedOn="{StaticResource BaseStyle}">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Background" Value="AliceBlue"/>
+        </Style>
+        <local:DateTimeConvert x:Key="DateTimeConvert"/>
+    </Window.Resources>
+    <TabControl SelectedIndex="{Binding SelectedIndex}" Margin="4">
+        <hc:TabItem Header="PSS">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="6*"/>
+                    <ColumnDefinition Width="50*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="2">
+                    <TextBlock Text="单件线数:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding PSSCreateQuickCommandExd}"/>
+                </StackPanel>
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="2" Margin="4,4,4,4">
+                    <DataGrid ItemsSource="{Binding PSSList}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="线号" Binding="{Binding LineNo}"/>
+                            <DataGridTextColumn Header="叠件分离状态" Binding="{Binding SPS_status}"/>
+                            <DataGridTextColumn Header="单件分离状态" Binding="{Binding PSS_status}"/>
+                            <DataGridTextColumn Header="速度" Binding="{Binding Speed_status}"/>
+                            <DataGridTextColumn Header="间距" Binding="{Binding Distance_status}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </hc:TabItem>
+        <hc:TabItem Header="相机">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16*"/>
+                    <ColumnDefinition Width="47*"/>
+                    <ColumnDefinition Width="527*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
+                    <TextBlock Text="相机数量:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding CameraNums}" SelectedItem="{Binding CameraNum}"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding CameraCreateQuickCommandExd}"/>
+                </StackPanel>
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">
+                    <DataGrid ItemsSource="{Binding CameraList}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="线号">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding LineNum, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.LineNumbers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="相机名称">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding CameraName, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.CameraTypes, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="叠件状态">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding State, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.CameraStates, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="触发时间" Binding="{Binding TriggerTime, Converter={StaticResource DateTimeConvert}}"/>
+                            <DataGridTextColumn Header="包裹长度" Binding="{Binding Length}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </hc:TabItem>
+        <hc:TabItem Header="摆轮">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16*"/>
+                    <ColumnDefinition Width="47*"/>
+                    <ColumnDefinition Width="527*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding BalanceWheelCreateQuickCommandExd}"/>
+                </StackPanel>
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">
+                    <DataGrid ItemsSource="{Binding BalanceWheelList}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="摆轮名" Binding="{Binding Name}"/>
+                            <DataGridTemplateColumn Header="分拣结果类型">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding ResultType, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.ResultTypes, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="分拣口" Binding="{Binding SortPort}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </hc:TabItem>
+    </TabControl>
+</Window>

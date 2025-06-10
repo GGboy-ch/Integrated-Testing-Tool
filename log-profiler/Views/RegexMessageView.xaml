@@ -1,0 +1,51 @@
+﻿<Window x:Class="LogProfiler.Views.RegexMessageView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LogProfiler.Views"
+        xmlns:viewmodels="clr-namespace:LogProfiler.ViewModels" 
+        d:DataContext="{d:DesignInstance Type=viewmodels:RegexMessageModel}"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Title="正则筛选" Height="300" Width="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="添加" Style="{StaticResource ButtonInfo}" Command="{Binding AddRegexCmd}" Margin="8"/>
+            <Button Content="{Binding DeleteButtonName}" Style="{StaticResource ButtonDanger}" Command="{Binding DeleteRegexCmd}" Margin="8"/>
+            <Button Content="确定" Style="{StaticResource ButtonSuccess}" Command="{Binding SaveRegexCmd }" Margin="8"/>
+            <TextBlock Text="{Binding TextBlockText}" Style="{StaticResource TextBlockSubTitleBold}" Margin="8"/>
+        </StackPanel>
+        <ListBox 
+            x:Name="listbox" 
+            Grid.Row="1" 
+            ItemsSource="{Binding RegexMessages}" 
+            SelectedItem="{Binding SelectedItem}" 
+            PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown" Margin="8">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="4">
+                        <TextBlock Text="{Binding RegetName}" VerticalAlignment="Center" Margin="4"/>
+                        <TextBox Text="{Binding RegexStr}" MinWidth="120" Margin="4"/>
+                        <CheckBox IsChecked="{Binding IsChecked}" Content="使用" Margin="4">
+                            <CheckBox.Style>
+                                <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>

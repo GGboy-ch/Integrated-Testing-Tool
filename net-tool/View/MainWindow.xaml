@@ -1,0 +1,32 @@
+﻿<hc:Window x:Class="NetTool.MainWindow"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NetTool"
+        xmlns:viewmodel="clr-namespace:NetTool.ViewModuel"
+        d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModuel}"
+        mc:Ignorable="d"
+        Icon="/Images/ipv6.png"
+        WindowStartupLocation="CenterScreen"
+        Title="公网ip助手" Height="120" Width="450">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <CheckBox x:Name="isAutoStart" Content="开机自启" IsChecked="{Binding IsOpenStartup}" Margin="10,0"/>
+            <CheckBox x:Name="isCloseWindow" Content="最小化至托盘" IsChecked="True" Margin="10,0"/>
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <TextBlock Text="归属地：" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                <TextBox Text="{Binding DeviceName}" Margin="0,4" Width="150"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock Text="IPv6地址" VerticalAlignment="Center" Margin="4"/>
+            <TextBox Text="{Binding IPv6Address}" Width="340" Margin="2,4"/>
+        </StackPanel>
+    </Grid>
+</hc:Window>

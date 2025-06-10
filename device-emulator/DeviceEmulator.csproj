@@ -7,11 +7,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<ProjectGuid>{FC87A154-1C80-4D06-86C0-C4DCC160555D}</ProjectGuid>
-    <ApplicationIcon>SlaveDevice.ico</ApplicationIcon>
+    <ApplicationIcon>DeviceEmulator.ico</ApplicationIcon>
+	<AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Log4net.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DeviceEmulator.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="SlaveDevice.ico">
+    <EmbeddedResource Include="DeviceEmulator.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

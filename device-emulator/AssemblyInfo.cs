@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Reflection;
+using System.Windows;
 
 [assembly: ThemeInfo(
     ResourceDictionaryLocation.None,            //where theme specific resource dictionaries are located
@@ -10,4 +11,9 @@
 )]
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "Log4net.config", ConfigFileExtension = "config", Watch = true)]
+
+[assembly: AssemblyMetadata("ChangeLog", @"
+202506010 1.0.0.0
+创建项目
+")]
 

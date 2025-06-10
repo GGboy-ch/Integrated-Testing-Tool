@@ -50,5 +50,7 @@
       <LastGenOutput>Res.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
+<Target Name="PackProject" AfterTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
+    <Exec Command="&quot;..\SetupTool\bin\Debug\net8.0\SetupTool.exe&quot; $(ProjectDir)" />
+</Target>
 </Project>

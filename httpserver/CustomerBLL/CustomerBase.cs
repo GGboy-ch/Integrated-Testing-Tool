@@ -117,7 +117,7 @@ namespace HTTPServer.CustomerBLL
             }
             catch (Exception ex)
             {
-                disaplayData += ClientData;
+                disaplayData += ClientData + "\r\n";
                 LogHelper.Exception($"[POSTResponseContent]:{ex}");
             }
             return response;

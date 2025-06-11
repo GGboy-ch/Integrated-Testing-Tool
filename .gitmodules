@@ -1,0 +1,3 @@
+[submodule "general-library"]
+	path = general-library
+	url = https://gitee.com/cai-donghong/general-library.git

@@ -40,7 +40,7 @@
                 <Button Content="URL列表" Command="{Binding ShowAddressListCmd}" Style="{StaticResource ButtonInfo}" Margin="4"/>
                 <Button Content="接收内容" Command="{Binding ShowRecievedListCmd}" Style="{StaticResource ButtonWarning}" Margin="4"/>
                 <Button Content="返回内容" Command="{Binding ShowSettingCmd}" Style="{StaticResource ButtonPrimary}" Margin="4"/>
-                <CheckBox x:Name="checkBox" Content="超时时间" Margin="4"/>
+                <CheckBox x:Name="checkBox" IsChecked="{Binding IsTimeout}" Content="超时时间" Margin="4"/>
                 <TextBox Text="{Binding Timeout, UpdateSourceTrigger=PropertyChanged}" Width="80" Height="30" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox}" Margin="4" />
             </StackPanel>
         </Border>

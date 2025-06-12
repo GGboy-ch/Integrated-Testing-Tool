@@ -216,6 +216,16 @@ namespace HTTPServer.VeiwModel
             set { _Timeout = value; OnPropertyChanged(); }
         }
 
+        private bool isTimeout;
+        /// <summary>
+        /// 是否开启超时
+        /// </summary>
+        public bool IsTimeout
+        {
+            get => isTimeout;
+            set { isTimeout = value; OnPropertyChanged(); }
+        }
+
         private int _RequestDatasCount;
         /// <summary>
         /// 请求数量
@@ -508,8 +518,8 @@ namespace HTTPServer.VeiwModel
                     }
                 }));
 
-                directory = customerBLL.SetResponseContent(ref requestdata) ?? directory;
-                if (Timeout > 0)
+                directory = customerBLL.SetResponseContent(ref requestdata)!.Count != 0 ? customerBLL.SetResponseContent(ref requestdata) : directory;
+                if (Timeout > 0 && IsTimeout)
                 {
                     Thread.Sleep(Timeout);
                 }

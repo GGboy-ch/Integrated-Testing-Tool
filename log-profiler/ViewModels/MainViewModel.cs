@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using DeviceEmulator.ViewModel;
+using GeneralLibrary;
 using IWshRuntimeLibrary;
 using LogProfiler.Models;
 using LogProfiler.Views;
@@ -863,46 +864,11 @@ namespace LogProfiler.ViewModels
 
         public void SaveConfig()
         {
-            string configpath = Environment.CurrentDirectory + $"\\Log4net.config";
+            string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             ishidetoTray.SetValue(IsHideToTray);
             xmlDoc.Save(configpath);
-        }
-
-        /// <summary>
-        /// 创建桌面快捷方式
-        /// </summary>
-        /// <param name="targetExePath">可执行文件路径</param>
-        /// <param name="shortcutName">快捷方式名称</param>
-        /// <param name="description">快捷方式描述信息</param>
-        public static void CreateDesktopShortcut(string targetExePath, string shortcutName, string description)
-        {
-            try
-            {
-                // 获取桌面路径
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string shortcutPath = Path.Combine(desktopPath, $"{shortcutName}.lnk");
-
-                // 创建Shell对象
-                WshShell shell = new WshShell();
-                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutPath);
-
-                // 设置快捷方式属性
-                shortcut.TargetPath = targetExePath;          // 目标程序路径
-                shortcut.WorkingDirectory = Path.GetDirectoryName(targetExePath); // 工作目录
-                shortcut.Description = description;            // 描述
-                shortcut.IconLocation = targetExePath + ",0";  // 图标（默认取程序图标） 
-                shortcut.WindowStyle = 1;                        // 窗口样式（1=正常窗口）
-
-                // 保存快捷方式
-                shortcut.Save();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Exception($"[CreateDesktopShortcut]:{ex}");
-                MessageBox.Show($"创建快捷方式失败！\r\n{ex}");
-            }
         }
 
         #endregion
@@ -925,8 +891,8 @@ namespace LogProfiler.ViewModels
             regexMessageModel.RegexMessageEventHandler += RegexMessageModel_RegexMessageEventHandler;
             IsAutoStart = IsAppInStartup(); // 检测是否开启了开机自启
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            CreateDesktopShortcut(assemblyName, "日志查询工具", "日志查询工具，用于便捷搜索基于log4net第三方库记录的日志");
-            string configpath = Environment.CurrentDirectory + $"\\Log4net.config";
+            DesktopShortcut.CreateDesktopShortcut(assemblyName, "日志查询工具", "日志查询工具，用于便捷搜索基于log4net第三方库记录的日志");
+            string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
         }

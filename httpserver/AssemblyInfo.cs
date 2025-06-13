@@ -10,8 +10,6 @@ using System.Windows;
                                                 // app, or any theme specific resource dictionaries)
 )]
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "Log4net.config", ConfigFileExtension = "config", Watch = true)]
-
 [assembly: AssemblyMetadata("ChangeLog", @"
 202506010 1.0.0.0
 创建项目

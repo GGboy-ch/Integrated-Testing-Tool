@@ -14,6 +14,7 @@ using IWshRuntimeLibrary;
 using File = System.IO.File;
 using System.Reflection;
 using System.Windows.Navigation;
+using GeneralLibrary;
 
 namespace HTTPServer.VeiwModel
 {
@@ -415,7 +416,7 @@ namespace HTTPServer.VeiwModel
                 }
             }
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            CreateDesktopShortcut(assemblyName, "HTTP服务器");
+            DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
         }
 
         private void Result(IAsyncResult ar)
@@ -589,35 +590,6 @@ namespace HTTPServer.VeiwModel
             catch (Exception ex)
             {
                 LogHelper.Exception($"[SelectedChangedEvent]:{ex}");
-            }
-        }
-
-        public static void CreateDesktopShortcut(string targetExePath, string shortcutName, string description = "HTTP服务器模拟器，用于本地测试")
-        {
-            try
-            {
-                // 获取桌面路径
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string shortcutPath = Path.Combine(desktopPath, $"{shortcutName}.lnk");
-
-                // 创建Shell对象
-                WshShell shell = new WshShell();
-                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutPath);
-
-                // 设置快捷方式属性
-                shortcut.TargetPath = targetExePath;          // 目标程序路径
-                shortcut.WorkingDirectory = Path.GetDirectoryName(targetExePath); // 工作目录
-                shortcut.Description = description;            // 描述
-                shortcut.IconLocation = targetExePath + ",0";  // 图标（默认取程序图标） 
-                shortcut.WindowStyle = 1;                        // 窗口样式（1=正常窗口）
-
-                // 保存快捷方式
-                shortcut.Save();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Exception($"[CreateDesktopShortcut]:{ex}");
-                MessageBox.Show($"创建快捷方式失败！\r\n{ex}");
             }
         }
     }

@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Log4net.config">
+    <Content Include="Log4net.config">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +39,15 @@
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="log4net" Version="2.0.17" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GeneralLibrary">
+      <HintPath>..\general-library\GeneralLibrary\bin\Debug\net8.0\GeneralLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.IWshRuntimeLibrary">
+      <HintPath>..\httpserver\obj\Debug\net8.0-windows\Interop.IWshRuntimeLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

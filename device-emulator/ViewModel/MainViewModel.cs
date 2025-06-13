@@ -9,6 +9,8 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using Newtonsoft.Json;
 using System.CodeDom;
+using System.IO;
+using GeneralLibrary;
 
 namespace DeviceEmulator.ViewModel
 {
@@ -458,6 +460,8 @@ namespace DeviceEmulator.ViewModel
             {
                 IPList.Add(addr.ToString());
             }
+            string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
+            DesktopShortcut.CreateDesktopShortcut(assemblyName, "下位机模拟工具", "用于模拟摆轮、叠包相机设备发送进行通讯");
         }
 
         #region 事件

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.RightsManagement;
 using System.Text;
 using DeviceEmulator.ViewModel;
+using GeneralLibrary;
 
 namespace LogProfiler.Models
 {
@@ -226,21 +227,6 @@ namespace LogProfiler.Models
             }
             return count;
         }
-    }
-
-    /// <summary>
-    /// 日志记录工具
-    /// </summary>
-    public class LogHelper
-    {
-        public LogHelper() { }
-
-        protected static log4net.ILog infolog = log4net.LogManager.GetLogger("InfoLog");
-        protected static log4net.ILog debuglog = log4net.LogManager.GetLogger("DebugLog");
-        protected static log4net.ILog exceptionlog = log4net.LogManager.GetLogger("ExceptionLog");
-        public static void Info(object o) { infolog.Info($"{o}\r\n"); }
-        public static void Debug(object o) { debuglog.Debug($"{o}\r\n"); }
-        public static void Exception(object o) { exceptionlog.Error($"{o}\r\n"); }
     }
 
     public class RegexData : NotifyBase

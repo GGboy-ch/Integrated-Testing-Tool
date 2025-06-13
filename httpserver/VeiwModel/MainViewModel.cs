@@ -518,8 +518,8 @@ namespace HTTPServer.VeiwModel
                         directory = JsonConvert.DeserializeObject<Dictionary<string, object?>>(ParticularText);
                     }
                 }));
-
-                directory = customerBLL.SetResponseContent(ref requestdata)!.Count != 0 ? customerBLL.SetResponseContent(ref requestdata) : directory;
+                var resopoeResult = customerBLL.SetResponseContent(ref requestdata);
+                directory = resopoeResult!.Count != 0 ? resopoeResult : directory;
                 if (Timeout > 0 && IsTimeout)
                 {
                     Thread.Sleep(Timeout);

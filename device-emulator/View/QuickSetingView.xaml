@@ -132,5 +132,46 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
+        <hc:TabItem Header="格口控制器">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16*"/>
+                    <ColumnDefinition Width="47*"/>
+                    <ColumnDefinition Width="527*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
+                    <TextBlock Text="格口数量:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding SortPortNums}" SelectedItem="{Binding SortPortNum}" IsEditable="True"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding SortPortCreateQuickCommandExd}"/>
+                </StackPanel>
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">
+                    <DataGrid ItemsSource="{Binding SortPortsList}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="格口号" Binding="{Binding PortNo}"/>
+                            <DataGridTemplateColumn Header="格口状态">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding PortState, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.SortPortStateList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="是否打印">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsPrint}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </hc:TabItem>
     </TabControl>
 </Window>

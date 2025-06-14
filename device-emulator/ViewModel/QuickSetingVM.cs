@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
@@ -10,6 +11,7 @@ namespace DeviceEmulator.ViewModel
     {
         public event EventHandler<ObservableCollection<PSS>>? PSSMessages;
         public event EventHandler<ObservableCollection<Camera>>? CameraMessages;
+        public event EventHandler<ObservableCollection<SortPort>>? SortPortMessages;
         public event EventHandler<BalanceWheel>? BalanceWheelMessages;
         public event EventHandler<bool>? CloseWindow;
         public event EventHandler<int>? SelectedIndexEventHandler;
@@ -52,6 +54,29 @@ namespace DeviceEmulator.ViewModel
             }
         }
 
+        private int sortPortNum;
+        /// <summary>
+        /// 格口数量
+        /// </summary>
+        public int SortPortNum
+        {
+            get { return sortPortNum; }
+            set
+            {
+                sortPortNum = value;
+                MyPropertyChanged();
+                SortPortsList.Clear();
+                for (int i = 1; i <= SortPortNum; i++)
+                {
+                    SortPortsList.Add(new SortPort { PortNo = i, PortState = SortPortState.Nomal });
+                }
+                if (!SortPortNums.Contains(SortPortNum))
+                {
+                    SortPortNums.Add(SortPortNum);
+                }
+            }
+        }
+
         private string? textMessage;
         public string? TextMessage
         {
@@ -71,20 +96,26 @@ namespace DeviceEmulator.ViewModel
         public ObservableCollection<int> ResultTypes { get; set; }
         public ObservableCollection<int> CameraStates { get; set; }
         public ObservableCollection<int> CameraNums { get; set; }
+        public ObservableCollection<int> SortPortNums { get; set; }
         public ObservableCollection<PSS> PSSList { get; set; }
         public ObservableCollection<Camera> CameraList { get; set; }
         public ObservableCollection<BalanceWheel> BalanceWheelList { get; set; }
+        public ObservableCollection<SortPort> SortPortsList { get; set; }
+        public ObservableCollection<SortPortState> SortPortStateList { get; set; }
 
         public QuickSetingVM()
         {
             PSSList = new ObservableCollection<PSS>();
             CameraList = new ObservableCollection<Camera>();
             BalanceWheelList = new ObservableCollection<BalanceWheel>() { new BalanceWheel { Name = Properties.Res.BalanceWheel, ResultType = 0, SortPort = 2} };
+            SortPortsList = new ObservableCollection<SortPort> { new SortPort { PortNo = 1, PortState = SortPortState.Nomal } };
             CameraTypes = new ObservableCollection<string> { Properties.Res.ZKGW_DepthCameraForBarCode, Properties.Res.ZKGW_DepthCamera };
             LineNumbers = new ObservableCollection<int>() { 1, 2, 3 };
             CameraNums = new ObservableCollection<int>() { 1, 2 };
             CameraStates = new ObservableCollection<int> { 0, 1, 2, 3, 4, 5 };
+            SortPortNums = new ObservableCollection<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
             ResultTypes = new ObservableCollection<int> { 0, 1, 2 };
+            SortPortStateList = new ObservableCollection<SortPortState> { SortPortState.Nomal, SortPortState.FullPackage, SortPortState.FullThrought, SortPortState.Locked, SortPortState.DoorClosed };
         }
 
 
@@ -147,6 +178,26 @@ namespace DeviceEmulator.ViewModel
                     });
                 }
                 return balanceWheelCreateQuickCommandExd;
+            }
+        }
+
+        private RelayCommand? sortPortCreateQuickCommandExd;
+        /// <summary>
+        /// 用于生成分拣格口快捷命令按钮
+        /// </summary>
+        public RelayCommand? SortPortCreateQuickCommandExd
+        {
+            get
+            {
+                if (sortPortCreateQuickCommandExd == null)
+                {
+                    sortPortCreateQuickCommandExd = new RelayCommand(() =>
+                    {
+                        SortPortMessages?.Invoke(this, SortPortsList);
+                        CloseWindow?.Invoke(this, true);
+                    });
+                }
+                return sortPortCreateQuickCommandExd;
             }
         }
     }

@@ -95,6 +95,11 @@
                             <ItemsControl ItemsSource="{Binding BalanceWheelButtonList}"/>
                         </hc:ScrollViewer>
                     </hc:TabItem>
+                    <hc:TabItem Header="格口控制器">
+                        <hc:ScrollViewer VerticalScrollBarVisibility="Visible">
+                            <ItemsControl ItemsSource="{Binding SortPortBoardButtonList}"/>
+                        </hc:ScrollViewer>
+                    </hc:TabItem>
                 </TabControl>
                 <CheckBox Grid.Row="2" Content="循环发送" IsChecked="{Binding IsLoopSend}" Margin="4"/>
             </Grid>

@@ -294,6 +294,38 @@ namespace DeviceEmulator.Model
         }
     }
 
+    public class SortPort : NotifyBase
+    {
+        private int portNo;
+        /// <summary>
+        /// 分拣格口号
+        /// </summary>
+        public int PortNo
+        {
+            get { return portNo; }
+            set { portNo = value; MyPropertyChanged(); }
+        }
+        private SortPortState? portState;
+        /// <summary>
+        /// 格口状态
+        /// </summary>
+        public SortPortState? PortState
+        {
+            get { return portState; }
+            set { portState = value; MyPropertyChanged(); }
+        }
+
+        private bool isPrint;
+        /// <summary>
+        /// 是否打印
+        /// </summary>
+        public bool IsPrint
+        {
+            get { return isPrint; }
+            set { isPrint = value; MyPropertyChanged(); }
+        }
+    }
+
     /// <summary>
     /// PLC协议版本
     /// </summary>
@@ -301,5 +333,29 @@ namespace DeviceEmulator.Model
     {
         V3 = 0,
         V4 = 1
+    }
+
+    public enum SortPortState
+    {
+        /// <summary>
+        /// 正常
+        /// </summary>
+        Nomal = 0,
+        /// <summary>
+        /// 满包
+        /// </summary>
+        FullPackage = 1,
+        /// <summary>
+        /// 满槽
+        /// </summary>
+        FullThrought = 2,
+        /// <summary>
+        /// 关门
+        /// </summary>
+        DoorClosed = 3,
+        /// <summary>
+        /// 锁格
+        /// </summary>
+        Locked = 4
     }
 }

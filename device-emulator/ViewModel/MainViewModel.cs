@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.CodeDom;
 using System.IO;
 using GeneralLibrary;
+using HandyControl.Media.Animation;
 
 namespace DeviceEmulator.ViewModel
 {
@@ -125,6 +126,7 @@ namespace DeviceEmulator.ViewModel
         public ObservableCollection<CmdButton>? PSSPLCButtonList { get; set; }
         public ObservableCollection<CmdButton>? CameraButtonList { get; set; }
         public ObservableCollection<CmdButton>? BalanceWheelButtonList { get; set; }
+        public ObservableCollection<CmdButton>? SortPortBoardButtonList { get; set; }
         public List<string>? RunningDeviceList { get; set; }
 
         #endregion
@@ -440,6 +442,7 @@ namespace DeviceEmulator.ViewModel
             PSSPLCButtonList = new ObservableCollection<CmdButton>();
             CameraButtonList = new ObservableCollection<CmdButton>();
             BalanceWheelButtonList = new ObservableCollection<CmdButton>();
+            SortPortBoardButtonList = new ObservableCollection<CmdButton>();
             DeviceUDPClients = new ObservableCollection<DeviceUDPClient>
             {
                 new DeviceUDPClient(Properties.Res.PSS, "127.0.0.1", 3021, "127.0.0.1", 4134), 
@@ -455,6 +458,7 @@ namespace DeviceEmulator.ViewModel
             QuickSetingVM.CameraMessages += QuickSetingVM_CameraMessages;
             QuickSetingVM.BalanceWheelMessages += QuickSetingVM_BalanceWheelMessages;
             QuickSetingVM.SelectedIndexEventHandler += QuickSetingVM_SelectedIndexEventHandler;
+            QuickSetingVM.SortPortMessages += QuickSetingVM_SortPortMessages;
             IPAddress[] ip = Dns.GetHostAddresses(Dns.GetHostName());
             foreach(IPAddress addr in ip)
             {
@@ -465,6 +469,20 @@ namespace DeviceEmulator.ViewModel
         }
 
         #region 事件
+
+        private void QuickSetingVM_SortPortMessages(object? sender, ObservableCollection<SortPort> e)
+        {
+            byte[] basedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x02, 0x14 };
+            byte[] printbasedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x04, 0x14 };
+            foreach (SortPort sortPort in e)
+            {
+                if (SortPortBoardButtonList?.Where(sortport => sortport.Content == $"格口{sortPort.PortNo}").Count() == 0)
+                {
+                    SortPortBoardButtonList?.Add(new CmdButton { Content = $"格口{sortPort.PortNo} 状态{sortPort.PortState}" });
+                }
+            }
+        }
+
         private void QuickSetingVM_BalanceWheelMessages(object? sender, BalanceWheel e)
         {
             byte[] basedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x06, 0x1B, 0x01 };
@@ -475,6 +493,8 @@ namespace DeviceEmulator.ViewModel
             data[14] = 0x00;
             data[15] = 0xCB;
             data[16] = 0x0A;
+            data[6] = (byte)(data.Length); //设置数据长度
+            XORTools.Xor(ref data);
 
             if (BalanceWheelButtonList?.Where(balance => balance.Content == $"结果类型{e.ResultType},分拣口{e.SortPort}").Count() == 0)//判断是否已经存在该按钮
             {
@@ -521,40 +541,54 @@ namespace DeviceEmulator.ViewModel
 
         private void QuickSetingVM_CameraMessages(object? sender, ObservableCollection<Camera> e)
         {
-            foreach (Camera c in e)
+            try
             {
-                c.TriggerTimeSpan = (int)(DateTime.Now - c.TriggerTime).TotalMilliseconds;
-                string jsonData = JsonConvert.SerializeObject(c);
-                byte[] msg = Encoding.UTF8.GetBytes(jsonData);
-                if (CameraButtonList?.Where(camera => camera.Content == $"相机：{c.CameraName}，叠件状态：{c.State}").Count() == 0)//判断是否已经存在该按钮
+                foreach (Camera c in e)
                 {
-                    CameraButtonList.Add(new CmdButton { Content = $"相机：{c.CameraName}，叠件状态：{c.State}", CommandText = msg, CmdDeviceType = Properties.Res.Camera, CommandExd = QuickCommandExd });
+                    c.TriggerTimeSpan = (int)(DateTime.Now - c.TriggerTime).TotalMilliseconds;
+                    string jsonData = JsonConvert.SerializeObject(c);
+                    byte[] msg = Encoding.UTF8.GetBytes(jsonData);
+                    if (CameraButtonList?.Where(camera => camera.Content == $"相机：{c.CameraName}，叠件状态：{c.State}").Count() == 0)//判断是否已经存在该按钮
+                    {
+                        CameraButtonList.Add(new CmdButton { Content = $"相机：{c.CameraName}，叠件状态：{c.State}", CommandText = msg, CmdDeviceType = Properties.Res.Camera, CommandExd = QuickCommandExd });
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Exception($"[QuickSetingVM_CameraMessages]:{ex}");
             }
         }
 
         private void QuickSetingVM_PSSMessages(object? sender, ObservableCollection<PSS> e)
         {
-            byte[]? data = new byte[5 + e.Count * 7];
-            int i = 0;
-            data[0] = 0xBB;
-            data[2] = 0x00;
-            data[3] = 0x2A;
-            data[4] = 0x01;
-            foreach (PSS type in e)
-            {   
-                GetMessage(type).CopyTo(data, 5 + 7 * i);
-                i++;
-            }
-            data[1] = (byte)data.Length;
-            if (PSSPLCButtonList?.Where(pss => pss.Content == "2A01").Count() == 0)//判断是否已经存在该按钮
+            try
             {
-                PSSPLCButtonList.Add(new CmdButton { Content = "2A01", CommandText = data, CmdDeviceType = Properties.Res.PSS, CommandExd = QuickCommandExd });
+                byte[]? data = new byte[5 + e.Count * 7];
+                int i = 0;
+                data[0] = 0xBB;
+                data[2] = 0x00;
+                data[3] = 0x2A;
+                data[4] = 0x01;
+                foreach (PSS type in e)
+                {
+                    GetMessage(type).CopyTo(data, 5 + 7 * i);
+                    i++;
+                }
+                data[1] = (byte)data.Length;
+                if (PSSPLCButtonList?.Where(pss => pss.Content == "2A01").Count() == 0)//判断是否已经存在该按钮
+                {
+                    PSSPLCButtonList.Add(new CmdButton { Content = "2A01", CommandText = data, CmdDeviceType = Properties.Res.PSS, CommandExd = QuickCommandExd });
+                }
+                else
+                {
+                    PSSPLCButtonList!.Where(pss => pss.Content == "2A01").First().CommandText = data;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                PSSPLCButtonList!.Where(pss => pss.Content == "2A01").First().CommandText = data;
-            }  
+                LogHelper.Exception($"[QuickSetingVM_PSSMessages]: {ex}");
+            }
         }
 
         private void QuickSetingVM_SelectedIndexEventHandler(object? sender, int e)

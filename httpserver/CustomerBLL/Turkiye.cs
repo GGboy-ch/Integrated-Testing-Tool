@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace HTTPServer.CustomerBLL
 {
-    public class Turkey : CustomerBase
+    public class Turkiye : CustomerBase
     {
-        public Turkey() : base() { }
+        public Turkiye() : base() { }
 
-        public Turkey(HttpListenerRequest httpListenerRequest, HttpListenerResponse httpListenerResponse) : base(httpListenerRequest) { }
-        public Turkey(HttpListenerRequest httpListenerRequest) : base(httpListenerRequest) { }
+        public Turkiye(HttpListenerRequest httpListenerRequest, HttpListenerResponse httpListenerResponse) : base(httpListenerRequest) { }
+        public Turkiye(HttpListenerRequest httpListenerRequest) : base(httpListenerRequest) { }
 
         protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response)
         {

@@ -398,7 +398,7 @@ namespace HTTPServer.VeiwModel
             URLList = new List<IPaddressMessage>();
             ContentTypeList = new ObservableCollection<string> { "Json","Text" };
             ContentList = new ObservableCollection<string>();
-            CustomerList = new ObservableCollection<Customer> { Customer.None, Customer.Spain, Customer.Cannock, Customer.America, Customer.Turkey };//添加客户逻辑之后需要在此处添加到选择列表
+            CustomerList = new ObservableCollection<Customer> { Customer.None, Customer.Spain, Customer.Cannock, Customer.America, Customer.Turkiye };//添加客户逻辑之后需要在此处添加到选择列表
             IPAddress[] iPAddresses = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (IPAddress iPAddress in iPAddresses)
             {
@@ -499,9 +499,9 @@ namespace HTTPServer.VeiwModel
                             customerBLL = new America(request, response);
                             break;
                         }
-                    case Customer.Turkey:
+                    case Customer.Turkiye:
                         {
-                            customerBLL = new Turkey(request, response);
+                            customerBLL = new Turkiye(request, response);
                             break;
                         }
                     default:

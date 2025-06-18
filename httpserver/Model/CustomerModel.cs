@@ -19,6 +19,6 @@ namespace HTTPServer.Model
         Cannock,
         Spain,
         America,
-        Turkey
+        Turkiye
     }
 }

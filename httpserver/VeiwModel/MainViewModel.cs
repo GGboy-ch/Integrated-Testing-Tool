@@ -207,7 +207,7 @@ namespace HTTPServer.VeiwModel
             set { _FileName = value; OnPropertyChanged(); }
         }
 
-        private int _Timeout;
+        private int _Timeout = 3000;
         /// <summary>
         /// 服务器接口超时时间
         /// </summary>

@@ -6,6 +6,7 @@ using System.Windows;
 using Microsoft.Win32;
 using System.Collections.Specialized;
 using NetTool.Common;
+using GeneralLibrary.Sql;
 
 namespace NetTool.ViewModuel
 {
@@ -132,28 +133,9 @@ namespace NetTool.ViewModuel
         /// </summary>
         public void InsertDataBase(string address)
         {
-            string conStr = "Data Source=120.26.41.210;DataBase=IPv6;User=remoteuser;Password=1531079";
+            NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
             string sql = $"INSERT INTO ipv6Address (DeviceName,Time,Address) VALUES ('{DeviceName}','{DateTime.Now:yyyy-MM-dd HH:mm:ss}','{address}')";
-            using (MySqlConnection con = new MySqlConnection(conStr))
-            {
-                con.Open();
-                try
-                {
-                    MySqlCommand com = new MySqlCommand(sql, con);
-                    try
-                    {
-                        com.ExecuteNonQuery();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"[InsertDataBase] {e}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
+            newMySQL.ExecuteNonQuery(sql);
         }
 
         /// <summary>
@@ -162,28 +144,9 @@ namespace NetTool.ViewModuel
         /// <param name="address">当前ipv6地址</param>
         public void UpdateDataBase(string address)
         {
-            string conStr = "Data Source=120.26.41.210;DataBase=IPv6;User=remoteuser;Password=1531079";
+            NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
             string sql = $"UPDATE ipv6address SET DeviceName='{DeviceName}',Time='{DateTime.Now:yyyy-MM-dd HH:mm:ss}',Address='{address}' WHERE Time LIKE '{DateTime.Now:yyyy-MM-dd}%'";
-            using (MySqlConnection con = new MySqlConnection(conStr))
-            {
-                con.Open();
-                try
-                {
-                    MySqlCommand com = new MySqlCommand(sql, con);
-                    try
-                    {
-                        com.ExecuteNonQuery();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"[UpdateDataBase] {e}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
+            newMySQL.ExecuteNonQuery(sql);
         }
 
         /// <summary>

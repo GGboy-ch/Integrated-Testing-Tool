@@ -15,6 +15,8 @@ using File = System.IO.File;
 using System.Reflection;
 using System.Windows.Navigation;
 using GeneralLibrary;
+using GeneralLibrary.Sql;
+using System.Data;
 
 namespace HTTPServer.VeiwModel
 {
@@ -45,7 +47,10 @@ namespace HTTPServer.VeiwModel
         /// 接口客户列表
         /// </summary>
         public ObservableCollection<Customer> CustomerList { get; set; }
-
+        /// <summary>
+        /// 用于保存文件请求Url
+        /// </summary>
+        public List<string> FileRequestUrl = new List<string>();
         /// <summary>
         /// HTTP服务端监听器
         /// </summary>
@@ -415,6 +420,7 @@ namespace HTTPServer.VeiwModel
                     ContentList.Add(file.Name);
                 }
             }
+            FileRequestUrl.Add("/GetLogs");
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
         }
@@ -427,11 +433,19 @@ namespace HTTPServer.VeiwModel
             var context = _HttpListener.EndGetContext(ar);
             var request = context.Request;
             var response = context.Response;
-            context.Response.ContentType = "application/json";//告诉客户端返回的ContentType类型为json文本格式，编码为UTF-8
-            context.Response.AddHeader("Content-type", "application/json");//添加响应头信息
+            if (request != null && FileRequestUrl.Contains(request.RawUrl!))
+            {
+                context.Response.ContentType = "application/octet-stream";//用于返回文件流
+                context.Response.AddHeader("Content-Disposition", "attachment; filename=downloaded_file.txt");
+            }
+            else
+            {
+                context.Response.ContentType = "application/json";//告诉客户端返回的ContentType类型为json文本格式，编码为UTF-8
+                context.Response.AddHeader("Content-type", "application/json");//添加响应头信息
+            }
             context.Response.ContentEncoding = Encoding.UTF8;
             string? returnObj = null;//定义返回客户端的信息
-            if (request.InputStream != null)
+            if (request!.InputStream != Stream.Null)
             {
                 //处理客户端发送的请求并返回处理信息
                 returnObj = HandleRequest(request, response);
@@ -451,8 +465,21 @@ namespace HTTPServer.VeiwModel
             {
                 using (var stream = response.OutputStream)
                 {
-                    //把处理信息返回到客户端
-                    stream.Write(returnByteArr, 0, returnByteArr.Length);
+                    if (request.RawUrl == "/GetLogNameList")
+                    {
+                        var data = Encoding.UTF8.GetBytes(GetLogNameList());
+                        stream.Write(data, 0, data.Length);
+                    }
+                    else if (string.IsNullOrEmpty(request.RawUrl))
+                    {
+                        //把处理信息返回到客户端
+                        stream.Write(returnByteArr, 0, returnByteArr.Length);
+                    }
+                    else
+                    {
+                        byte[] data = GetFile(request);
+                        stream.Write(data, 0, data.Length);
+                    }
                 }
             }
             catch (Exception ex)
@@ -545,6 +572,25 @@ namespace HTTPServer.VeiwModel
                 return JsonConvert.SerializeObject(directory);
             }
             return JsonConvert.SerializeObject(directory);
+        }
+
+        private string GetLogNameList()
+        {
+            List<string> logNameList = new List<string>();
+            var files = new DirectoryInfo("D:\\BackupLogs").GetFiles("*.log",SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                logNameList.Add(file.Name);
+            }
+            return string.Join("|", logNameList) ?? string.Empty;
+        }
+
+        private byte[] GetFile(HttpListenerRequest request)
+        {
+            var files = new DirectoryInfo("D:\\BackupLogs").GetFiles("*.log", SearchOption.AllDirectories);
+            string filepath = files!.Where(path => path.Name == request.RawUrl!.Trim('/')).FirstOrDefault()!.FullName;
+            byte[] data = File.ReadAllBytes(filepath);
+            return data;
         }
 
         public void Close()

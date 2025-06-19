@@ -132,6 +132,16 @@ namespace LogProfiler.ViewModels
             set { selectedLogIndex = value; MyPropertyChanged(); }
         }
 
+        private string selectedLog = string.Empty;
+        /// <summary>
+        /// 选中需要下载的日志
+        /// </summary>
+        public string SelectedLog
+        {
+            get => selectedLog;
+            set { selectedLog = value; MyPropertyChanged(); }
+        }
+
         private int _Page = 1;
         /// <summary>
         /// 当前展示的日志页码
@@ -212,7 +222,7 @@ namespace LogProfiler.ViewModels
             set { isAutoUpdate = value; MyPropertyChanged(); }
         }
 
-        private string logDownloadUri = string.Empty;
+        private string logDownloadUri = "http://127.0.0.1:6060/GetLogNameList";
         /// <summary>
         /// 下载日志的Uri
         /// </summary>
@@ -239,6 +249,7 @@ namespace LogProfiler.ViewModels
         Dictionary<int, List<LogData>> CurrentLogDatas = new Dictionary<int, List<LogData>>();
         Dictionary<int, List<LogData>> OriginalLogDatas = new Dictionary<int, List<LogData>>();
         public ObservableCollection<string> DeviceNameList { get; set; }//设备名称列表，供下拉框选择
+        public ObservableCollection<string> LogNameList { get; set; }//从服务器获取到的日志名称列表
         /// <summary>
         /// 用于将HTTP接口请求和返回值绑定起来
         /// </summary>
@@ -248,10 +259,71 @@ namespace LogProfiler.ViewModels
 
         #region 命令
 
+        private AsyncRelayCommand? getLogNameListCmd;
+        public AsyncRelayCommand? GetLogNameListCmd
+        {
+            get => getLogNameListCmd ?? new AsyncRelayCommand(async () => await GetLogNameListAsync(LogDownloadUri));
+            set => getLogNameListCmd = value;
+        }
+
+        private async Task GetLogNameListAsync(string url)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(url))
+                    {
+                        return;
+                    }
+                    HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    response.EnsureSuccessStatusCode();
+                    string str = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrEmpty(str))
+                    {
+                        MessageBox.Show("没有获取到日志列表，请检查网络连接或日志服务器地址是否正确。");
+                        return;
+                    }
+                    else
+                    {
+                        var namelist = str.Split('|');
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            foreach (var s in namelist)
+                            {
+                                LogNameList.Add(s);
+                            }
+                        });
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    LogHelper.Exception($"下载失败: {ex}");
+                }
+            }
+        }
+
+        private RelayCommand? openDownloadLogWindowCmd;
+        public RelayCommand? OpenDownloadLogWindowCmd
+        {
+            get => openDownloadLogWindowCmd ?? new RelayCommand(OpenDownloadLogWindowCmdExd);
+            set => openDownloadLogWindowCmd = value;
+        }
+
+        /// <summary>
+        /// 打开日志下载界面
+        /// </summary>
+        private void OpenDownloadLogWindowCmdExd()
+        {
+            DownloadLogView downloadLogView = new DownloadLogView(this);
+            downloadLogView.Owner = Application.Current.MainWindow;
+            downloadLogView.ShowDialog();
+        }
+
         private AsyncRelayCommand? getNewLogsCmd;
         public AsyncRelayCommand? GetNewLogsCmd
         {
-            get => getNewLogsCmd ?? new AsyncRelayCommand(async () => await DownloadFileAsync(LogDownloadUri));
+            get => getNewLogsCmd ?? new AsyncRelayCommand(async () => await DownloadFileAsync(SelectedLog));
             set => getNewLogsCmd = value;
         }
 
@@ -261,8 +333,9 @@ namespace LogProfiler.ViewModels
         /// <param name="url"></param>
         /// <param name="savePath"></param>
         /// <returns></returns>
-        private static async Task DownloadFileAsync(string url)
+        private async Task DownloadFileAsync(string url)
         {
+            url = "http://127.0.0.1:6060/" + url;
             using (HttpClient client = new HttpClient())
             {
                 try
@@ -287,7 +360,7 @@ namespace LogProfiler.ViewModels
                 }
                 catch (HttpRequestException ex)
                 {
-                    Console.WriteLine($"下载失败: {ex.Message}");
+                    LogHelper.Exception($"下载失败: {ex}");
                 }
             }
         }
@@ -879,6 +952,7 @@ namespace LogProfiler.ViewModels
             InfoLogDatas = new ObservableCollection<LogData>();
             ExceptionLogDatas = new ObservableCollection<LogData>();
             DeviceNameList = new ObservableCollection<string>() { string.Empty };
+            LogNameList = new ObservableCollection<string>();
             DisplayLogDatas.Add(0, DebugLogDatas);
             DisplayLogDatas.Add(1, InfoLogDatas);
             DisplayLogDatas.Add(2, ExceptionLogDatas);

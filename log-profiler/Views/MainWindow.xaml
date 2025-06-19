@@ -84,7 +84,7 @@
             <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <Button Content="下载最新日志" Style="{StaticResource ButtonInfo}" Command="{Binding GetNewLogsCmd}" Margin="16,4,8,4"/>
+            <Button Content="下载最新日志" Style="{StaticResource ButtonInfo}" Command="{Binding OpenDownloadLogWindowCmd}" Margin="16,4,8,4"/>
             <Button Content="导入日志" Style="{StaticResource ButtonPrimary}" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
             <Button Content="清空日志缓存" Style="{StaticResource ButtonDanger}" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
         </StackPanel>

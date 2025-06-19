@@ -20,12 +20,12 @@ namespace HTTPServer.CustomerBLL
 
         public Cannock(HttpListenerRequest httpListenerRequest) :base(httpListenerRequest) { }
 
-        public override Dictionary<string, object> POSTResponseContent(ref string disaplayData)
+        public override Dictionary<string, object?>? POSTResponseContent(ref string disaplayData) 
         {
-            Dictionary<string, object> responseDic = new Dictionary<string, object>();
+            Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             try
             {
-                Dictionary<string, object>? requestDic = JsonConvert.DeserializeObject<Dictionary<string, object>>(ClientData);
+                Dictionary<string, object?>? requestDic = JsonConvert.DeserializeObject<Dictionary<string, object?>>(ClientData!);
                 disaplayData += JsonConvert.SerializeObject(ClientData).Replace("\r\n", string.Empty).Replace(" ", string.Empty);
                 if (requestDic!.ContainsKey("ScanTime"))
                 {
@@ -53,9 +53,9 @@ namespace HTTPServer.CustomerBLL
             }
         }
 
-        public override Dictionary<string, object> GETResponseContent(ref string disaplayData)
+        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData)
         {
-            Dictionary<string, object> responseDic = new Dictionary<string, object>();
+            Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             try
             {
                 disaplayData += Request!.QueryString.Get(0);

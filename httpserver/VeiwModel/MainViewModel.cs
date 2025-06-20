@@ -527,15 +527,15 @@ namespace HTTPServer.VeiwModel
                         var data = Encoding.UTF8.GetBytes(GetLogNameList());
                         stream.Write(data, 0, data.Length);
                     }
-                    else if (string.IsNullOrEmpty(request.RawUrl))
-                    {
-                        //把处理信息返回到客户端
-                        stream.Write(returnByteArr, 0, returnByteArr.Length);
-                    }
-                    else
+                    else if (request.RawUrl!.EndsWith(".log"))
                     {
                         byte[] data = GetFile(request);
                         stream.Write(data, 0, data.Length);
+                    }
+                    else
+                    {
+                        //把处理信息返回到客户端
+                        stream.Write(returnByteArr, 0, returnByteArr.Length);
                     }
                 }
             }

@@ -291,6 +291,7 @@ namespace LogProfiler.ViewModels
                         var namelist = str.Split('|');
                         Application.Current.Dispatcher.Invoke(() =>
                         {
+                            LogNameList.Clear();
                             foreach (var s in namelist)
                             {
                                 LogNameList.Add(s);

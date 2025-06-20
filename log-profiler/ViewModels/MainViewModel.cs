@@ -298,7 +298,7 @@ namespace LogProfiler.ViewModels
                         });
                     }
                 }
-                catch (HttpRequestException ex)
+                catch (Exception ex)
                 {
                     LogHelper.Exception($"下载失败: {ex}");
                 }
@@ -368,7 +368,7 @@ namespace LogProfiler.ViewModels
                         MessageBox.Show($"下载完成！保存路径为：{savePath}");
                     }
                 }
-                catch (HttpRequestException ex)
+                catch (Exception ex)
                 {
                     OnTipClosing?.Invoke(this, true);//关闭提示窗口
                     ownerWindow!.IsHitTestVisible = true;

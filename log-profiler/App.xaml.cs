@@ -9,7 +9,6 @@ namespace LogProfiler
     public partial class App : Application
     {
         public static TaskbarIcon? mTaskbarIcon;
-        protected override void OnStartup(StartupEventArgs e) { }
     }
 
 }

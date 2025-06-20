@@ -222,7 +222,7 @@ namespace LogProfiler.ViewModels
             set { isAutoUpdate = value; MyPropertyChanged(); }
         }
 
-        private string logDownloadUri = "http://127.0.0.1:6060/GetLogNameList";
+        private string logDownloadUri = string.Empty;
         /// <summary>
         /// 下载日志的Uri
         /// </summary>
@@ -262,16 +262,18 @@ namespace LogProfiler.ViewModels
         private AsyncRelayCommand? getLogNameListCmd;
         public AsyncRelayCommand? GetLogNameListCmd
         {
-            get => getLogNameListCmd ?? new AsyncRelayCommand(async () => await GetLogNameListAsync(LogDownloadUri));
+            get => getLogNameListCmd ?? new AsyncRelayCommand(async () => await GetLogNameListAsync());
             set => getLogNameListCmd = value;
         }
 
-        private async Task GetLogNameListAsync(string url)
+        private async Task GetLogNameListAsync()
         {
+            string url = LogDownloadUri + "/GetLogNameList";
             using (HttpClient client = new HttpClient())
             {
                 try
                 {
+                    client.Timeout = TimeSpan.FromMilliseconds(500); // 设置超时时间为500毫秒
                     if (string.IsNullOrEmpty(url))
                     {
                         return;
@@ -323,7 +325,7 @@ namespace LogProfiler.ViewModels
         private AsyncRelayCommand? getNewLogsCmd;
         public AsyncRelayCommand? GetNewLogsCmd
         {
-            get => getNewLogsCmd ?? new AsyncRelayCommand(async () => await DownloadFileAsync(SelectedLog));
+            get => getNewLogsCmd ?? new AsyncRelayCommand(async () => await DownloadFileAsync());
             set => getNewLogsCmd = value;
         }
 
@@ -333,13 +335,16 @@ namespace LogProfiler.ViewModels
         /// <param name="url"></param>
         /// <param name="savePath"></param>
         /// <returns></returns>
-        private async Task DownloadFileAsync(string url)
+        private async Task DownloadFileAsync()
         {
-            url = "http://127.0.0.1:6060/" + url;
+            string url = LogDownloadUri + $"/{SelectedLog}";
             using (HttpClient client = new HttpClient())
             {
+                TipWindow tipWindow = new TipWindow("正在下载日志文件，请稍等...", this);
+                var ownerWindow = Application.Current.Windows.OfType<DownloadLogView>().FirstOrDefault();
                 try
                 {
+                    client.Timeout = TimeSpan.FromMilliseconds(500); // 设置超时时间为500毫秒
                     if (string.IsNullOrEmpty(url))
                     {
                         return;
@@ -349,17 +354,24 @@ namespace LogProfiler.ViewModels
                     {
                         Directory.CreateDirectory(path);
                     }
+                    tipWindow.Owner = ownerWindow ?? Application.Current.MainWindow;
+                    tipWindow.Show();
+                    ownerWindow!.IsHitTestVisible = false;//关闭主窗口的鼠标事件
                     HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
                     string savePath = Path.Combine(path, response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty);
                     using (FileStream fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write))
                     {
                         await response.Content.CopyToAsync(fileStream);
+                        OnTipClosing?.Invoke(this, true);//关闭提示窗口
+                        ownerWindow.IsHitTestVisible = true;
                         MessageBox.Show($"下载完成！保存路径为：{savePath}");
                     }
                 }
                 catch (HttpRequestException ex)
                 {
+                    OnTipClosing?.Invoke(this, true);//关闭提示窗口
+                    ownerWindow!.IsHitTestVisible = true;
                     LogHelper.Exception($"下载失败: {ex}");
                 }
             }
@@ -470,6 +482,7 @@ namespace LogProfiler.ViewModels
             currentexceptionLogDatas.Clear();
             ExceptionLogDatas.Clear();
             DeviceNameList.Clear();
+            LogDataCount = 0;
         }
 
         private RelayCommand? regexCmd;
@@ -935,11 +948,16 @@ namespace LogProfiler.ViewModels
             key!.DeleteValue("NetTool.exe", false);
         }
 
+        /// <summary>
+        /// 将缓存中的配置参数保存配置文件
+        /// </summary>
         public void SaveConfig()
         {
             string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            XElement logDownloadUri = xmlDoc.Descendants("LogDownloadUri").FirstOrDefault()!;
+            logDownloadUri.SetValue(LogDownloadUri);
             ishidetoTray.SetValue(IsHideToTray);
             xmlDoc.Save(configpath);
         }
@@ -969,6 +987,7 @@ namespace LogProfiler.ViewModels
             string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            LogDownloadUri = xmlDoc.Descendants("LogDownloadUri").FirstOrDefault()!.Value;
         }
     }
 }

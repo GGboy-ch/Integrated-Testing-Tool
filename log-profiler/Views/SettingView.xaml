@@ -20,7 +20,7 @@
             <CheckBox Grid.Row="2" Content="更新" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <TextBlock Text="下载日志的Uri：" VerticalAlignment="Center" Margin="8"/>
+            <TextBlock Text="下载日志的域名：" VerticalAlignment="Center" Margin="8"/>
             <TextBox x:Name="textBox" Text="{Binding LogDownloadUri}" MinWidth="240" MaxHeight="30" Margin="8"/>
         </StackPanel>
     </Grid>

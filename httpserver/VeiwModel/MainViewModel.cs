@@ -1,22 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using GeneralLibrary;
+using HTTPServer.CustomerBLL;
+using HTTPServer.Model;
+using HTTPServer.Veiw;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
-using HTTPServer.Model;
-using MessageBox = HandyControl.Controls.MessageBox;
-using HTTPServer.CustomerBLL;
-using HTTPServer.Veiw;
-using IWshRuntimeLibrary;
+using System.Xml.Linq;
 using File = System.IO.File;
-using System.Reflection;
-using System.Windows.Navigation;
-using GeneralLibrary;
-using GeneralLibrary.Sql;
-using System.Data;
+using MessageBox = HandyControl.Controls.MessageBox;
 
 namespace HTTPServer.VeiwModel
 {
@@ -242,9 +239,63 @@ namespace HTTPServer.VeiwModel
             set { _RequestDatasCount = value; OnPropertyChanged(); }
         }
 
+        private bool isHideToTray;
+        /// <summary>
+        /// 界面是否隐藏到托盘
+        /// </summary>
+        public bool IsHideToTray
+        {
+            get => isHideToTray;
+            set { isHideToTray = value; OnPropertyChanged(); }
+        }
+
+        private string logFilePath = "C:\\Users\\Administrator\\FTP\\PC\\文档\\Logs";
+        /// <summary>
+        /// 日志文件的存放路径
+        /// </summary>
+        public string LogFilePath
+        {
+            get => logFilePath;
+            set { logFilePath = value; OnPropertyChanged(); }
+        }
+
         #endregion
 
         #region 命令
+
+        private RelayCommand<object>? notifyCommand;
+        public RelayCommand<object> NotifyCommand
+        {
+            get
+            {
+                if (notifyCommand == null)
+                {
+                    notifyCommand = new RelayCommand<object>((type) =>
+                    {
+                        if (type!.ToString() == "0")
+                        {
+                            Application.Current.MainWindow.Show();
+                            Application.Current.MainWindow.Activate();
+                        }
+                        if (type.ToString() == "1")
+                        {
+                            SettingView settingView = new SettingView(this);
+                            settingView.Owner = Application.Current.MainWindow;
+                            settingView.ShowDialog();
+                            Application.Current.MainWindow.Activate();
+                        }
+                        if (type.ToString() == "2")
+                        {
+                            SaveConfig();
+                            Application.Current.Shutdown();
+                        }
+                    });
+                }
+                return notifyCommand;
+            }
+            set { notifyCommand = value; }
+        }
+
         private RelayCommand? _ShowAddressListCmd;
         /// <summary>
         /// 显示Address列表
@@ -423,7 +474,13 @@ namespace HTTPServer.VeiwModel
             FileRequestUrl.Add("/GetLogs");
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
+            string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
+            XDocument xmlDoc = XDocument.Load(configpath);
+            isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            LogFilePath = xmlDoc.Descendants("LogFilePath").FirstOrDefault()!.Value;
         }
+
+        #region 方法
 
         private void Result(IAsyncResult ar)
         {
@@ -577,7 +634,7 @@ namespace HTTPServer.VeiwModel
         private string GetLogNameList()
         {
             List<string> logNameList = new List<string>();
-            var files = new DirectoryInfo("D:\\BackupLogs").GetFiles("*.log",SearchOption.AllDirectories);
+            var files = new DirectoryInfo(LogFilePath).GetFiles("*.log",SearchOption.AllDirectories);
             foreach (var file in files)
             {
                 logNameList.Add(file.Name);
@@ -587,7 +644,7 @@ namespace HTTPServer.VeiwModel
 
         private byte[] GetFile(HttpListenerRequest request)
         {
-            var files = new DirectoryInfo("D:\\BackupLogs").GetFiles("*.log", SearchOption.AllDirectories);
+            var files = new DirectoryInfo(LogFilePath).GetFiles("*.log", SearchOption.AllDirectories);
             string filepath = files!.Where(path => path.Name == request.RawUrl!.Trim('/')).FirstOrDefault()!.FullName;
             byte[] data = File.ReadAllBytes(filepath);
             return data;
@@ -638,6 +695,19 @@ namespace HTTPServer.VeiwModel
                 LogHelper.Exception($"[SelectedChangedEvent]:{ex}");
             }
         }
+
+        public void SaveConfig()
+        {
+            string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
+            XDocument xmlDoc = XDocument.Load(configpath);
+            XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            XElement logFilePath = xmlDoc.Descendants("LogFilePath").FirstOrDefault()!;
+            ishidetoTray.SetValue(IsHideToTray);
+            logFilePath.SetValue(LogFilePath);
+            xmlDoc.Save(configpath);
+        }
+
+        #endregion
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using Hardcodet.Wpf.TaskbarNotification;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -9,6 +10,7 @@ namespace HTTPServer
     /// </summary>
     public partial class App : Application
     {
+        public static TaskbarIcon? mTaskbarIcon;
     }
 
 }

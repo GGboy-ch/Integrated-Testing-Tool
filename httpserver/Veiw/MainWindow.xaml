@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance Type=veiwmodel:MainViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Icon="/Images/服务器.ico"
+        Icon="pack://application:,,,/HTTPServer;component/Images/HTTPServer.ico"
         Title="HTTP服务器" Height="450" Width="800">
     <Window.Resources>
         <!--设置列表样式，使选中Item中的控件之后自动选中Item-->
@@ -42,6 +42,9 @@
                 <Button Content="返回内容" Command="{Binding ShowSettingCmd}" Style="{StaticResource ButtonPrimary}" Margin="4"/>
                 <CheckBox x:Name="checkBox" IsChecked="{Binding IsTimeout}" Content="超时时间" Margin="4"/>
                 <TextBox Text="{Binding Timeout, UpdateSourceTrigger=PropertyChanged}" Width="80" Height="30" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox}" Margin="4" />
+                <Button MaxHeight="60" Style="{StaticResource ButtonCustom}" Command="{Binding NotifyCommand}" CommandParameter="1" Padding="8">
+                    <Image Source="{StaticResource SettingIcon}"/>
+                </Button>
             </StackPanel>
         </Border>
         <hc:ScrollViewer Grid.Row="1">

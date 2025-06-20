@@ -1,4 +1,5 @@
 ﻿using HandyControl.Controls;
+using Hardcodet.Wpf.TaskbarNotification;
 using HTTPServer.VeiwModel;
 using System.Globalization;
 using System.Text;
@@ -23,6 +24,8 @@ namespace HTTPServer
             InitializeComponent();
             MainViewModel = new MainViewModel();
             this.DataContext = MainViewModel;
+            App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
+            App.mTaskbarIcon.DataContext = MainViewModel;
             this.Closing += MainWindow_Closing;
         }
         
@@ -33,7 +36,16 @@ namespace HTTPServer
         /// <param name="e"></param>
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            MainViewModel.Close();
+            if (MainViewModel.IsHideToTray)
+            {
+                this.Hide();
+                e.Cancel = true;
+            }
+            else
+            {
+                MainViewModel.SaveConfig();
+                MainViewModel.Close();
+            }
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

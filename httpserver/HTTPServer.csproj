@@ -20,7 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Images\服务器.ico" />
+    <None Remove="HTTPServer.config" />
+    <None Remove="Images\HTTPServer.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,16 +37,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="HTTPServer.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="HTTPServer.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0-preview1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Costura.Fody" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <PackageReference Include="HandyControl" Version="3.6.0-rc2" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
     <PackageReference Include="log4net" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
@@ -55,7 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\服务器.ico" />
+    <Resource Include="Images\HTTPServer.ico" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,6 +13,7 @@
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="日志文件存放路径：" Margin="4"  VerticalAlignment="Center"/>
             <TextBox MaxHeight="30" MinWidth="200" Text="{Binding LogFilePath}" Margin="4"/>
+            <Button Content="预览" Command="{Binding PreviewCmd}" Style="{StaticResource ButtonSuccess}" Margin="4"/>
         </StackPanel>
         <CheckBox Content="关闭软件时是否隐藏到托盘" IsChecked="{Binding IsHideToTray}" Margin="8"/>
     </StackPanel>

@@ -11,9 +11,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using File = System.IO.File;
 using MessageBox = HandyControl.Controls.MessageBox;
+using Application = System.Windows.Application;
 
 namespace HTTPServer.VeiwModel
 {
@@ -262,6 +264,22 @@ namespace HTTPServer.VeiwModel
         #endregion
 
         #region 命令
+
+        private RelayCommand? previewCmd;
+        public RelayCommand? PreviewCmd
+        {
+            get => previewCmd ??= new RelayCommand(PreviewCmdCxd);
+            set => previewCmd = value;
+        }
+
+        private void PreviewCmdCxd()
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                LogFilePath = folderBrowserDialog.SelectedPath ?? LogFilePath;
+            }
+        }
 
         private RelayCommand<object>? notifyCommand;
         public RelayCommand<object> NotifyCommand

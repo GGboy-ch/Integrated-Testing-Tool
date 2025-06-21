@@ -543,15 +543,18 @@ namespace HTTPServer.VeiwModel
                     if (request.RawUrl == "/GetLogNameList")
                     {
                         var data = Encoding.UTF8.GetBytes(GetLogNameList());
+                        response.ContentLength64 = data.Length;
                         stream.Write(data, 0, data.Length);
                     }
                     else if (request.RawUrl!.EndsWith(".log"))
                     {
                         byte[] data = GetFile(request);
+                        response.ContentLength64 = data.Length;
                         stream.Write(data, 0, data.Length);
                     }
                     else
                     {
+                        response.ContentLength64 = returnByteArr.Length;
                         //把处理信息返回到客户端
                         stream.Write(returnByteArr, 0, returnByteArr.Length);
                     }

@@ -16,8 +16,8 @@
         </Grid.RowDefinitions>
         <StackPanel Margin="8">
             <CheckBox Content="是否开机自启" IsChecked="{Binding IsAutoStart}" Margin="8"/>
-            <CheckBox Grid.Row="1" Content="关闭时最小到托盘" IsChecked="{Binding IsHideToTray}" Margin="8"/>
-            <CheckBox Grid.Row="2" Content="更新" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
+            <CheckBox Grid.Row="1" Content="关闭时隐藏到托盘" IsChecked="{Binding IsHideToTray}" Margin="8"/>
+            <CheckBox Grid.Row="2" Content=" 启动时自动更新" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <TextBlock Text="下载日志的域名：" VerticalAlignment="Center" Margin="8"/>

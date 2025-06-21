@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using DeviceEmulator.ViewModel;
 using GeneralLibrary;
-using IWshRuntimeLibrary;
 using LogProfiler.Models;
 using LogProfiler.Views;
 using Microsoft.Win32;
@@ -654,16 +653,16 @@ namespace LogProfiler.ViewModels
             if (templogDataList.Count() == 0)//使用第一个日志的事件作为基准
             {
                 log.DeepCopy(tempdata);
-                logData.LogDataLength = logData.LogContent.Contains("GET http:") || logData.LogContent.Contains("POST http:") ? 0 : 30; // 如果是第一个日志，设置一个默认的时间间隔
+                logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http") ? 0 : 30; // 如果是第一个日志，设置一个默认的时间间隔
             }
             else
             {
                 //对于Http请求和参数，不设置时间间隔，只需要显示返回的事件即可
-                logData.LogDataLength = logData.LogContent.Contains("GET http:") || logData.LogContent.Contains("POST http:")
+                logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http")
                     ? 0
                     : (logData.LogDatetime - tempdata.LogDatetime).TotalMilliseconds;
                 LogData? lastLogData = templogDataList.LastOrDefault(data => !string.IsNullOrEmpty(data.LogTip) && data.LogTip == logData.LogTip);
-                if (TimeoutThreshold > 0 && !(logData.LogContent.Contains("GET http:") || logData.LogContent.Contains("POST http:")) && lastLogData != null)//对于Http请求的日志记录，不算超时时间
+                if (TimeoutThreshold > 0 && !(logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http")) && lastLogData != null)//对于Http请求的日志记录，不算超时时间
                 {
                     logData.IsTimeout = (logData.LogDatetime - lastLogData.LogDatetime) > TimeSpan.FromMilliseconds(TimeoutThreshold);
                 }
@@ -717,7 +716,7 @@ namespace LogProfiler.ViewModels
             string deviceName = match.Success ? match.Groups[1].Value.Trim('[', ']') : string.Empty;
             try
             {
-                if (logMessage.Contains("POST http:") || logMessage.Contains("GET http:"))//处理HTTP请求日志
+                if (logMessage.Contains("POST http") || logMessage.Contains("GET http"))//处理HTTP请求日志
                 {
                     postRequest = logMessage.Split('/').Last();
                 }

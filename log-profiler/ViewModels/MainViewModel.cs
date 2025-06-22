@@ -329,12 +329,7 @@ namespace LogProfiler.ViewModels
             set => getNewLogsCmd = value;
         }
 
-        /// <summary>
-        /// 从Uri异步下载文件
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="savePath"></param>
-        /// <returns></returns>
+        // 替换 DownloadFileAsync 方法，支持实时显示下载速度
         private async Task DownloadFileAsync()
         {
             string url = LogDownloadUri + $"/{SelectedLog}";
@@ -344,7 +339,7 @@ namespace LogProfiler.ViewModels
                 var ownerWindow = Application.Current.Windows.OfType<DownloadLogView>().FirstOrDefault();
                 try
                 {
-                    client.Timeout = TimeSpan.FromMilliseconds(500); // 设置超时时间为500毫秒
+                    client.Timeout = TimeSpan.FromMinutes(1);
                     if (string.IsNullOrEmpty(url))
                     {
                         return;
@@ -356,24 +351,84 @@ namespace LogProfiler.ViewModels
                     }
                     tipWindow.Owner = ownerWindow ?? Application.Current.MainWindow;
                     tipWindow.Show();
-                    ownerWindow!.IsHitTestVisible = false;//关闭主窗口的鼠标事件
+                    ownerWindow!.IsHitTestVisible = false;
+
                     HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
-                    string savePath = Path.Combine(path, response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty);
-                    using (FileStream fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write))
+                    string fileName = response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty;
+                    string savePath = Path.Combine(path, fileName);
+
+                    var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                    var canReportProgress = totalBytes != -1;
+
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                     {
-                        await response.Content.CopyToAsync(fileStream);
-                        OnTipClosing?.Invoke(this, true);//关闭提示窗口
-                        ownerWindow.IsHitTestVisible = true;
-                        MessageBox.Show($"下载完成！保存路径为：{savePath}");
+                        var buffer = new byte[8192];
+                        long totalRead = 0;
+                        int read;
+                        var lastReportTime = DateTime.Now;
+                        long lastRead = 0;
+
+                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, read);
+                            totalRead += read;
+
+                            // 每500ms更新一次速度
+                            var now = DateTime.Now;
+                            if ((now - lastReportTime).TotalMilliseconds > 500)
+                            {
+                                double speed = (totalRead - lastRead) / (now - lastReportTime).TotalSeconds / 1024.0; // KB/s
+                                // 替换 DownloadFileAsync 方法中的速度显示部分
+                                string speedText = canReportProgress
+                                        ? $"下载进度: {UnitConvert(totalRead)} / {UnitConvert(totalBytes)}  速度: {speed:F2} KB/s"
+                                        : $"已下载: {UnitConvert(totalRead)}  速度: {speed:F2} KB/s";
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    tipWindow.SetTipText(speedText);
+                                });
+                                lastReportTime = now;
+                                lastRead = totalRead;
+                            }
+                        }
                     }
+
+                    OnTipClosing?.Invoke(this, true);
+                    ownerWindow.IsHitTestVisible = true;
+                    MessageBox.Show($"下载完成！保存路径为：{savePath}");
                 }
                 catch (Exception ex)
                 {
-                    OnTipClosing?.Invoke(this, true);//关闭提示窗口
+                    OnTipClosing?.Invoke(this, true);
                     ownerWindow!.IsHitTestVisible = true;
                     LogHelper.Exception($"下载失败: {ex}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// 单位转换方法，将字符串形式的大小转换为字节数
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        private string UnitConvert(long data)
+        {
+            if (data < 1024)
+            {
+                return $"{data} B"; // 字节
+            }
+            else if (data < 1024 * 1024)
+            {
+                return $"{data / 1024} KB"; // KB
+            }
+            else if (data < 1024 * 1024 * 1024)
+            {
+                return $"{data / (1024 * 1024)} MB"; // MB
+            }
+            else
+            {
+                return $"{data / (1024 * 1024 * 1024)} GB"; // GB
             }
         }
 

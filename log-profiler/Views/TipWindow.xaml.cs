@@ -49,6 +49,11 @@ namespace LogProfiler.Views
             });
         }
 
+        public void SetTipText(string text)
+        {
+            textBlock.Text = text;
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             if (!isAllowToClose)

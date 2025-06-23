@@ -399,11 +399,11 @@ namespace LogProfiler.ViewModels
                             var now = DateTime.Now;
                             if ((now - lastReportTime).TotalMilliseconds > 500)
                             {
-                                double speed = (totalRead - lastRead) / (now - lastReportTime).TotalSeconds / 1024.0; // KB/s
+                                double speed = (totalRead - lastRead) / (now - lastReportTime).TotalSeconds; // B/S
                                 // 替换 DownloadFileAsync 方法中的速度显示部分
                                 string speedText = canReportProgress
-                                        ? $"下载进度: {UnitConvert(totalRead)} / {UnitConvert(totalBytes)}  速度: {speed:F2} KB/s"
-                                        : $"已下载: {UnitConvert(totalRead)}  速度: {speed:F2} KB/s";
+                                        ? $"下载进度: {UnitConvert(totalRead)} / {UnitConvert(totalBytes)}  速度: {UnitConvert(speed)}/s"
+                                        : $"已下载: {UnitConvert(totalRead)}  速度: {UnitConvert(speed)}/s";
                                 double speedValue = (totalRead * 100) / totalBytes;
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
@@ -435,23 +435,23 @@ namespace LogProfiler.ViewModels
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private static string UnitConvert(long data)
+        private static string UnitConvert(double data)
         {
             if (data < 1024)
             {
-                return $"{data} B"; // 字节
+                return $"{data:F2} B"; // 字节
             }
             else if (data < 1024 * 1024)
             {
-                return $"{data / 1024} KB"; // KB
+                return $"{(data / 1024):F2} KB"; // KB
             }
             else if (data < 1024 * 1024 * 1024)
             {
-                return $"{data / (1024 * 1024)} MB"; // MB
+                return $"{(data / (1024 * 1024)):F2} MB"; // MB
             }
             else
             {
-                return $"{data / (1024 * 1024 * 1024)} GB"; // GB
+                return $"{(data / (1024 * 1024 * 1024)):F2} GB"; // GB
             }
         }
 

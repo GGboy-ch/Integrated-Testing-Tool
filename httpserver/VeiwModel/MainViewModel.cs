@@ -499,28 +499,27 @@ namespace HTTPServer.VeiwModel
 
         private void Result(IAsyncResult ar)
         {
-            //继续异步监听
             _HttpListener.BeginGetContext(Result, null);
             index++;
-            //获得context对象
             var context = _HttpListener.EndGetContext(ar);
             var request = context.Request;
             var response = context.Response;
-            if (request != null && request.RawUrl!.EndsWith(".log"))
+
+            // 判断是否为文件下载请求
+            if (request != null && IsFileDownloadRequest(request.RawUrl, out string fileName, out string mimeType))
             {
-                context.Response.ContentType = "application/octet-stream";//用于返回文件流
-                context.Response.AddHeader("Content-Disposition", "attachment; filename=downloaded_file.txt");
+                context.Response.ContentType = mimeType;
+                context.Response.AddHeader("Content-Disposition", $"attachment; filename={fileName}");
             }
             else
             {
-                context.Response.ContentType = "application/json";//告诉客户端返回的ContentType类型为json文本格式，编码为UTF-8
-                context.Response.AddHeader("Content-type", "application/json");//添加响应头信息
+                context.Response.ContentType = "application/json";
+                context.Response.AddHeader("Content-type", "application/json");
             }
             context.Response.ContentEncoding = Encoding.UTF8;
-            string? returnObj = null;//定义返回客户端的信息
+            string? returnObj = null;
             if (request!.InputStream != Stream.Null)
             {
-                //处理客户端发送的请求并返回处理信息
                 returnObj = HandleRequest(request, response);
             }
             else
@@ -534,7 +533,7 @@ namespace HTTPServer.VeiwModel
             }
             ReposeText = CustomerBase.ConvertToJsonString(returnObj);
             LogHelper.Debug($"[{index}] {request.HttpMethod}{returnObj}");
-            var returnByteArr = Encoding.UTF8.GetBytes(returnObj);//设置客户端返回信息的编码
+            var returnByteArr = Encoding.UTF8.GetBytes(returnObj);
             try
             {
                 using (var stream = response.OutputStream)
@@ -545,16 +544,15 @@ namespace HTTPServer.VeiwModel
                         response.ContentLength64 = data.Length;
                         stream.Write(data, 0, data.Length);
                     }
-                    else if (request.RawUrl!.EndsWith(".log"))
+                    else if (IsFileDownloadRequest(request.RawUrl, out fileName, out mimeType))
                     {
-                        byte[] data = GetFile(request);
+                        byte[] data = GetFile(request, fileName);
                         response.ContentLength64 = data.Length;
                         stream.Write(data, 0, data.Length);
                     }
                     else
                     {
                         response.ContentLength64 = returnByteArr.Length;
-                        //把处理信息返回到客户端
                         stream.Write(returnByteArr, 0, returnByteArr.Length);
                     }
                 }
@@ -563,6 +561,57 @@ namespace HTTPServer.VeiwModel
             {
                 LogHelper.Exception($"[Result]:{ex}");
             }
+        }
+
+        // 新增方法：判断是否为文件下载请求，并获取文件名和MIME类型
+        private bool IsFileDownloadRequest(string? rawUrl, out string fileName, out string mimeType)
+        {
+            fileName = string.Empty;
+            mimeType = "application/octet-stream";
+            if (string.IsNullOrEmpty(rawUrl)) return false;
+            // 只处理以.扩展名结尾的文件请求
+            var ext = Path.GetExtension(rawUrl);
+            if (!string.IsNullOrEmpty(ext))
+            {
+                fileName = rawUrl.Trim('/');
+                mimeType = GetMimeTypeByExtension(ext);
+                return true;
+            }
+            return false;
+        }
+
+        // 新增方法：根据扩展名返回MIME类型
+        private string GetMimeTypeByExtension(string ext)
+        {
+            return ext.ToLower() switch
+            {
+                ".txt" => "text/plain",
+                ".json" => "application/json",
+                ".log" => "application/octet-stream",
+                ".pdf" => "application/pdf",
+                ".jpg" => "image/jpeg",
+                ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".zip" => "application/zip",
+                ".rar" => "application/x-rar-compressed",
+                ".xml" => "application/xml",
+                _ => "application/octet-stream"
+            };
+        }
+
+        // 修改GetFile方法，支持返回任意类型文件
+        private byte[] GetFile(HttpListenerRequest request, string fileName)
+        {
+            fileName = request.RawUrl!.Trim('/');
+            var files = new DirectoryInfo(LogFilePath).GetFiles("*", SearchOption.AllDirectories);
+            var file = files.FirstOrDefault(f => f.Name == fileName);
+            if (file != null)
+            {
+                return File.ReadAllBytes(file.FullName);
+            }
+            // 文件不存在时返回空字节数组
+            return Array.Empty<byte>();
         }
 
         /// <summary>
@@ -655,20 +704,12 @@ namespace HTTPServer.VeiwModel
         private string GetLogNameList()
         {
             List<string> logNameList = new List<string>();
-            var files = new DirectoryInfo(LogFilePath).GetFiles("*.log",SearchOption.AllDirectories);
+            var files = new DirectoryInfo(LogFilePath).GetFiles("*",SearchOption.AllDirectories);
             foreach (var file in files)
             {
                 logNameList.Add(file.Name);
             }
             return string.Join("|", logNameList) ?? string.Empty;
-        }
-
-        private byte[] GetFile(HttpListenerRequest request)
-        {
-            var files = new DirectoryInfo(LogFilePath).GetFiles("*.log", SearchOption.AllDirectories);
-            string filepath = files!.Where(path => path.Name == request.RawUrl!.Trim('/')).FirstOrDefault()!.FullName;
-            byte[] data = File.ReadAllBytes(filepath);
-            return data;
         }
 
         public void Close()

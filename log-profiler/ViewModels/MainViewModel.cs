@@ -272,7 +272,7 @@ namespace LogProfiler.ViewModels
             {
                 try
                 {
-                    client.Timeout = TimeSpan.FromMilliseconds(500); // 设置超时时间为500毫秒
+                    client.Timeout = TimeSpan.FromMinutes(1); // 设置超时时间为1分钟
                     if (string.IsNullOrEmpty(url))
                     {
                         return;
@@ -329,13 +329,16 @@ namespace LogProfiler.ViewModels
             set => getNewLogsCmd = value;
         }
 
-        // 替换 DownloadFileAsync 方法，支持实时显示下载速度
+        /// <summary>
+        /// 支持实时显示下载速度
+        /// </summary>
+        /// <returns></returns>
         private async Task DownloadFileAsync()
         {
             string url = LogDownloadUri + $"/{SelectedLog}";
             using (HttpClient client = new HttpClient())
             {
-                TipWindow tipWindow = new TipWindow("正在下载日志文件，请稍等...", this);
+                ProgressBarView progressBarView = new ProgressBarView(this);
                 var ownerWindow = Application.Current.Windows.OfType<DownloadLogView>().FirstOrDefault();
                 try
                 {
@@ -349,9 +352,22 @@ namespace LogProfiler.ViewModels
                     {
                         Directory.CreateDirectory(path);
                     }
-                    tipWindow.Owner = ownerWindow ?? Application.Current.MainWindow;
-                    tipWindow.Show();
+                    progressBarView.Owner = ownerWindow ?? Application.Current.MainWindow;
+                    progressBarView.Show();
                     ownerWindow!.IsHitTestVisible = false;
+
+                    if (ownerWindow != null)//关闭主窗口，并让加载界面随主界面移动
+                    {
+                        ownerWindow.IsHitTestVisible = false;
+                        ownerWindow.LocationChanged += (s, e) =>
+                        {
+                            if (ownerWindow != null)
+                            {
+                                progressBarView.Left = ownerWindow.Left + (ownerWindow.Width - progressBarView.Width) / 2;
+                                progressBarView.Top = ownerWindow.Top + (ownerWindow.Height - progressBarView.Height) / 2;
+                            }
+                        };
+                    }
 
                     HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
@@ -384,9 +400,10 @@ namespace LogProfiler.ViewModels
                                 string speedText = canReportProgress
                                         ? $"下载进度: {UnitConvert(totalRead)} / {UnitConvert(totalBytes)}  速度: {speed:F2} KB/s"
                                         : $"已下载: {UnitConvert(totalRead)}  速度: {speed:F2} KB/s";
+                                double speedValue = (totalRead * 100) / totalBytes;
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    tipWindow.SetTipText(speedText);
+                                    progressBarView.SetProgress(speedValue, speedText);
                                 });
                                 lastReportTime = now;
                                 lastRead = totalRead;
@@ -394,13 +411,13 @@ namespace LogProfiler.ViewModels
                         }
                     }
 
-                    OnTipClosing?.Invoke(this, true);
-                    ownerWindow.IsHitTestVisible = true;
+                    progressBarView.Close();
+                    ownerWindow!.IsHitTestVisible = true;
                     MessageBox.Show($"下载完成！保存路径为：{savePath}");
                 }
                 catch (Exception ex)
                 {
-                    OnTipClosing?.Invoke(this, true);
+                    progressBarView.Close();
                     ownerWindow!.IsHitTestVisible = true;
                     LogHelper.Exception($"下载失败: {ex}");
                 }
@@ -412,7 +429,7 @@ namespace LogProfiler.ViewModels
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private string UnitConvert(long data)
+        private static string UnitConvert(long data)
         {
             if (data < 1024)
             {
@@ -702,6 +719,13 @@ namespace LogProfiler.ViewModels
             }
         }
 
+        /// <summary>
+        /// 从缓存列表中获取日志数据，并计算时间间隔、超时状态、界面显示的真实宽度等信息
+        /// </summary>
+        /// <param name="log">需要处理的原始日志数据</param>
+        /// <param name="tempdata">临时日志数据，用于缓存上一个日志数据</param>
+        /// <param name="templogDataList">原始日志列表</param>
+        /// <returns></returns>
         private LogData GetLogData(LogData log, LogData tempdata, IEnumerable<LogData> templogDataList)
         {
             LogData logData = log.DeepCopy();

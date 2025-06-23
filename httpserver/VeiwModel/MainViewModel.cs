@@ -47,10 +47,6 @@ namespace HTTPServer.VeiwModel
         /// </summary>
         public ObservableCollection<Customer> CustomerList { get; set; }
         /// <summary>
-        /// 用于保存文件请求Url
-        /// </summary>
-        public List<string> FileRequestUrl = new List<string>();
-        /// <summary>
         /// HTTP服务端监听器
         /// </summary>
         public HttpListener _HttpListener { get; set; }
@@ -489,7 +485,6 @@ namespace HTTPServer.VeiwModel
                     ContentList.Add(file.Name);
                 }
             }
-            FileRequestUrl.Add("/GetLogs");
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
@@ -508,7 +503,7 @@ namespace HTTPServer.VeiwModel
             var context = _HttpListener.EndGetContext(ar);
             var request = context.Request;
             var response = context.Response;
-            if (request != null && FileRequestUrl.Contains(request.RawUrl!))
+            if (request != null && request.RawUrl!.EndsWith(".log"))
             {
                 context.Response.ContentType = "application/octet-stream";//用于返回文件流
                 context.Response.AddHeader("Content-Disposition", "attachment; filename=downloaded_file.txt");

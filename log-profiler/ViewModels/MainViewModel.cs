@@ -17,6 +17,7 @@ namespace LogProfiler.ViewModels
     public class MainViewModel : NotifyBase
     {
         private int tempPage = -1;
+        int index = 0;//用于记录当前HTTP请求的索引
         public EventHandler<bool>? OnTipClosing;//事件处理器
         private RegexMessageModel regexMessageModel = new RegexMessageModel();
         List<string> tempPathList = new List<string>();//临时存放日志文件路径的列表，用于在正则表达式中筛选日志文件
@@ -277,6 +278,7 @@ namespace LogProfiler.ViewModels
                     {
                         return;
                     }
+                    index++;
                     HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
                     string str = await response.Content.ReadAsStringAsync();
@@ -336,6 +338,8 @@ namespace LogProfiler.ViewModels
         private async Task DownloadFileAsync()
         {
             string url = LogDownloadUri + $"/{SelectedLog}";
+            string fileName = string.Empty;
+            DateTime starttime = default;
             using (HttpClient client = new HttpClient())
             {
                 ProgressBarView progressBarView = new ProgressBarView(this);
@@ -368,10 +372,10 @@ namespace LogProfiler.ViewModels
                             }
                         };
                     }
-
+                    starttime = DateTime.Now;
                     HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
-                    string fileName = response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty;
+                    fileName = response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty;
                     string savePath = Path.Combine(path, fileName);
 
                     var totalBytes = response.Content.Headers.ContentLength ?? -1L;
@@ -414,12 +418,14 @@ namespace LogProfiler.ViewModels
                     progressBarView.Close();
                     ownerWindow!.IsHitTestVisible = true;
                     MessageBox.Show($"下载完成！保存路径为：{savePath}");
+                    LogHelper.Info($"{fileName}下载完成，耗时：{(DateTime.Now - starttime).TotalMilliseconds}ms");
                 }
                 catch (Exception ex)
                 {
                     progressBarView.Close();
                     ownerWindow!.IsHitTestVisible = true;
                     LogHelper.Exception($"下载失败: {ex}");
+                    LogHelper.Info($"{fileName}下载失败，耗时：{(DateTime.Now - starttime).TotalMilliseconds}ms");
                 }
             }
         }
@@ -452,34 +458,34 @@ namespace LogProfiler.ViewModels
         private RelayCommand<object>? notifyCommand;
         public RelayCommand<object> NotifyCommand
         {
-            get
-            {
-                if (notifyCommand == null)
-                {
-                    notifyCommand = new RelayCommand<object>((type) =>
-                    {
-                        if (type!.ToString() == "0")
-                        {
-                            Application.Current.MainWindow.Show();
-                            Application.Current.MainWindow.Activate();
-                        }
-                        if (type.ToString() == "1")
-                        {
-                            SettingView settingView = new SettingView(this);
-                            settingView.Owner = Application.Current.MainWindow;
-                            settingView.ShowDialog();
-                            Application.Current.MainWindow.Activate();
-                        }
-                        if (type.ToString() == "2")
-                        {
-                            SaveConfig();
-                            Application.Current.Shutdown();
-                        }
-                    });
-                }
-                return notifyCommand;
-            }
+            get => notifyCommand ?? new RelayCommand<object>(NotrifiCommandExd);
             set { notifyCommand = value; }
+        }
+
+        /// <summary>
+        /// 菜单栏通知命令处理
+        /// </summary>
+        /// <param name="type"></param>
+        private void NotrifiCommandExd(object? type)
+        {
+            if (type!.ToString() == "0")
+            {
+                Application.Current.MainWindow.Show();
+                Application.Current.MainWindow.Activate();
+            }
+            if (type.ToString() == "1")
+            {
+                SettingView settingView = new SettingView(this);
+                settingView.Owner = Application.Current.MainWindow;
+                settingView.ShowDialog();
+                Application.Current.MainWindow.Activate();
+            }
+            if (type.ToString() == "2")
+            {
+                SaveConfig();
+                LogHelper.Debug("软件关闭");
+                Application.Current.Shutdown();
+            }
         }
 
         private RelayCommand? copyLogCmd;
@@ -539,6 +545,7 @@ namespace LogProfiler.ViewModels
             get => clearLogCmd ?? new RelayCommand(ClearLogCmdExd);
             set => clearLogCmd = value;
         }
+
         /// <summary>
         /// 清除缓存中的日志数据
         /// </summary>
@@ -563,6 +570,7 @@ namespace LogProfiler.ViewModels
             get => regexCmd ?? new RelayCommand(RegexCmdExd);
             set => regexCmd = value;
         }
+
         /// <summary>
         /// 通过正则表达式选择日志文件
         /// </summary>
@@ -612,6 +620,7 @@ namespace LogProfiler.ViewModels
             get => previewPageCmd ?? new RelayCommand(PreviewCmdExd);
             set => previewPageCmd = value;
         }
+
         /// <summary>
         /// 上一页
         /// </summary>
@@ -626,6 +635,7 @@ namespace LogProfiler.ViewModels
             get => nextPageCmd ?? new RelayCommand(NextCmdExd);
             set => nextPageCmd = value;
         }
+
         /// <summary>
         /// 下一页
         /// </summary>
@@ -635,15 +645,15 @@ namespace LogProfiler.ViewModels
         }
 
         private RelayCommand? searchContiguousCmd;
-        /// <summary>
-        /// 搜索相邻日志命令
-        /// </summary>
         public RelayCommand SearchContiguousCmd
         {
             get => searchContiguousCmd ?? new RelayCommand(SearchContiguousCmdExd);
             set => searchContiguousCmd = value;
         }
 
+        /// <summary>
+        /// 搜索相邻日志命令
+        /// </summary>
         private void SearchContiguousCmdExd()
         {
             try

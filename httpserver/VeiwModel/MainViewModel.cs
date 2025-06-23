@@ -22,6 +22,8 @@ namespace HTTPServer.VeiwModel
     public class MainViewModel : NotifyBase
     {
         #region 属性
+
+        private static int index = 0;
         /// <summary>
         /// 接收的请求参数列表
         /// </summary>
@@ -499,6 +501,7 @@ namespace HTTPServer.VeiwModel
         {
             //继续异步监听
             _HttpListener.BeginGetContext(Result, null);
+            index++;
             //获得context对象
             var context = _HttpListener.EndGetContext(ar);
             var request = context.Request;
@@ -530,6 +533,7 @@ namespace HTTPServer.VeiwModel
                 returnObj = JsonConvert.SerializeObject(directory);
             }
             ReposeText = CustomerBase.ConvertToJsonString(returnObj);
+            LogHelper.Debug($"[{index}] {request.HttpMethod}{returnObj}");
             var returnByteArr = Encoding.UTF8.GetBytes(returnObj);//设置客户端返回信息的编码
             try
             {
@@ -580,6 +584,7 @@ namespace HTTPServer.VeiwModel
                 //需要注意：request中的请求参数被获取过一次之后就会丢失，请避免重复调用带request的构造函数
                 CustomerBase customerBLL = new CustomerBase();
                 string requestdata = $"数据来源：{request.RemoteEndPoint}\t请求方式: {request.HttpMethod}\t 请求参数：\r\n";
+                LogHelper.Debug($"[{index}] {requestdata}");
 
                 //根据当前客户类型使用相应的客户逻辑
                 switch (SelectedCustomer)

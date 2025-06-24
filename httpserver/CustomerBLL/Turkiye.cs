@@ -14,7 +14,7 @@ namespace HTTPServer.CustomerBLL
         public Turkiye(HttpListenerRequest httpListenerRequest, HttpListenerResponse httpListenerResponse) : base(httpListenerRequest) { }
         public Turkiye(HttpListenerRequest httpListenerRequest) : base(httpListenerRequest) { }
 
-        protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response)
+        protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
             switch (Request?.RawUrl)
             {

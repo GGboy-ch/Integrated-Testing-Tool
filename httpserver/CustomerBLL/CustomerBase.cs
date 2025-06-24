@@ -60,7 +60,7 @@ namespace HTTPServer.CustomerBLL
         /// </summary>
         /// <param name="disaplayData">用于在界面上显示客户端的请求参数</param>
         /// <returns></returns>
-        public virtual Dictionary<string, object?>? SetResponseContent(ref string disaplayData)
+        public virtual Dictionary<string, object?>? SetResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             try
             {
@@ -69,11 +69,11 @@ namespace HTTPServer.CustomerBLL
                 {
                     case "POST":
                         {
-                            return POSTResponseContent(ref disaplayData);
+                            return POSTResponseContent(ref disaplayData, rawurl, contentFile);
                         }
                     case "GET":
                         {
-                            return GETResponseContent(ref disaplayData);
+                            return GETResponseContent(ref disaplayData, rawurl, contentFile);
                         }
                     case "PUT":
                         {
@@ -100,7 +100,7 @@ namespace HTTPServer.CustomerBLL
         /// </summary>
         /// <param name="disaplayData">界面显示的的请求信息</param>
         /// <returns></returns>
-        public virtual Dictionary<string, object?>? POSTResponseContent(ref string disaplayData)
+        public virtual Dictionary<string, object?>? POSTResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             Dictionary<string, object?>? requestDic = JsonConvert.DeserializeObject<Dictionary<string, object?>>(ClientData!);
             Dictionary<string, object?>? response = new Dictionary<string, object?>();
@@ -114,7 +114,7 @@ namespace HTTPServer.CustomerBLL
                 {
                     disaplayData += $"\"{key}\":\"{requestDic[key]}\" \r\n";
                 }
-                ProcessRequest(requestDic, ref response);
+                ProcessRequest(requestDic, ref response, rawurl, contentFile);
             }
             catch (Exception ex)
             {
@@ -128,16 +128,32 @@ namespace HTTPServer.CustomerBLL
         /// 详细处理请求，子类可以重写此方法来实现特定的逻辑
         /// </summary>
         /// <param name="response"></param>
-        protected virtual void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response) { }
+        protected virtual void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
+        {
+            if (!string.IsNullOrEmpty(rawurl) && !string.IsNullOrEmpty(contentFile))
+            {
+                string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{contentFile}";
+                string json = File.ReadAllText(path, Encoding.UTF8);
+                response = JsonConvert.DeserializeObject<Dictionary<string, object>>(ConvertToJsonString(json))!;
+            }
+        }
 
-        protected virtual void ProcessRequest(ref Dictionary<string, object?> response) { }
+        protected virtual void ProcessRequest(ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
+        {
+            if (!string.IsNullOrEmpty(rawurl) && !string.IsNullOrEmpty(contentFile))
+            {
+                string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{contentFile}";
+                string json = File.ReadAllText(path, Encoding.UTF8);
+                response = JsonConvert.DeserializeObject<Dictionary<string, object>>(ConvertToJsonString(json))!;
+            }
+        }
 
         /// <summary>
         /// 返回GET响应
         /// </summary>
         /// <param name="disaplayData">界面显示的请求信息</param>
         /// <returns></returns>
-        public virtual Dictionary<string, object?>? GETResponseContent(ref string disaplayData)
+        public virtual Dictionary<string, object?>? GETResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             if (Request!.QueryString.Count > 0)
             {
@@ -153,7 +169,7 @@ namespace HTTPServer.CustomerBLL
                 {"Message","已调用默认客户的GET逻辑" }
             };
             WriteFileToResponse("", "Logprofiler.exe"); //如果有文件下载，则直接返回文件内容
-            ProcessRequest(ref responseDic);
+            ProcessRequest(ref responseDic, rawurl, contentFile);
             return responseDic;
         }
 

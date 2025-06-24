@@ -31,7 +31,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="8*"/>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Border>
             <StackPanel Orientation="Horizontal">
@@ -83,15 +83,25 @@
                                         Margin="4" 
                                         MinWidth="100"/>
                                     <CheckBox Content="使用" Style="{StaticResource ToggleButtonDanger}"  IsChecked="{Binding IsUseTextBox}"/>
+                                    
+                                    <Button Content="新增文本" Command="{Binding OpenAddControlCmd}" HorizontalAlignment="Right" Style="{StaticResource ButtonSuccess}" Margin="4"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="RawUrl：" Style="{StaticResource TextBlockBoldBaseStyle}" Margin="4"/>
+                                    <hc:ComboBox
+                                        ItemsSource="{Binding RawUrlList}"
+                                        SelectedItem="{Binding SelectedRawUrl}"
+                                        Margin="4"
+                                        MinWidth="140"/>
+                                    <TextBlock Text="文本列表：" Style="{StaticResource TextBlockBoldBaseStyle}" Margin="4"/>
                                     <hc:ComboBox
                                         ItemsSource="{Binding ContentList}"
                                         SelectedIndex="{Binding ContentSelectedIndex}"
                                         SelectionChanged="ComboBox_SelectionChanged"
                                         Margin="4" 
                                         MinWidth="140"/>
-                                    <Button Content="新增文本" Command="{Binding OpenAddControlCmd}" HorizontalAlignment="Right" Style="{StaticResource ButtonSuccess}" Margin="4"/>
                                 </StackPanel>
-                                <TextBox Text="{Binding ParticularText}" TextWrapping="Wrap" IsEnabled="{Binding IsUseTextBox}"/>
+                                    <TextBox Text="{Binding ParticularText}" TextWrapping="Wrap" IsEnabled="{Binding IsUseTextBox}"/>
                             </StackPanel>
                         </GroupBox>
                         <GroupBox Header="响应内容" Grid.Row="0" Grid.Column="1" MinWidth="200" Margin="4">
@@ -104,6 +114,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="2">
             <TextBlock Text="请求记录数量：" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultPrimary}" Margin="4"/>
             <TextBlock Text="{Binding RequestDatasCount}" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultPrimary}" Margin="4"/>
+            <Button Content="清空记录" Style="{StaticResource ButtonDanger}" Command="{Binding ClearCmd}" Margin="80,4"/>
         </StackPanel>
     </Grid>
 </hc:Window>

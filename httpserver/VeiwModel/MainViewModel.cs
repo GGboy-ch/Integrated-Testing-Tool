@@ -27,31 +27,45 @@ namespace HTTPServer.VeiwModel
         /// <summary>
         /// 接收的请求参数列表
         /// </summary>
-        public ObservableCollection<string> RequestDatas { get; set; }
+        public ObservableCollection<string> RequestDatas { get; set; } = new ObservableCollection<string>();
         /// <summary>
         /// 可以IP列表
         /// </summary>
-        public ObservableCollection<IPaddressMessage> IPList { get; set; }
+        public ObservableCollection<IPaddressMessage> IPList { get; set; } = new ObservableCollection<IPaddressMessage>();
         /// <summary>
         /// 监听的URL列表
         /// </summary>
-        public List<IPaddressMessage> URLList { get; set; }
+        public List<IPaddressMessage> URLList { get; set; } = new List<IPaddressMessage>();
         /// <summary>
         /// 返回内容文本类型
         /// </summary>
-        public ObservableCollection<string> ContentTypeList { get; set; }
+        public ObservableCollection<string> ContentTypeList { get; set; } =new ObservableCollection<string> { "Json","Text" };
         /// <summary>
         /// 返回内容列表
         /// </summary>
-        public ObservableCollection<string> ContentList { get; set; }
+        public ObservableCollection<string> ContentList { get; set; } = new ObservableCollection<string>();
+        /// <summary>
+        /// RawUrl列表
+        /// </summary>
+        public ObservableCollection<string> RawUrlList { get; set; } = new ObservableCollection<string>();
         /// <summary>
         /// 接口客户列表
         /// </summary>
-        public ObservableCollection<Customer> CustomerList { get; set; }
+        public ObservableCollection<Customer> CustomerList { get; set; } = new ObservableCollection<Customer>();
         /// <summary>
         /// HTTP服务端监听器
         /// </summary>
-        public HttpListener _HttpListener { get; set; }
+        public HttpListener _HttpListener { get; set; } = new HttpListener();
+
+        private string selectedRawUrl = string.Empty;
+        /// <summary>
+        /// 选中的RawUrl
+        /// </summary>
+        public string SelectedRawUrl
+        {
+            get => selectedRawUrl;
+            set { selectedRawUrl = value; OnPropertyChanged(); }
+        }
 
         private Visibility _IPListVisibility = Visibility.Collapsed;
         /// <summary>
@@ -263,6 +277,22 @@ namespace HTTPServer.VeiwModel
 
         #region 命令
 
+        private RelayCommand? clearCmd;
+        public RelayCommand? ClearCmd
+        {
+            get => clearCmd ?? new RelayCommand(ClearCmdCxd);
+            set => clearCmd = value;
+        }
+
+        /// <summary>
+        /// 清除接收的请求参数缓存
+        /// </summary>
+        private void ClearCmdCxd()
+        {
+            RequestDatas.Clear();
+            RequestDatasCount = 0;
+        }
+
         private RelayCommand? previewCmd;
         public RelayCommand? PreviewCmd
         {
@@ -270,6 +300,9 @@ namespace HTTPServer.VeiwModel
             set => previewCmd = value;
         }
 
+        /// <summary>
+        /// 预览命令，选择日志文件存放路径
+        /// </summary>
         private void PreviewCmdCxd()
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
@@ -464,13 +497,10 @@ namespace HTTPServer.VeiwModel
         public MainViewModel()
         {
             var paths = new DirectoryInfo(Environment.CurrentDirectory + "\\TXT").GetFiles("*", SearchOption.AllDirectories).Where(file => file.Name.EndsWith(".txt")).ToList();
-            _HttpListener = new HttpListener();
-            RequestDatas = new ObservableCollection<string>();
-            IPList = new ObservableCollection<IPaddressMessage>();
-            URLList = new List<IPaddressMessage>();
-            ContentTypeList = new ObservableCollection<string> { "Json","Text" };
-            ContentList = new ObservableCollection<string>();
-            CustomerList = new ObservableCollection<Customer> { Customer.None, Customer.Spain, Customer.Cannock, Customer.America, Customer.Turkiye };//添加客户逻辑之后需要在此处添加到选择列表
+            foreach (Customer customer in Enum.GetValues(typeof(Customer)))
+            {
+                CustomerList.Add(customer);
+            }
             IPAddress[] iPAddresses = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (IPAddress iPAddress in iPAddresses)
             {
@@ -505,6 +535,13 @@ namespace HTTPServer.VeiwModel
             var request = context.Request;
             var response = context.Response;
 
+            if (RawUrlList.All(x => x != request.RawUrl) && !string.IsNullOrEmpty(request.RawUrl))
+            {
+                Application.Current.Dispatcher.Invoke((Action)(() =>
+                {
+                    RawUrlList.Add(request.RawUrl);
+                }));
+            }
             // 判断是否为文件下载请求
             if (request != null && IsFileDownloadRequest(request.RawUrl, out string fileName, out string mimeType))
             {
@@ -658,6 +695,11 @@ namespace HTTPServer.VeiwModel
                             customerBLL = new Turkiye(request, response);
                             break;
                         }
+                    case Customer.JD:
+                        {
+                            customerBLL = new JD(request, response);
+                            break;
+                        }
                     default:
                         {
                             customerBLL = new CustomerBase(request, response);
@@ -672,7 +714,15 @@ namespace HTTPServer.VeiwModel
                         directory = JsonConvert.DeserializeObject<Dictionary<string, object?>>(ParticularText);
                     }
                 }));
-                var resopoeResult = customerBLL.SetResponseContent(ref requestdata);
+                var resopoeResult = new Dictionary<string, object?>();
+                if (ContentSelectedIndex >= 0 && IsUseTextBox)
+                {
+                    resopoeResult = customerBLL.SetResponseContent(ref requestdata, SelectedRawUrl, ContentList[ContentSelectedIndex]);
+                }
+                else
+                {
+                    resopoeResult = customerBLL.SetResponseContent(ref requestdata, SelectedRawUrl);
+                }
                 directory = resopoeResult!.Count != 0 ? resopoeResult : directory;
                 if (Timeout > 0 && IsTimeout)
                 {

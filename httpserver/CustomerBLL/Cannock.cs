@@ -20,7 +20,7 @@ namespace HTTPServer.CustomerBLL
 
         public Cannock(HttpListenerRequest httpListenerRequest) :base(httpListenerRequest) { }
 
-        public override Dictionary<string, object?>? POSTResponseContent(ref string disaplayData) 
+        public override Dictionary<string, object?>? POSTResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "") 
         {
             Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             try
@@ -53,7 +53,7 @@ namespace HTTPServer.CustomerBLL
             }
         }
 
-        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData)
+        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             try

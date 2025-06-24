@@ -14,7 +14,7 @@ namespace HTTPServer.CustomerBLL
         public Spain(HttpListenerRequest httpListenerRequest): base(httpListenerRequest) { }
         public Spain(HttpListenerRequest? request, HttpListenerResponse? response) : base(request, response) { }
 
-        public override Dictionary<string, object?>? POSTResponseContent(ref string disaplayData)
+        public override Dictionary<string, object?>? POSTResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             if (Request!.RawUrl == "/ctt-e-jwt/token?ids=cognito")
@@ -26,7 +26,7 @@ namespace HTTPServer.CustomerBLL
             return responseDic;
         }
 
-        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData)
+        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
         {
             Dictionary<string, object?> responseDic = new Dictionary<string, object?>();
             if (Request!.QueryString.Count > 0)

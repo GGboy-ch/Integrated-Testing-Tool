@@ -18,7 +18,7 @@ namespace HTTPServer.CustomerBLL
         public America(HttpListenerRequest httpListenerRequest, HttpListenerResponse httpListenerResponse) : base(httpListenerRequest) { }
         public America(HttpListenerRequest httpListenerRequest) : base(httpListenerRequest) { }
 
-        protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response)
+        protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
             if (Request?.RawUrl == "/AutoSort/CreateBatch")
             {

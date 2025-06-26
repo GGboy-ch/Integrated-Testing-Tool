@@ -14,11 +14,11 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="2">
             <CheckBox x:Name="isAutoStart" Content="开机自启" IsChecked="{Binding IsOpenStartup}" Margin="10,0"/>
-            <CheckBox x:Name="isCloseWindow" Content="最小化至托盘" IsChecked="True" Margin="10,0"/>
+            <CheckBox Content="最小化至托盘" IsChecked="{Binding IsHideToTray}" Margin="10,0"/>
             <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <TextBlock Text="归属地：" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <TextBox Text="{Binding DeviceName}" Margin="0,4" Width="150"/>
@@ -26,7 +26,7 @@
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <TextBlock Text="IPv6地址" VerticalAlignment="Center" Margin="4"/>
-            <TextBox Text="{Binding IPv6Address}" Width="340" Margin="2,4"/>
+            <TextBox Text="{Binding IPv6Address}" Height="40" MinWidth="340" Margin="2,4"/>
         </StackPanel>
     </Grid>
 </hc:Window>

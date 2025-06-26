@@ -1,33 +1,84 @@
-﻿using MySql.Data.MySqlClient;
-using System.Net.Sockets;
-using System.Net;
-using CommunityToolkit.Mvvm.Input;
-using System.Windows;
-using Microsoft.Win32;
-using System.Collections.Specialized;
-using NetTool.Common;
+﻿using CommunityToolkit.Mvvm.Input;
 using GeneralLibrary.Sql;
+using Microsoft.Win32;
+using MySql.Data.MySqlClient;
+using NetTool.Common;
+using System.Collections.Specialized;
+using System.Net;
+using System.Net.Sockets;
+using System.Windows;
+using System.Xml.Linq;
 
 namespace NetTool.ViewModuel
 {
     public class MainViewModuel : NotifyBase
     {
+        private bool isAutoClosedApp;
+        /// <summary>
+        /// 是否自动关闭应用
+        /// </summary>
+        public bool IsAutoClosedApp
+        {
+            get { return isAutoClosedApp; }
+            set { isAutoClosedApp = value; OnPropertyChanged(); }
+        }
+
+        private bool isHideToTray;
+        /// <summary>
+        /// 关闭软件后是否隐藏到托盘
+        /// </summary>
+        public bool IsHideToTray
+        {
+            get { return isHideToTray; }
+            set { isHideToTray = value; OnPropertyChanged(); }
+        }
+
+        private int delayTime;
+        /// <summary>
+        /// 延迟时间
+        /// </summary>
+        public int DelayTime
+        {
+            get { return delayTime; }
+            set { delayTime = value; OnPropertyChanged(); }
+        }
+
         private string ipv6Address = "127.0.0.1";
-        public string IPv6Address//ipv6公网ip
+        /// <summary>
+        /// ipv6公网ip
+        /// </summary>
+        public string IPv6Address
         {
             get { return ipv6Address; }
             set { ipv6Address = value; OnPropertyChanged(); }
         }
 
         private bool isOpenStartup = true;
-
-        public bool IsOpenStartup//开机自启开关
+        /// <summary>
+        /// 开机自启开关
+        /// </summary>
+        public bool IsOpenStartup
         {
             get { return isOpenStartup; }
-            set { isOpenStartup = value; OnPropertyChanged(); }
+            set
+            {
+                isOpenStartup = value;
+                OnPropertyChanged();
+                if (isOpenStartup)
+                {
+                    AddAppToStartup(); // 添加到开机自启
+                }
+                else
+                {
+                    RemoveAppFromStartup(); // 从开机自启中移除
+                }
+            }
         }
 
         private string? deviceName = Environment.GetEnvironmentVariable("computername");
+        /// <summary>
+        /// 本地设备名称
+        /// </summary>
         public string? DeviceName
         {
             get { return deviceName; }
@@ -55,6 +106,7 @@ namespace NetTool.ViewModuel
                         }
                         if( type.ToString() == "2")
                         {
+                            SaveConfig();
                             Application.Current.Shutdown();
                         }
                     });
@@ -66,7 +118,12 @@ namespace NetTool.ViewModuel
 
         public MainViewModuel()
         {
-            if(CheckNum() > 7)
+            string configpath = Environment.CurrentDirectory + $"\\NetTool.config";
+            XDocument xmlDoc = XDocument.Load(configpath);
+            IsAutoClosedApp = (bool)xmlDoc.Descendants("IsAutoClosedApp").FirstOrDefault()!;
+            IsHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            DelayTime = (int)xmlDoc.Descendants("DelayTime").FirstOrDefault()!;
+            if (CheckNum() > 7)
             {
                 ClearTable();
             }
@@ -101,6 +158,24 @@ namespace NetTool.ViewModuel
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             key!.DeleteValue("NetTool.exe", false);
+        }
+
+        /// <summary>
+        /// 将缓存中的配置参数保存配置文件
+        /// </summary>
+        public void SaveConfig()
+        {
+            string configpath = Environment.CurrentDirectory + $"\\NetTool.config";
+            XDocument xmlDoc = XDocument.Load(configpath);
+            XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            XElement isAutoClosedApp = xmlDoc.Descendants("IsAutoClosedApp").FirstOrDefault()!;
+            XElement isOpenStartup = xmlDoc.Descendants("IsOpenStartup").FirstOrDefault()!;
+            XElement delayTime = xmlDoc.Descendants("DelayTime").FirstOrDefault()!;
+            isAutoClosedApp.SetValue(IsAutoClosedApp);
+            ishidetoTray.SetValue(IsHideToTray);
+            isOpenStartup.SetValue(IsOpenStartup);
+            delayTime.SetValue(DelayTime);
+            xmlDoc.Save(configpath);
         }
 
         /// <summary>

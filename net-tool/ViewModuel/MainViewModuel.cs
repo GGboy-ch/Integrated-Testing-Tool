@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows;
 using System.Xml.Linq;
+using GeneralLibrary;
 
 namespace NetTool.ViewModuel
 {
@@ -128,7 +129,10 @@ namespace NetTool.ViewModuel
                 ClearTable();
             }
             IPv6Address = GetIPv6Address();
-            SelectDataBase(IPv6Address);
+            if (!string.IsNullOrEmpty(IPv6Address))
+            {
+                SelectDataBase(IPv6Address);
+            }
             IsOpenStartup = IsAppInStartup();
         }
 
@@ -197,7 +201,7 @@ namespace NetTool.ViewModuel
             }
             catch (Exception ex)
             {
-                 MessageBox.Show("当前网络无法获取IPv6地址");
+                 LogHelper.Exception($"[GetIPv6Address]:{ex}");
             }
 
             return ipv6Address;
@@ -234,30 +238,23 @@ namespace NetTool.ViewModuel
             using (MySqlConnection con = new MySqlConnection(conStr))
             {
                 con.Open();
+                MySqlCommand com = new MySqlCommand(sql, con);
                 try
                 {
-                    MySqlCommand com = new MySqlCommand(sql, con);
-                    try
+                    var s = com.ExecuteReader();
+                    if (!s.Read())
                     {
-                        var s = com.ExecuteReader();
-                        if (!s.Read())
-                        {
-                            InsertDataBase(address);
-                        }
-                        else
-                        {
-                            UpdateDataBase(address);
-                        }
-                        s.Close();
+                        InsertDataBase(address);
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Console.WriteLine($"[SelectDataBase] {e}");
+                        UpdateDataBase(address);
                     }
+                    s.Close();
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Console.WriteLine(ex.ToString());
+                    LogHelper.Exception($"[SelectDataBase] {e}");
                 }
             }
         }
@@ -273,28 +270,20 @@ namespace NetTool.ViewModuel
             using(MySqlConnection con = new MySqlConnection( conStr))
             {
                 con.Open();
+                MySqlCommand com = new MySqlCommand(sql, con);
                 try
                 {
-                    MySqlCommand com = new MySqlCommand(sql, con);
-                    try
+                    var s = com.ExecuteReader();
+                    if (s.Read())
                     {
-                        var s = com.ExecuteReader();
-                        if (s.Read())
-                        {
-                            num = (long)s[0];
-                        }
+                        num = (long)s[0];
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"[CheckNum] {e}");
-                    }
-                    return num;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
-                    return -1;
+                    LogHelper.Exception($"[CheckNum] {e}");
                 }
+                return num;
             }
         }
 
@@ -303,28 +292,9 @@ namespace NetTool.ViewModuel
         /// </summary>
         public void ClearTable()
         {
-            string conStr = "Data Source=120.26.41.210;DataBase=IPv6;User=remoteuser;Password=1531079";
+            NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
             string sql = $"DELETE FROM ipv6Address WHERE DeviceName='{DeviceName}'";
-            using(MySqlConnection con = new MySqlConnection(conStr))
-            {
-                con.Open();
-                try
-                {
-                    MySqlCommand com = new MySqlCommand(sql, con);
-                    try
-                    {
-                        var s = com.ExecuteReader();
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine($"[ClearTable] {e}");
-                    }
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-            }
+            newMySQL.ExecuteNonQuery(sql);
         }
     }
 }

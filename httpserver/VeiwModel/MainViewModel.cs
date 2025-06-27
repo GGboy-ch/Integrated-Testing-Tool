@@ -772,7 +772,10 @@ namespace HTTPServer.VeiwModel
                     {
                         ParticularText = CustomerBase.ConvertToJsonString(ParticularText);
                     }
-                    File.WriteAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[ContentSelectedIndex]}", ParticularText, Encoding.UTF8);//将关闭前最后一次返回的响应参数保存到本地
+                    if (ContentSelectedIndex >= 0)
+                    {
+                        File.WriteAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[ContentSelectedIndex]}", ParticularText, Encoding.UTF8);//将关闭前最后一次返回的响应参数保存到本地
+                    }
                 }
             }
             catch (Exception ex)

@@ -83,6 +83,12 @@ namespace HTTPServer.CustomerBLL
                     response.Add("ChuteCode", new int[] { chutecode });
                 }
             }
+            else if (Request?.RawUrl == "/AutoSort/ChutePrint")
+            {
+                string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{CustomerName}ChutePrintNormal.txt";
+                string json = File.ReadAllText(path, Encoding.UTF8);
+                response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
+            }
         }
     }
 }

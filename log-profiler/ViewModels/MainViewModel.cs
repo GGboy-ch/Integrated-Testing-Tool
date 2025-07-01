@@ -562,6 +562,7 @@ namespace LogProfiler.ViewModels
             ExceptionLogDatas.Clear();
             DeviceNameList.Clear();
             LogDataCount = 0;
+            CurrentLogDataCount = 0;
         }
 
         private RelayCommand? regexCmd;

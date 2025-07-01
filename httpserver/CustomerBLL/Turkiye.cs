@@ -59,7 +59,7 @@ namespace HTTPServer.CustomerBLL
                 case "/api/Manifesto/KekEvrakTespit":
                     {
                         response.Add("IsError", false);
-                        response.Add("value", new Dictionary<string, object>
+                        response.Add("value", new Dictionary<string, object?>
                         {
                             { "evrakSiraNo", null },
                             { "evrakSiriNo", null },

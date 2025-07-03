@@ -8,6 +8,8 @@
 	<ProjectGuid>{42101128-73F8-4ACD-AD03-266E386E8F51}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Logprofiler.ico</ApplicationIcon>
+	<Company>Dickred</Company>
+	<AssemblyTitle>创建日志查询工具</AssemblyTitle>
     <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>

@@ -8,6 +8,7 @@
 	<ProjectGuid>{A2C27A4D-E548-41D5-B8CA-E22B37525CB1}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>NetTool.ico</ApplicationIcon>
+	<AssemblyTitle>调整IPV6获取工具自动关闭启动</AssemblyTitle>
 	<AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 

@@ -27,6 +27,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={#MyAppName}
+VersionInfoDescription={#MyUpdateMessage}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 DisableDirPage=no

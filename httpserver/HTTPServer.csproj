@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
 	<ProjectGuid>{EE0DCE06-9B39-47DD-9639-A6823794C8B5}</ProjectGuid>
     <ApplicationIcon>HTTPServer.ico</ApplicationIcon>
+	<AssemblyTitle>创建HTTP服务器</AssemblyTitle>
 	<AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 

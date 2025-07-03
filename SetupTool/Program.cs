@@ -17,7 +17,7 @@ namespace SetupTool
         {
             try
             {
-                //string rootpath = "C:\\Users\\wayzim\\Desktop\\Tools\\log-profiler";
+                //string rootpath = "C:\\Users\\wayzim\\Desktop\\Tools\\IntegratedTestingTool\\log-profiler";
                 string rootpath = Environment.CurrentDirectory;
                 Console.WriteLine($"需要打包项目所在的路径：{rootpath}");
                 string projectName = Path.GetFileNameWithoutExtension(new DirectoryInfo(rootpath).GetFiles().Where(file => file.Name.EndsWith(".csproj")).FirstOrDefault()!.FullName);
@@ -32,7 +32,7 @@ namespace SetupTool
                 bool isSDK = xmlDoc.Root.ToString().Contains("Sdk");
                 string projectGuid = xmlDoc.Descendants(ns + "ProjectGuid").FirstOrDefault()?.Value!;
                 string version = string.Empty;
-                string uploadMessage = assemblyInfos[assemblyInfos.IndexOf(assemblyInfos.Where(str => str.StartsWith("[assembly: AssemblyMetadata")).FirstOrDefault()!) + 2];
+                string uploadMessage = xmlDoc.Descendants(ns + "UploadMessage").FirstOrDefault()?.Value!;
                 string packpath = rootpath + "\\bin\\Release\\net8.0";
 
                 if (isSDK)

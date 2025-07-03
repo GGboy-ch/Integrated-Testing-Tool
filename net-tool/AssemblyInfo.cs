@@ -9,10 +9,3 @@ using System.Windows;
                                                 //(used if a resource is not found in the page,
                                                 // app, or any theme specific resource dictionaries)
 )]
-
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "Log4net.config", ConfigFileExtension = "config", Watch = true)]
-
-[assembly: AssemblyMetadata("ChangeLog", @"
-202506010 1.0.0.0
-创建项目
-")]

@@ -92,7 +92,7 @@ namespace HTTPServer.CustomerBLL
             {
                 LogHelper.Exception($"[SetResponseContent]:{ex}");
             }
-            return null;
+            return new Dictionary<string, object?>();
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace HTTPServer.CustomerBLL
             {
                 if (requestDic == null)
                 {
-                    return null;
+                    return new Dictionary<string, object?>();
                 }
                 foreach (var key in requestDic.Keys)
                 {

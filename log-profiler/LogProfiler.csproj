@@ -9,9 +9,10 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Logprofiler.ico</ApplicationIcon>
 	<Company>Dickred</Company>
-	<AssemblyTitle>创建日志查询工具</AssemblyTitle>
+	<AssemblyTitle>日志查询工具</AssemblyTitle>
     <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <FileVersion>1.0.0.1</FileVersion>
+	<UploadMessage>创建日志查询工具，用于分析处理log4net记录的日志</UploadMessage>
   </PropertyGroup>
 
   <ItemGroup>

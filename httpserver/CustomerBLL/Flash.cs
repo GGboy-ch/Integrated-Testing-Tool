@@ -15,11 +15,11 @@ namespace HTTPServer.CustomerBLL
         }
         protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
-            base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
             if (Request!.RawUrl == "/sorting/sort")
             {
 
             }
+            base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
         }
     }
 }

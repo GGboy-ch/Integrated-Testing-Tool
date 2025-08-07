@@ -30,7 +30,7 @@ namespace HTTPServer.CustomerBLL
                     }
                 case "/api/AracIslemleri/AracSort":
                     {
-                        response.Add("IsError", false);
+                        response.Add("isError", false);
                         response.Add("value", new Dictionary<string, object>
                         {
                             { "aktarmaObjId", "3120000100000000551" },
@@ -44,7 +44,7 @@ namespace HTTPServer.CustomerBLL
                     }
                 case "/api/AracIslemleri/AracBosalt":
                     {
-                        response.Add("IsError", false);
+                        response.Add("isError", false);
                         response.Add("value", new Dictionary<string, object>
                         {
                             { "aktarmaObjId", "3120000100000000551" },
@@ -58,7 +58,7 @@ namespace HTTPServer.CustomerBLL
                     }
                 case "/api/Manifesto/KekEvrakTespit":
                     {
-                        response.Add("IsError", false);
+                        response.Add("isError", false);
                         response.Add("value", new Dictionary<string, object?>
                         {
                             { "evrakSiraNo", null },
@@ -75,7 +75,7 @@ namespace HTTPServer.CustomerBLL
                     }
                 case "/api/Manifesto/BasarisizKekEvrakTespit":
                     {
-                        response.Add("IsError", false);
+                        response.Add("isError", false);
                         response.Add("value", new Dictionary<string, object>
                         {
                             { "barkod", "00918863882" },
@@ -95,6 +95,7 @@ namespace HTTPServer.CustomerBLL
                         break;
                     }
             }
+            base.ProcessRequest(requestDic,ref response, rawurl, contentFile);
         }
     }
 }

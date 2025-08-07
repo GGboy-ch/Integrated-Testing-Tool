@@ -700,6 +700,11 @@ namespace HTTPServer.VeiwModel
                             customerBLL = new JD(request, response);
                             break;
                         }
+                    case Customer.Flash:
+                        {
+                            customerBLL = new Flash(request, response);
+                            break;
+                        }
                     default:
                         {
                             customerBLL = new CustomerBase(request, response);

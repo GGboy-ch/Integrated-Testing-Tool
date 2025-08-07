@@ -89,6 +89,7 @@ namespace HTTPServer.CustomerBLL
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
             }
+            base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
         }
     }
 }

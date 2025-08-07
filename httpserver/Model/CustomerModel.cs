@@ -20,6 +20,7 @@ namespace HTTPServer.Model
         Spain,
         America,
         Turkiye,
-        JD
+        JD,
+        Flash,
     }
 }

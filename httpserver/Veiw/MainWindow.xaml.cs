@@ -53,5 +53,10 @@ namespace HTTPServer
             MainViewModel.SelectedChangedEvent(selectedIndex);
             selectedIndex = ((HandyControl.Controls.ComboBox)sender).SelectedIndex;
         }
+
+        private void Customer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+             MainViewModel.CustomerChangedEvent();
+        }
     }
 }

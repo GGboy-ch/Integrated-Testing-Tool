@@ -130,7 +130,7 @@ namespace HTTPServer.CustomerBLL
         /// <param name="response"></param>
         protected virtual void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
-            if (!string.IsNullOrEmpty(rawurl) && !string.IsNullOrEmpty(contentFile))
+            if (!string.IsNullOrEmpty(rawurl) && Request!.RawUrl == rawurl && !string.IsNullOrEmpty(contentFile))
             {
                 string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{contentFile}";
                 string json = File.ReadAllText(path, Encoding.UTF8);
@@ -140,7 +140,7 @@ namespace HTTPServer.CustomerBLL
 
         protected virtual void ProcessRequest(ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
-            if (!string.IsNullOrEmpty(rawurl) && !string.IsNullOrEmpty(contentFile))
+            if (!string.IsNullOrEmpty(rawurl) && Request!.RawUrl == rawurl && !string.IsNullOrEmpty(contentFile))
             {
                 string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{contentFile}";
                 string json = File.ReadAllText(path, Encoding.UTF8);

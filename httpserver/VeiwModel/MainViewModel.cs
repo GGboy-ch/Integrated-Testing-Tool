@@ -496,7 +496,6 @@ namespace HTTPServer.VeiwModel
 
         public MainViewModel()
         {
-            var paths = new DirectoryInfo(Environment.CurrentDirectory + "\\TXT").GetFiles("*", SearchOption.AllDirectories).Where(file => file.Name.EndsWith(".txt")).ToList();
             foreach (Customer customer in Enum.GetValues(typeof(Customer)))
             {
                 CustomerList.Add(customer);
@@ -510,13 +509,6 @@ namespace HTTPServer.VeiwModel
                 }
             }
             IPList.Add(new IPaddressMessage { Address = "127.0.0.1:6060" });
-            foreach(FileInfo file in paths)
-            {
-                if (File.Exists(file.FullName))
-                {
-                    ContentList.Add(file.Name);
-                }
-            }
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
@@ -767,17 +759,20 @@ namespace HTTPServer.VeiwModel
             return string.Join("|", logNameList) ?? string.Empty;
         }
 
+        /// <summary>
+        /// 软件关闭时调用，保存最后一次的响应参数文本文件
+        /// </summary>
         public void Close()
         {
             try
             {
                 if (ContentList.Count > 0)
                 {
-                    if (!string.IsNullOrEmpty(ParticularText))
+                    if (!string.IsNullOrEmpty(ParticularText)) //如果有特定的文本信息，则转换为Json格式
                     {
                         ParticularText = CustomerBase.ConvertToJsonString(ParticularText);
                     }
-                    if (ContentSelectedIndex >= 0)
+                    if (ContentSelectedIndex >= 0) //如果选中了返回内容列表中的某一项
                     {
                         File.WriteAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[ContentSelectedIndex]}", ParticularText, Encoding.UTF8);//将关闭前最后一次返回的响应参数保存到本地
                     }
@@ -789,13 +784,17 @@ namespace HTTPServer.VeiwModel
             }
         }
 
+        /// <summary>
+        /// 当选择的返回内容列表发生变化时触发
+        /// </summary>
+        /// <param name="selectedindex"></param>
         public void SelectedChangedEvent(int selectedindex)
         {
             try
             {
                 if (ContentList.Count > 0)
                 {
-                    if (selectedindex >= 0)
+                    if (selectedindex >= 0) //如果已选中了返回内容列表中的某一项，先保存该项的内容到本地
                     {
                         if (!string.IsNullOrEmpty(ParticularText))
                         {
@@ -813,6 +812,31 @@ namespace HTTPServer.VeiwModel
             catch (Exception ex)
             {
                 LogHelper.Exception($"[SelectedChangedEvent]:{ex}");
+            }
+        }
+
+        /// <summary>
+        /// 客户类型发生变化时触发
+        /// </summary>
+        public void CustomerChangedEvent()
+        {
+            try
+            {
+                ContentList.Clear();
+                string path = Path.Combine(Environment.CurrentDirectory, $"TXT\\{SelectedCustomer}");
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt", SearchOption.TopDirectoryOnly);
+                foreach (var file in files)
+                {
+                    ContentList.Add(file.Name);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Exception($"[CustomerChangedEvent]:{ex}");
             }
         }
 

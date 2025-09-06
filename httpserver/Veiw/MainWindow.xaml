@@ -36,7 +36,7 @@
         <Border>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="客户:" VerticalAlignment="Center" Margin="4"/>
-                <ComboBox MinWidth="200" MaxHeight="30" ItemsSource="{Binding CustomerList}" Margin="4" SelectedItem="{Binding SelectedCustomer}"/>
+                <ComboBox MinWidth="200" MaxHeight="30" ItemsSource="{Binding CustomerList}" Margin="4" SelectedItem="{Binding SelectedCustomer}" SelectionChanged="Customer_SelectionChanged"/>
                 <Button Content="URL列表" Command="{Binding ShowAddressListCmd}" Style="{StaticResource ButtonInfo}" Margin="4"/>
                 <Button Content="接收内容" Command="{Binding ShowRecievedListCmd}" Style="{StaticResource ButtonWarning}" Margin="4"/>
                 <Button Content="返回内容" Command="{Binding ShowSettingCmd}" Style="{StaticResource ButtonPrimary}" Margin="4"/>

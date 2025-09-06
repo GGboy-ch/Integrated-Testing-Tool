@@ -325,7 +325,7 @@ namespace DeviceEmulator.ViewModel
                             
                             do
                             {
-                                Thread.Sleep(2000);
+                                //Thread.Sleep(2000);
                                 if (client?.DeviceName == Properties.Res.Camera)//相机数据的
                                 {
                                     data = ChangeCameraArrivedTime(o?.CommandText);
@@ -546,8 +546,16 @@ namespace DeviceEmulator.ViewModel
                 foreach (Camera c in e)
                 {
                     c.TriggerTimeSpan = (int)(DateTime.Now - c.TriggerTime).TotalMilliseconds;
+                    if (c.CameraName == "深度相机")
+                    {
+                        c.CameraName = "ZKGW_DepthCamera";
+                    }
+                    else if (c.CameraName == "预识别相机")
+                    {
+                        c.CameraName = "ZKGW_DepthCameraForBarCode";
+                    }
                     string jsonData = JsonConvert.SerializeObject(c);
-                    byte[] msg = Encoding.UTF8.GetBytes(jsonData);
+                    byte[] msg = Encoding.ASCII.GetBytes(jsonData);
                     if (CameraButtonList?.Where(camera => camera.Content == $"相机：{c.CameraName}，叠件状态：{c.State}").Count() == 0)//判断是否已经存在该按钮
                     {
                         CameraButtonList.Add(new CmdButton { Content = $"相机：{c.CameraName}，叠件状态：{c.State}", CommandText = msg, CmdDeviceType = Properties.Res.Camera, CommandExd = QuickCommandExd });

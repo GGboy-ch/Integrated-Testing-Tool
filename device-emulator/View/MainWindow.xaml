@@ -78,6 +78,8 @@
                     <ComboBox Width="60" Height="20" Margin="4,2" ItemsSource="{Binding PLCTypes}" SelectedItem="{Binding PlcType}"/>
                     <Button Content="设置快捷命令" Style="{StaticResource ButtonPrimary}" Command="{Binding OpenSetingExd}" HorizontalAlignment="Left" Margin="4"/>
                     <Button Content="清空快捷命令" Style="{StaticResource ButtonDanger}" Command="{Binding ClearQuickCmdExd}" HorizontalAlignment="Left" Margin="4"/>
+                    <TextBlock Text="循环间隔：" VerticalAlignment="Center" Margin="4"/>
+                    <TextBox Width="30" Height="20"/>
                 </StackPanel>
                 <TabControl Grid.Row="1" Style="{StaticResource TabControlCapsuleSolid}" SelectedIndex="{Binding DeviceSelectedIndex}" Margin="4">
                     <hc:TabItem Header="单件分离PLC">

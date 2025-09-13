@@ -227,6 +227,7 @@ namespace DeviceEmulator.ViewModel
                                 }
                                 catch (Exception ex)//暂不处理WSACancelBlockingCall异常
                                 {
+                                    Thread.Sleep(1000); //避免频繁异常时CPU占用过高
                                     if (ex is not SocketException)
                                     {
                                         LogHelper.Exception(ex);
@@ -288,7 +289,7 @@ namespace DeviceEmulator.ViewModel
                         {
                             do
                             {
-                                Thread.Sleep(2000);
+                                //Thread.Sleep(2000);
                                 IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(IpcIP), IpcPort);
                                 byte[]? data = Encoding.UTF8.GetBytes(AddCommondMessage);
                                 LogHelper.Debug($"'Send' [UdpClient]:{Encoding.UTF8.GetString(data)}");
@@ -325,7 +326,6 @@ namespace DeviceEmulator.ViewModel
                             
                             do
                             {
-                                //Thread.Sleep(2000);
                                 if (client?.DeviceName == Properties.Res.Camera)//相机数据的
                                 {
                                     data = ChangeCameraArrivedTime(o?.CommandText);
@@ -341,6 +341,7 @@ namespace DeviceEmulator.ViewModel
                                     LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{BitConverter.ToString(data).Replace('-', ' ')}");
                                 }
                                 client?.UdpClient?.Send(data, remotePoint);
+                                Thread.Sleep(2000); //间隔发送
                             }
                             while (IsLoopSend == true);
                         });
@@ -628,12 +629,16 @@ namespace DeviceEmulator.ViewModel
         /// <param name="color">文本字体颜色</param>
         private void AddRichTextBox(string color, string data)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 Paragraph paragraph = new Paragraph();
                 Run run = new Run(data) { Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)) };
                 paragraph.Inlines.Add(run);
                 RichTextBoxDocument.Blocks.Add(paragraph);
+                if (RichTextBoxDocument.Blocks.Count > 500)
+                {
+                    RichTextBoxDocument.Blocks.Remove(RichTextBoxDocument.Blocks.FirstOrDefault());
+                }
             }));
         }
 

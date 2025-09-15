@@ -116,6 +116,16 @@ namespace DeviceEmulator.ViewModel
             set { deviceSelectedIndex = value; MyPropertyChanged(); }
         }
 
+        private int loopSpan = 1000;
+        /// <summary>
+        /// 循环间隔
+        /// </summary>
+        public int LoopSpan
+        {
+            get { return loopSpan; }
+            set { loopSpan = value; MyPropertyChanged(); }
+        }
+
         public static UdpClient? udpClient; // 用于与上位机通信
         public QuickSetingVM QuickSetingVM {  get; set; }
 
@@ -341,7 +351,7 @@ namespace DeviceEmulator.ViewModel
                                     LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{BitConverter.ToString(data).Replace('-', ' ')}");
                                 }
                                 client?.UdpClient?.Send(data, remotePoint);
-                                Thread.Sleep(2000); //间隔发送
+                                Thread.Sleep(LoopSpan); //间隔发送
                             }
                             while (IsLoopSend == true);
                         });

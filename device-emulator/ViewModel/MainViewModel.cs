@@ -59,7 +59,7 @@ namespace DeviceEmulator.ViewModel
             set { isLoopSend = value; MyPropertyChanged(); }
         }
 
-        private string ipcIP = "127.0.0.1";
+        private string ipcIP = string.Empty;
         /// <summary>
         /// 上位机IP
         /// </summary>
@@ -69,7 +69,7 @@ namespace DeviceEmulator.ViewModel
             set { ipcIP = value; MyPropertyChanged(); }
         }
 
-        private int ipcPort = 6000;
+        private int ipcPort = 0;
         /// <summary>
         /// 上位机端口
         /// </summary>
@@ -79,7 +79,7 @@ namespace DeviceEmulator.ViewModel
             set { ipcPort = value; MyPropertyChanged(); }
         }
 
-        private string localIP = "127.0.0.1";
+        private string localIP = string.Empty;
         /// <summary>
         /// 本地设备IP
         /// </summary>
@@ -89,7 +89,7 @@ namespace DeviceEmulator.ViewModel
             set { localIP = value; MyPropertyChanged(); }
         }
 
-        private int localPort = 6001;
+        private int localPort = 0;
         /// <summary>
         /// 本地设备端口
         /// </summary>
@@ -170,7 +170,10 @@ namespace DeviceEmulator.ViewModel
             }
             try
             {
-                udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(LocalIP), LocalPort));
+                if (!string.IsNullOrEmpty(LocalIP) && LocalPort != 0)
+                {
+                    udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(LocalIP), LocalPort));
+                }
             }
             catch (SocketException ex)
             {
@@ -189,7 +192,10 @@ namespace DeviceEmulator.ViewModel
                         stopcancellationToken.Token.ThrowIfCancellationRequested();//检测到令牌被取消后直接抛出异常中断循环
                         try
                         {
-                            data = udpClient?.Receive(ref remotePoint);
+                            if (udpClient != null)
+                            {
+                                data = udpClient?.Receive(ref remotePoint);
+                            }
                         }
                         catch (Exception ex)//暂不处理WSACancelBlockingCall异常
                         {

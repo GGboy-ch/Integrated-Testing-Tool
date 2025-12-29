@@ -23,7 +23,7 @@ namespace HTTPServer.CustomerBLL
                         response.Add("accessToken", new Dictionary<string, object>
                         {
                             { "token", "eyJhbGciOTest14Oi8vd3d3LlhkfSd9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCITest123CJ9.eyJodHRwOi8vc2NoTesT12y54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50a XR5L2NsYWltcy9uYW1lIjoic3VyYXRjYXJnbyAiTest153E3NDE1MzMxMjcsImV4cC1H5D7K0saDTEyNywiaXNzIjoic3VyYXRrYXJnby5jb20udHIiLCJhdWQiOiJzdJsTestLmNvbS50ciJ9.KmAhUtXvh6Rh6-oHDfMiQjoAhRTest123YUA1m_xLcrJkcoVxyp7Xu0Spln-5l7fdPkKGOTKAeTeStCVMfh3Fw" },
-                            { "expiration", Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")).ToUniversalTime().AddMinutes(30) }
+                            { "expiration", Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")).ToUniversalTime().AddMinutes(2) }
                         });
                         response.Add("equiredAuthenticatorType", null);
                         break;
@@ -88,10 +88,10 @@ namespace HTTPServer.CustomerBLL
                     }
                 case "/sort":
                     {
-                        requestDic.TryGetValue("Barcode", out object? barcode);
-                        response.Add("Message", "success");
-                        response.Add("Barcode", barcode);
-                        response.Add("ChuteCode", new int[] {1, 2, 3});
+                        requestDic.TryGetValue("barcode", out object? barcode);
+                        response.Add("message", "success");
+                        response.Add("barcode", barcode);
+                        response.Add("chuteCode", new int[] {1, 2, 3});
                         break;
                     }
             }

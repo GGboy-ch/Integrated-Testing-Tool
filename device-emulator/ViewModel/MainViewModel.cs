@@ -476,6 +476,7 @@ namespace DeviceEmulator.ViewModel
             QuickSetingVM.BalanceWheelMessages += QuickSetingVM_BalanceWheelMessages;
             QuickSetingVM.SelectedIndexEventHandler += QuickSetingVM_SelectedIndexEventHandler;
             QuickSetingVM.SortPortMessages += QuickSetingVM_SortPortMessages;
+            QuickSetingVM.LightMessages += QuickSetingVM_LightMessage;
             IPAddress[] ip = Dns.GetHostAddresses(Dns.GetHostName());
             foreach(IPAddress addr in ip)
             {
@@ -486,6 +487,23 @@ namespace DeviceEmulator.ViewModel
         }
 
         #region 事件
+
+        private void QuickSetingVM_LightMessage(object? sender, ObservableCollection<Light> e)
+        {
+            foreach(var light in e)
+            {
+                byte[] basedata = { 0xAA, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x1D, 0x01, 0x1D, 0x01 };
+                byte[] data = new byte[12];
+                basedata.CopyTo(data, 0);
+                data[11] = Convert.ToByte(light.LineNo);
+                data[6] = (byte)(data.Length); //设置数据长度
+                XORTools.Xor(ref data);
+                if (BalanceWheelButtonList?.Where(data => data.Content == $"光电{light.LightNo}").Count() == 0 && light.DeviceType == Properties.Res.BalanceWheel)//判断是否已经存在该按钮
+                {
+                    BalanceWheelButtonList?.Add(new CmdButton { Content = $"光电{light.LightNo}", CmdDeviceType = Properties.Res.BalanceWheel, CommandText = data, CommandExd = QuickCommandExd });
+                }
+            }
+        }
 
         private void QuickSetingVM_SortPortMessages(object? sender, ObservableCollection<SortPort> e)
         {

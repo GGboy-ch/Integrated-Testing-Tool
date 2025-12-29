@@ -326,6 +326,38 @@ namespace DeviceEmulator.Model
         }
     }
 
+    public class Light : NotifyBase
+    {
+        private int lightNo;
+        /// <summary>
+        /// 光电序号
+        /// </summary>
+        public int LightNo
+        {
+            get { return lightNo; }
+            set { lightNo = value; MyPropertyChanged(); }
+        }
+        private int lineNo;
+        /// <summary>
+        /// 线号
+        /// </summary>
+        public int LineNo
+        {
+            get { return lineNo; }
+            set { lineNo = value; MyPropertyChanged(); }
+        }
+
+        private string deviceType = string.Empty;
+        /// <summary>
+        /// 父级设备类型
+        /// </summary>
+        public string DeviceType
+        {
+            get { return deviceType; }
+            set { deviceType = value; MyPropertyChanged(); }
+        }
+    }
+
     /// <summary>
     /// PLC协议版本
     /// </summary>

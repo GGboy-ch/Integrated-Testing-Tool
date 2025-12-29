@@ -125,6 +125,9 @@
     <value>Camera</value>
     <comment>分拣设备类型</comment>
   </data>
+  <data name="PortStateBoard" xml:space="preserve">
+    <value>PortStateBoard</value>
+  </data>
   <data name="PSS" xml:space="preserve">
     <value>PSS</value>
     <comment>分拣设备类型</comment>

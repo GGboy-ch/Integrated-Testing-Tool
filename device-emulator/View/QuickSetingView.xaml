@@ -173,5 +173,40 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
+        <hc:TabItem Header="光电">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16*"/>
+                    <ColumnDefinition Width="47*"/>
+                    <ColumnDefinition Width="527*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
+                    <TextBlock Text="光电数量:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LightNums}" SelectedItem="{Binding LightNum}" IsEditable="True"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding LightCreateQuickCommandExd}"/>
+                </StackPanel>
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">
+                    <DataGrid ItemsSource="{Binding LightList}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="光电序号" Binding="{Binding LightNo}"/>
+                            <DataGridTextColumn Header="线号" Binding="{Binding LineNo}"/>
+                            <DataGridTemplateColumn Header="父级设备">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox 
+                                            SelectedItem="{Binding DeviceType, UpdateSourceTrigger=PropertyChanged}"
+                                            ItemsSource="{Binding DataContext.DeviceTypeList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </hc:TabItem>
     </TabControl>
 </Window>

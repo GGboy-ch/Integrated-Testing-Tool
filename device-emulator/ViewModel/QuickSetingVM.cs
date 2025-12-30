@@ -92,7 +92,7 @@ namespace DeviceEmulator.ViewModel
                 LightList.Clear();
                 for (int i = 1; i <= LightNum; i++)
                 {
-                    LightList.Add(new Light { LineNo = i});
+                    LightList.Add(new Light { LightNo = i});
                 }
             }
         }

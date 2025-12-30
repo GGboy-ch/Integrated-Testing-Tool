@@ -347,7 +347,7 @@ namespace DeviceEmulator.Model
             set { lineNo = value; MyPropertyChanged(); }
         }
 
-        private string deviceType = string.Empty;
+        private string deviceType = Properties.Res.BalanceWheel;
         /// <summary>
         /// 父级设备类型
         /// </summary>

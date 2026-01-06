@@ -518,22 +518,25 @@ namespace DeviceEmulator.ViewModel
             }
         }
 
-        private void QuickSetingVM_BalanceWheelMessages(object? sender, BalanceWheel e)
+        private void QuickSetingVM_BalanceWheelMessages(object? sender, ObservableCollection<BalanceWheel> e)
         {
-            byte[] basedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x06, 0x1B, 0x01 };
-            byte[] data = new byte[17];
-            basedata.CopyTo(data, 0);
-            data[12] = Convert.ToByte(e.ResultType);
-            data[13] = Convert.ToByte(e.SortPort);
-            data[14] = 0x00;
-            data[15] = 0xCB;
-            data[16] = 0x0A;
-            data[6] = (byte)(data.Length); //设置数据长度
-            XORTools.Xor(ref data);
-
-            if (BalanceWheelButtonList?.Where(balance => balance.Content == $"结果类型{e.ResultType},分拣口{e.SortPort}").Count() == 0)//判断是否已经存在该按钮
+            foreach (BalanceWheel bw in e)
             {
-                BalanceWheelButtonList?.Add(new CmdButton { Content = $"结果类型{e.ResultType},分拣口{e.SortPort}", CmdDeviceType = Properties.Res.BalanceWheel, CommandText = data, CommandExd = QuickCommandExd });
+                byte[] basedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x06, 0x1B, 0x01 };
+                byte[] data = new byte[17];
+                basedata.CopyTo(data, 0);
+                data[12] = Convert.ToByte(bw.ResultType);
+                data[13] = Convert.ToByte(bw.SortPort);
+                data[14] = 0x00;
+                data[15] = 0xCB;
+                data[16] = 0x0A;
+                data[6] = (byte)(data.Length); //设置数据长度
+                XORTools.Xor(ref data);
+
+                if (BalanceWheelButtonList?.Where(balance => balance.Content == $"结果类型{bw.ResultType},分拣口{bw.SortPort}").Count() == 0)//判断是否已经存在该按钮
+                {
+                    BalanceWheelButtonList?.Add(new CmdButton { Content = $"结果类型{bw.ResultType},分拣口{bw.SortPort}", CmdDeviceType = Properties.Res.BalanceWheel, CommandText = data, CommandExd = QuickCommandExd });
+                }
             }
         }
 

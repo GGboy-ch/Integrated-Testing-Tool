@@ -13,7 +13,7 @@ namespace DeviceEmulator.ViewModel
         public event EventHandler<ObservableCollection<Camera>>? CameraMessages;
         public event EventHandler<ObservableCollection<SortPort>>? SortPortMessages;
         public event EventHandler<ObservableCollection<Light>>? LightMessages;
-        public event EventHandler<BalanceWheel>? BalanceWheelMessages;
+        public event EventHandler<ObservableCollection<BalanceWheel>>? BalanceWheelMessages;
         public event EventHandler<bool>? CloseWindow;
         public event EventHandler<int>? SelectedIndexEventHandler;
 
@@ -51,6 +51,22 @@ namespace DeviceEmulator.ViewModel
                 for (int i = 1; i <= CameraNum; i++)
                 {
                     CameraList.Add(new Camera());
+                }
+            }
+        }
+
+        private int balanceWheelNum;
+        public int BalanceWheelNum
+        {
+            get { return balanceWheelNum; }
+            set
+            {
+                balanceWheelNum = value;
+                MyPropertyChanged();
+                BalanceWheelList.Clear();
+                for(int i = 1; i <= BalanceWheelNum; i++)
+                {
+                    BalanceWheelList.Add(new BalanceWheel { Name = Properties.Res.BalanceWheel});
                 }
             }
         }
@@ -111,37 +127,25 @@ namespace DeviceEmulator.ViewModel
             set { selectedIndex = value; MyPropertyChanged(); SelectedIndexEventHandler?.Invoke(this, selectedIndex); }
         }
 
-        public ObservableCollection<int> LineNumbers { get; set; }
-        public ObservableCollection<string> CameraTypes { get; set; }
-        public ObservableCollection<int> ResultTypes { get; set; }
-        public ObservableCollection<int> CameraStates { get; set; }
-        public ObservableCollection<int> CameraNums { get; set; }
-        public ObservableCollection<int> SortPortNums { get; set; }
-        public ObservableCollection<int> LightNums { get; set; }
-        public ObservableCollection<PSS> PSSList { get; set; }
-        public ObservableCollection<Camera> CameraList { get; set; }
-        public ObservableCollection<BalanceWheel> BalanceWheelList { get; set; }
-        public ObservableCollection<SortPort> SortPortsList { get; set; }
-        public ObservableCollection<Light> LightList { get; set; }
-        public ObservableCollection<SortPortState> SortPortStateList { get; set; }
-        public ObservableCollection<string> DeviceTypeList { get; set; }
+        public ObservableCollection<int> LineNumbers { get; set; } = new ObservableCollection<int>() { 1, 2, 3 };
+        public ObservableCollection<string> CameraTypes { get; set; } = new ObservableCollection<string> { Properties.Res.ZKGW_DepthCameraForBarCode, Properties.Res.ZKGW_DepthCamera };
+        public ObservableCollection<int> ResultTypes { get; set; } = new ObservableCollection<int> { 0, 1, 2 };
+        public ObservableCollection<int> CameraStates { get; set; } = new ObservableCollection<int> { 0, 1, 2, 3, 4, 5 };
+        public ObservableCollection<int> CameraNums { get; set; } = new ObservableCollection<int>() { 1, 2 };
+        public ObservableCollection<int> SortPortNums { get; set; } = new ObservableCollection<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        public ObservableCollection<int> BalanceWheelNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 ,4, 5, 6, 7};
+        public ObservableCollection<int> LightNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 };
+        public ObservableCollection<PSS> PSSList { get; set; } = new ObservableCollection<PSS>();
+        public ObservableCollection<Camera> CameraList { get; set; } = new ObservableCollection<Camera>();
+        public ObservableCollection<BalanceWheel> BalanceWheelList { get; set; } = new ObservableCollection<BalanceWheel>() { new BalanceWheel { Name = Properties.Res.BalanceWheel, ResultType = 0, SortPort = 2 } };
+        public ObservableCollection<SortPort> SortPortsList { get; set; } = new ObservableCollection<SortPort> { new SortPort { PortNo = 1, PortState = SortPortState.Nomal } };
+        public ObservableCollection<Light> LightList { get; set; } = new ObservableCollection<Light>();
+        public ObservableCollection<SortPortState> SortPortStateList { get; set; } = new ObservableCollection<SortPortState> { SortPortState.Nomal, SortPortState.FullPackage, SortPortState.FullThrought, SortPortState.Locked, SortPortState.DoorClosed };
+        public ObservableCollection<string> DeviceTypeList { get; set; } = new ObservableCollection<string> { Properties.Res.PSS, Properties.Res.Camera, Properties.Res.BalanceWheel, Properties.Res.PortStateBoard };
 
         public QuickSetingVM()
         {
-            PSSList = new ObservableCollection<PSS>();
-            CameraList = new ObservableCollection<Camera>();
-            LightList = new ObservableCollection<Light>();
-            BalanceWheelList = new ObservableCollection<BalanceWheel>() { new BalanceWheel { Name = Properties.Res.BalanceWheel, ResultType = 0, SortPort = 2 } };
-            SortPortsList = new ObservableCollection<SortPort> { new SortPort { PortNo = 1, PortState = SortPortState.Nomal } };
-            CameraTypes = new ObservableCollection<string> { Properties.Res.ZKGW_DepthCameraForBarCode, Properties.Res.ZKGW_DepthCamera };
-            LineNumbers = new ObservableCollection<int>() { 1, 2, 3 };
-            LightNums = new ObservableCollection<int>() { 1, 2, 3 };
-            CameraNums = new ObservableCollection<int>() { 1, 2 };
-            CameraStates = new ObservableCollection<int> { 0, 1, 2, 3, 4, 5 };
-            SortPortNums = new ObservableCollection<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            ResultTypes = new ObservableCollection<int> { 0, 1, 2 };
-            SortPortStateList = new ObservableCollection<SortPortState> { SortPortState.Nomal, SortPortState.FullPackage, SortPortState.FullThrought, SortPortState.Locked, SortPortState.DoorClosed };
-            DeviceTypeList = new ObservableCollection<string> { Properties.Res.PSS, Properties.Res.Camera, Properties.Res.BalanceWheel, Properties.Res.PortStateBoard };
+            
         }
 
 
@@ -199,7 +203,7 @@ namespace DeviceEmulator.ViewModel
                 {
                     balanceWheelCreateQuickCommandExd = new RelayCommand(() =>
                     {
-                        BalanceWheelMessages?.Invoke(this, BalanceWheelList[0]);
+                        BalanceWheelMessages?.Invoke(this, BalanceWheelList);
                         CloseWindow?.Invoke(this, true);
                     });
                 }

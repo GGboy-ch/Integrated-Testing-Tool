@@ -594,9 +594,9 @@ namespace DeviceEmulator.ViewModel
                     }
                     string jsonData = JsonConvert.SerializeObject(c);
                     byte[] msg = Encoding.ASCII.GetBytes(jsonData);
-                    if (CameraButtonList?.Where(camera => camera.Content == $"相机：{c.CameraName}，叠件状态：{c.State}").Count() == 0)//判断是否已经存在该按钮
+                    if (CameraButtonList?.Where(camera => camera.Content == $"{c.LineNum}号线相机：{c.CameraName}，叠件状态：{c.State}").Count() == 0)//判断是否已经存在该按钮
                     {
-                        CameraButtonList.Add(new CmdButton { Content = $"相机：{c.CameraName}，叠件状态：{c.State}", CommandText = msg, CmdDeviceType = Properties.Res.Camera, CommandExd = QuickCommandExd });
+                        CameraButtonList.Add(new CmdButton { Content = $"{c.LineNum}号线相机：{c.CameraName}，叠件状态：{c.State}", CommandText = msg, CmdDeviceType = Properties.Res.Camera, CommandExd = QuickCommandExd });
                     }
                 }
             }

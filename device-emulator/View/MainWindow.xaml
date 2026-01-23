@@ -28,6 +28,38 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!--顺序发送命令列表样式，可拖动控件-->
+        <Style TargetType="ListBox" BasedOn="{StaticResource ListBoxBaseStyle}">
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Grid Margin="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{Binding Content}"/>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="4">
+                                <TextBlock Text="与下一条命令的间隔时间：" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding IntervalTime}" Width="100"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemBaseStyle}">
+                        <Setter Property="AllowDrop" Value="True"/>
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Item_MouseDown"/>
+                        <EventSetter Event="MouseMove" Handler="Item_MouseMove"/>
+                        <EventSetter Event="Drop" Handler="Item_Drop"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
         <Style TargetType="GroupBox" BasedOn="{StaticResource BaseStyle}">
             <Setter Property="Margin" Value="4"/>
             <Setter Property="Background" Value="AliceBlue"/>
@@ -71,15 +103,20 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="2*"/>
                     <RowDefinition Height="10*"/>
-                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Background="AliceBlue">
                     <TextBlock Text="PLC协议版本:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
                     <ComboBox Width="60" Height="20" Margin="4,2" ItemsSource="{Binding PLCTypes}" SelectedItem="{Binding PlcType}"/>
-                    <Button Content="设置快捷命令" Style="{StaticResource ButtonPrimary}" Command="{Binding OpenSetingExd}" HorizontalAlignment="Left" Margin="4"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Command="{Binding OpenSetingExd}" HorizontalAlignment="Left" Margin="4"/>
                     <Button Content="清空快捷命令" Style="{StaticResource ButtonDanger}" Command="{Binding ClearQuickCmdExd}" HorizontalAlignment="Left" Margin="4"/>
+                    <Button Content="批量执行" Style="{StaticResource ButtonPrimary}" Command="{Binding BatchExecutionCmdExd}" HorizontalAlignment="Left" Margin="4"/>
                 </StackPanel>
-                <TabControl Grid.Row="1" Style="{StaticResource TabControlCapsuleSolid}" SelectedIndex="{Binding DeviceSelectedIndex}" Margin="4">
+                <TabControl
+                    Grid.Row="1" 
+                    Visibility="{Binding TableControlVisibility}" 
+                    Style="{StaticResource TabControlCapsuleSolid}" 
+                    SelectedIndex="{Binding DeviceSelectedIndex}"
+                    Margin="4">
                     <hc:TabItem Header="单件分离PLC">
                         <hc:ScrollViewer VerticalScrollBarVisibility="Visible">
                             <ItemsControl Grid.Row="1" ItemsSource="{Binding PSSPLCButtonList}"/>
@@ -101,11 +138,25 @@
                         </hc:ScrollViewer>
                     </hc:TabItem>
                 </TabControl>
-                <StackPanel Grid.Row="2" Orientation="Horizontal">
-                    <CheckBox Content="循环发送" IsChecked="{Binding IsLoopSend}" Margin="4"/>
-                    <TextBox Text="{Binding LoopSpan}" IsEnabled="{Binding IsLoopSend}" Width="60" Height="20" Margin="4,0"/>
-                    <TextBlock Text="循环间隔(ms)" VerticalAlignment="Center" Margin="4"/>
-                </StackPanel>
+                <Grid Grid.Row="1" Visibility="{Binding BatchExecutionVisibility}" Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ListBox ItemsSource="{Binding ButtonList}" SelectedItem="{Binding SelectedButton}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="删除" Command="{Binding DeleteBatchExecutionButtonCmd}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                        <CheckBox Content="循环发送" IsChecked="{Binding IsLoopSend}" Margin="4"/>
+                        <TextBox Text="{Binding LoopSpan}" IsEnabled="{Binding IsLoopSend}" Width="60" Height="20" Margin="4,0"/>
+                        <TextBlock Text="循环间隔(ms)" VerticalAlignment="Center" Margin="4"/>
+                        <Button Style="{StaticResource ButtonPrimary}" Command="{Binding ExecutionCmd}" Content="执行" Margin="4"/>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="2" Grid.ColumnSpan="2" Header="输入区">

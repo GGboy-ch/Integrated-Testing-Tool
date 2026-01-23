@@ -8,10 +8,10 @@ using DeviceEmulator.View;
 using System.Windows.Documents;
 using System.Windows.Media;
 using Newtonsoft.Json;
-using System.CodeDom;
 using System.IO;
 using GeneralLibrary;
-using HandyControl.Media.Animation;
+using System.Windows;
+using System.Windows.Navigation;
 
 namespace DeviceEmulator.ViewModel
 {
@@ -126,8 +126,51 @@ namespace DeviceEmulator.ViewModel
             set { loopSpan = value; MyPropertyChanged(); }
         }
 
+        private BatchExecutionCmdButton? selectedButton;
+        /// <summary>
+        /// 选中的批量执行命令按钮
+        /// </summary>
+        public BatchExecutionCmdButton? SelectedButton
+        {
+            get { return selectedButton; }
+            set { selectedButton = value; MyPropertyChanged(); }
+        }
+
+        private Visibility batchExecutionVisibility = Visibility.Collapsed;
+        /// <summary>
+        /// 批量执行命令窗口可见性
+        /// </summary>
+        public Visibility BatchExecutionVisibility
+        {
+            get { return batchExecutionVisibility; }
+            set
+            {
+                batchExecutionVisibility = value;
+                MyPropertyChanged();
+                if (batchExecutionVisibility == Visibility.Collapsed)
+                {
+                    TableControlVisibility = Visibility.Visible;
+                }
+                else
+                {
+                    TableControlVisibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private Visibility tableControlVisibility = Visibility.Visible;
+        /// <summary>
+        /// 快捷命令表格可见性
+        /// </summary>
+        public Visibility TableControlVisibility
+        {
+            get { return tableControlVisibility; }
+            set { tableControlVisibility = value; MyPropertyChanged(); }
+
+        }
+
         public static UdpClient? udpClient; // 用于与上位机通信
-        public QuickSetingVM QuickSetingVM {  get; set; }
+        public QuickSetingVM QuickSetingVM { get; set; }
 
         static CancellationTokenSource stopcancellationToken = new CancellationTokenSource(); //停止接受上位机数据
         public ObservableCollection<string>? IPList { get; set; }
@@ -137,6 +180,7 @@ namespace DeviceEmulator.ViewModel
         public ObservableCollection<CmdButton>? CameraButtonList { get; set; }
         public ObservableCollection<CmdButton>? BalanceWheelButtonList { get; set; }
         public ObservableCollection<CmdButton>? SortPortBoardButtonList { get; set; }
+        public ObservableCollection<BatchExecutionCmdButton> ButtonList { get; set; } = new ObservableCollection<BatchExecutionCmdButton>();
         public List<string>? RunningDeviceList { get; set; }
 
         #endregion
@@ -184,9 +228,9 @@ namespace DeviceEmulator.ViewModel
             Task.Factory.StartNew(() =>
             {
                 byte[]? data = null;
-                IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(IpcIP), IpcPort);
                 try
                 {
+                    IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(IpcIP), IpcPort);
                     while (true)
                     {
                         stopcancellationToken.Token.ThrowIfCancellationRequested();//检测到令牌被取消后直接抛出异常中断循环
@@ -328,44 +372,31 @@ namespace DeviceEmulator.ViewModel
         /// </summary>
         public RelayCommand<CmdButton>? QuickCommandExd
         {
-            get
-            {
-                if (quickCommandExd == null)
-                {
-                    quickCommandExd = new RelayCommand<CmdButton>((o) =>
-                    {
-                        Task.Factory.StartNew(() =>
-                        {
-                            DeviceUDPClient? client = DeviceUDPClients.Where(client => client.DeviceName == o?.CmdDeviceType).FirstOrDefault();
-                            byte[]? data = null;
-                            IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(client!.RemoteIP), client.RemotePort);
-                            
-                            do
-                            {
-                                if (client?.DeviceName == Properties.Res.Camera)//相机数据的
-                                {
-                                    data = ChangeCameraArrivedTime(o?.CommandText);
-                                }
-                                else
-                                {
-                                    data = o?.CommandText;
-                                }
-                                if (data != null)
-                                {
-                                    TextBoxData = $"[{DateTime.Now}] Send to {client?.RemoteIP}:{client?.RemotePort} :{client?.DeviceName}\n{BitConverter.ToString(data).Replace('-', ' ')}\n";
-                                    AddRichTextBox("#E5BC1E", TextBoxData);
-                                    LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{BitConverter.ToString(data).Replace('-', ' ')}");
-                                }
-                                client?.UdpClient?.Send(data, remotePoint);
-                                Thread.Sleep(LoopSpan); //间隔发送
-                            }
-                            while (IsLoopSend == true);
-                        });
-                    });
-                }
-                return quickCommandExd;
-            } 
+            get => quickCommandExd ?? new RelayCommand<CmdButton>((o) => Task.Factory.StartNew(() => QuickCommand(o)));
             set { quickCommandExd = value; }
+        }
+
+        private void QuickCommand(CmdButton o)
+        {
+            DeviceUDPClient? client = DeviceUDPClients.Where(client => client.DeviceName == o?.CmdDeviceType).FirstOrDefault();
+            byte[]? data = null;
+            IPEndPoint remotePoint = new IPEndPoint(IPAddress.Parse(client!.RemoteIP), client.RemotePort);
+
+            if (client?.DeviceName == Properties.Res.Camera)//相机数据的
+            {
+                data = ChangeCameraArrivedTime(o?.CommandText);
+            }
+            else
+            {
+                data = o?.CommandText;
+            }
+            if (data != null)
+            {
+                TextBoxData = $"[{DateTime.Now}] Send to {client?.RemoteIP}:{client?.RemotePort} :{client?.DeviceName}\n{BitConverter.ToString(data).Replace('-', ' ')}\n";
+                AddRichTextBox("#E5BC1E", TextBoxData);
+                LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{BitConverter.ToString(data).Replace('-', ' ')}");
+            }
+            client?.UdpClient?.Send(data, remotePoint);
         }
 
         private RelayCommand? openSetingExd;
@@ -425,11 +456,13 @@ namespace DeviceEmulator.ViewModel
                         PSSPLCButtonList?.Clear();
                         CameraButtonList?.Clear();
                         BalanceWheelButtonList?.Clear();
+                        SortPortBoardButtonList?.Clear();
+                        ButtonList.Clear();
                     });
                 }
                 return clearQuickCmdExd;
             }
-            set {  clearQuickCmdExd = value; }
+            set { clearQuickCmdExd = value; }
         }
 
         private RelayCommand? clearRichTextDocumentExd;
@@ -440,7 +473,7 @@ namespace DeviceEmulator.ViewModel
         {
             get
             {
-                if(clearRichTextDocumentExd == null)
+                if (clearRichTextDocumentExd == null)
                 {
                     clearRichTextDocumentExd = new RelayCommand(() =>
                     {
@@ -450,6 +483,84 @@ namespace DeviceEmulator.ViewModel
                 return clearRichTextDocumentExd;
             }
             set { clearRichTextDocumentExd = value; }
+        }
+
+        private RelayCommand? batchExecutionCmdExd;
+        /// <summary>
+        /// 设置批量执行命令顺序
+        /// </summary>
+        public RelayCommand? BatchExecutionCmdExd
+        {
+            get
+            {
+                if (batchExecutionCmdExd == null)
+                {
+                    batchExecutionCmdExd = new RelayCommand(BatchExecution);
+                }
+                return batchExecutionCmdExd;
+            }
+            set { batchExecutionCmdExd = value; }
+        }
+
+        private void BatchExecution()
+        {
+            AddBatchExecutionButton(PSSPLCButtonList!);
+            AddBatchExecutionButton(CameraButtonList!);
+            AddBatchExecutionButton(BalanceWheelButtonList!);
+            AddBatchExecutionButton(SortPortBoardButtonList!);
+            var count = ButtonList!.Count;
+            if (BatchExecutionVisibility == Visibility.Visible)
+            {
+                BatchExecutionVisibility = Visibility.Collapsed;
+            }
+            else
+            {
+                BatchExecutionVisibility = Visibility.Visible;
+            }
+        }
+
+        private RelayCommand? executionCmd;
+        /// <summary>
+        /// 执行批量命令
+        /// </summary>
+        public RelayCommand? ExecutionCmd
+        {
+            get => executionCmd ?? new RelayCommand(ExecutionCmdExd);
+            set { executionCmd = value; }
+        }
+
+        private void ExecutionCmdExd()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                do
+                {
+                    foreach (var button in ButtonList)
+                    {
+                        QuickCommand(button);
+                        Thread.Sleep((int)button.IntervalTime);
+                    }
+                    Thread.Sleep(LoopSpan); //间隔发送
+
+                } while (IsLoopSend == true);
+            });
+        }
+
+
+        private RelayCommand? deleteBatchExecutionButtonCmd;
+        /// <summary>
+        /// 删除批量执行命令按钮
+        /// </summary>
+        public RelayCommand? DeleteBatchExecutionButtonCmd
+        {
+            get => deleteBatchExecutionButtonCmd ??= new RelayCommand(() =>
+            {
+                if (SelectedButton != null)
+                {
+                    ButtonList.Remove(SelectedButton);
+                }
+            });
+            set { deleteBatchExecutionButtonCmd = value; }
         }
 
         #endregion
@@ -462,9 +573,9 @@ namespace DeviceEmulator.ViewModel
             SortPortBoardButtonList = new ObservableCollection<CmdButton>();
             DeviceUDPClients = new ObservableCollection<DeviceUDPClient>
             {
-                new DeviceUDPClient(Properties.Res.PSS, "127.0.0.1", 3021, "127.0.0.1", 4134), 
-                new DeviceUDPClient(Properties.Res.BalanceWheel, "127.0.0.1", 9001, "127.0.0.1", 9000, true), 
-                new DeviceUDPClient (Properties.Res.Camera, "127.0.0.1", 5555, "127.0.0.1", 6666), 
+                new DeviceUDPClient(Properties.Res.PSS, "127.0.0.1", 3021, "127.0.0.1", 4134),
+                new DeviceUDPClient(Properties.Res.BalanceWheel, "127.0.0.1", 9001, "127.0.0.1", 9000, true),
+                new DeviceUDPClient (Properties.Res.Camera, "127.0.0.1", 5555, "127.0.0.1", 6666),
             };
             RunningDeviceList = new List<string>();
             QuickSetingVM = new QuickSetingVM();
@@ -478,7 +589,7 @@ namespace DeviceEmulator.ViewModel
             QuickSetingVM.SortPortMessages += QuickSetingVM_SortPortMessages;
             QuickSetingVM.LightMessages += QuickSetingVM_LightMessage;
             IPAddress[] ip = Dns.GetHostAddresses(Dns.GetHostName());
-            foreach(IPAddress addr in ip)
+            foreach (IPAddress addr in ip)
             {
                 IPList.Add(addr.ToString());
             }
@@ -486,11 +597,13 @@ namespace DeviceEmulator.ViewModel
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "下位机模拟工具", "用于模拟摆轮、叠包相机设备发送进行通讯");
         }
 
+
+
         #region 事件
 
         private void QuickSetingVM_LightMessage(object? sender, ObservableCollection<Light> e)
         {
-            foreach(var light in e)
+            foreach (var light in e)
             {
                 byte[] basedata = { 0xAA, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x1D, 0x01, 0x1D, 0x01 };
                 byte[] data = new byte[12];
@@ -652,7 +765,7 @@ namespace DeviceEmulator.ViewModel
         public byte[] GetMessage(PSS pss)
         {
             byte[]? data;
-            if(PlcType == PLCType.V4)
+            if (PlcType == PLCType.V4)
             { data = [(byte)pss.LineNo, pss.PSS_status, pss.Speed_status, pss.Distance_status, 0x00, 0x00, 0x00]; }
             else
             { data = [(byte)pss.LineNo, pss.SPS_status, pss.PSS_status, pss.Speed_status, pss.Distance_status, 0x00, 0x00]; }
@@ -705,7 +818,7 @@ namespace DeviceEmulator.ViewModel
                     {
                         stopcancellationToken.Token.ThrowIfCancellationRequested();
                         AddRichTextBox("#D450A2", $"[{DateTime.Now}] Send to {client?.RemoteIP}:{client?.RemotePort}:({client?.DeviceName}心跳)\n{BitConverter.ToString((byte[])heartbit).Replace('-', ' ')}\n");
-                        LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{ BitConverter.ToString((byte[])heartbit).Replace('-', ' ')}");
+                        LogHelper.Debug($"'Sned' [{client?.DeviceName}]:{BitConverter.ToString((byte[])heartbit).Replace('-', ' ')}");
                         client?.UdpClient?.Send(heartbit, remotePoint);
                         Thread.Sleep(4000);
                     }
@@ -760,6 +873,29 @@ namespace DeviceEmulator.ViewModel
             }
             client?.Send(args, args.Length, remotePoint);
             LogHelper.Debug($"'Send' {BitConverter.ToString(args).Replace('-', ' ')}");
+        }
+
+        /// <summary>
+        /// 将快捷命令添加到批量执行命令列表中
+        /// </summary>
+        /// <param name="collection">快捷命令列表</param>
+        private void AddBatchExecutionButton(ObservableCollection<CmdButton> collection)
+        {
+            foreach (var item in collection)
+            {
+                BatchExecutionCmdButton newData = new BatchExecutionCmdButton
+                {
+                    Content = item.Content,
+                    CmdDeviceType = item.CmdDeviceType,
+                    CommandText = item.CommandText,
+                    IntervalTime = 50,
+                    CommandExd = item.CommandExd
+                };
+                if (ButtonList.Count(button => button.Content == newData.Content) == 0)
+                {
+                    ButtonList.Add(newData);
+                }
+            }
         }
     }
 }

@@ -358,6 +358,19 @@ namespace DeviceEmulator.Model
         }
     }
 
+    public class BatchExecutionCmdButton : CmdButton
+    {
+        private double intervalTime;
+        /// <summary>
+        /// 批量执行命令间隔时间
+        /// </summary>
+        public double IntervalTime
+        {
+            get { return intervalTime; }
+            set { intervalTime = value; MyPropertyChanged(); }
+        }
+    }
+
     /// <summary>
     /// PLC协议版本
     /// </summary>

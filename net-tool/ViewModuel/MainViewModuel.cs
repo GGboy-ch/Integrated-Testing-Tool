@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Windows;
 using System.Xml.Linq;
 using GeneralLibrary;
+using System.IO;
 
 namespace NetTool.ViewModuel
 {
@@ -119,7 +120,7 @@ namespace NetTool.ViewModuel
 
         public MainViewModuel()
         {
-            string configpath = Environment.CurrentDirectory + $"\\NetTool.config";
+            string configpath = AppContext.BaseDirectory + $"\\NetTool.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             IsAutoClosedApp = (bool)xmlDoc.Descendants("IsAutoClosedApp").FirstOrDefault()!;
             IsHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
@@ -152,7 +153,7 @@ namespace NetTool.ViewModuel
         public static void AddAppToStartup()
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.SetValue("NetTool.exe", System.Windows.Forms.Application.ExecutablePath);
+            key!.SetValue("NetTool.exe", $"\"{System.Windows.Forms.Application.ExecutablePath}\"");
         }
 
         /// <summary>
@@ -169,7 +170,7 @@ namespace NetTool.ViewModuel
         /// </summary>
         public void SaveConfig()
         {
-            string configpath = Environment.CurrentDirectory + $"\\NetTool.config";
+            string configpath = AppContext.BaseDirectory + $"\\NetTool.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             XElement isAutoClosedApp = xmlDoc.Descendants("IsAutoClosedApp").FirstOrDefault()!;

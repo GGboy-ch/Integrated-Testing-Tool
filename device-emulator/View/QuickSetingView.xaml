@@ -31,7 +31,7 @@
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
                     <TextBlock Text="单件线数:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
-                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}" IsEditable="True"/>
                     <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding PSSCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">
@@ -61,7 +61,7 @@
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4,4,4,4" Background="AliceBlue" Grid.ColumnSpan="3">
                     <TextBlock Text="相机数量:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
-                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding CameraNums}" SelectedItem="{Binding CameraNum}"/>
+                    <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding CameraNums}" SelectedItem="{Binding CameraNum}" IsEditable="True"/>
                     <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding CameraCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4,4,4,4">

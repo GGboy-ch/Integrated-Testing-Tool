@@ -39,7 +39,7 @@ namespace HTTPServer.VeiwModel
         /// <summary>
         /// 返回内容文本类型
         /// </summary>
-        public ObservableCollection<string> ContentTypeList { get; set; } =new ObservableCollection<string> { "Json","Text" };
+        public ObservableCollection<string> ContentTypeList { get; set; } = new ObservableCollection<string> { "Json", "Text" };
         /// <summary>
         /// 返回内容列表
         /// </summary>
@@ -125,7 +125,7 @@ namespace HTTPServer.VeiwModel
                     Directory.CreateDirectory(path);
                 }
                 FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt", SearchOption.TopDirectoryOnly);
-                foreach( var file in files)
+                foreach (var file in files)
                 {
                     ContentList.Add(file.Name);
                 }
@@ -141,7 +141,7 @@ namespace HTTPServer.VeiwModel
             get { return _ContentTypeSelectedIndex; }
             set
             {
-                _ContentTypeSelectedIndex = value; 
+                _ContentTypeSelectedIndex = value;
                 OnPropertyChanged();
                 if (!string.IsNullOrWhiteSpace(ParticularText))
                 {
@@ -159,11 +159,11 @@ namespace HTTPServer.VeiwModel
                             }
                         case 1:
                             {
-                                ParticularText = ParticularText.Replace("\r\n",string.Empty).Replace(" ",string.Empty);
+                                ParticularText = ParticularText.Replace("\r\n", string.Empty).Replace(" ", string.Empty);
                                 if (!string.IsNullOrEmpty(ReposeText))
                                 {
                                     ReposeText = ReposeText.Replace("\r\n", string.Empty).Replace(" ", string.Empty);
-                                } 
+                                }
                                 break;
                             }
                         default:
@@ -357,7 +357,7 @@ namespace HTTPServer.VeiwModel
 
         private void ShowAddressCmdCxd()
         {
-            if(IPListVisibility == Visibility.Visible)
+            if (IPListVisibility == Visibility.Visible)
             {
                 IPListVisibility = Visibility.Collapsed;
                 RecieveVisibility = Visibility.Visible;
@@ -382,7 +382,7 @@ namespace HTTPServer.VeiwModel
 
         private void ShowRecievedListCmdCxd()
         {
-            if(RecieveVisibility == Visibility.Visible)
+            if (RecieveVisibility == Visibility.Visible)
             {
                 RecieveVisibility = Visibility.Collapsed;
             }
@@ -404,7 +404,7 @@ namespace HTTPServer.VeiwModel
 
         private void ShowSettingCmdCxd()
         {
-            if(SettingVisibility == Visibility.Visible)
+            if (SettingVisibility == Visibility.Visible)
             {
                 SettingVisibility = Visibility.Collapsed;
                 RecieveVisibility = Visibility.Visible;
@@ -751,7 +751,7 @@ namespace HTTPServer.VeiwModel
         private string GetLogNameList()
         {
             List<string> logNameList = new List<string>();
-            var files = new DirectoryInfo(LogFilePath).GetFiles("*",SearchOption.AllDirectories);
+            var files = new DirectoryInfo(LogFilePath).GetFiles("*", SearchOption.AllDirectories);
             foreach (var file in files)
             {
                 logNameList.Add(file.Name);
@@ -852,18 +852,18 @@ namespace HTTPServer.VeiwModel
         }
 
         #endregion
-    }
 
-    /// <summary>
-    /// 用于存储服务器的IP信息
-    /// </summary>
-    public class IPaddressMessage : NotifyBase
-    {
-        private string? _address;
-        public string? Address
+        /// <summary>
+        /// 用于存储服务器的IP信息
+        /// </summary>
+        public class IPaddressMessage : NotifyBase
         {
-            get { return _address; }
-            set { _address = value; OnPropertyChanged(); }
+            private string? _address;
+            public string? Address
+            {
+                get { return _address; }
+                set { _address = value; OnPropertyChanged(); }
+            }
         }
     }
 }

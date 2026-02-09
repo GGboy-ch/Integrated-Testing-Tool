@@ -89,6 +89,17 @@ namespace HTTPServer.CustomerBLL
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
             }
+            else if (Request?.RawUrl == "/getPort")
+            {
+                response.Add("code", 200);
+                response.Add("data", new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "logisticsCarrier", "GOFO" },
+                    }
+                });
+            }
             base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
         }
     }

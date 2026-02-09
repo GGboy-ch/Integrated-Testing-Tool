@@ -21,6 +21,10 @@ namespace HTTPServer.CustomerBLL
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(ConvertToJsonString(json))!;
             }
+            else if (Request!.RawUrl == "/api/token")
+            {
+                response.Add("access_token","adadad");
+            }
             base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
         }
     }

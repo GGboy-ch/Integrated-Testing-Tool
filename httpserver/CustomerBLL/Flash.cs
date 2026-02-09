@@ -17,7 +17,14 @@ namespace HTTPServer.CustomerBLL
         {
             if (Request!.RawUrl == "/sorting/sort")
             {
-
+                response.Add("code", 1);
+                response.Add("message", "success");
+                response.Add("data", new Dictionary<string, object>
+                {
+                    { "pno", "TH6403B3H63" },
+                    { "sort_no", "TH6403" },
+                    { "sort_id", 31 }
+                });
             }
             base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
         }

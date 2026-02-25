@@ -353,7 +353,7 @@ namespace NetTool.ViewModuel
         public void UpdateDataBase(string address)
         {
             NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
-            string sql = $"UPDATE ipv6address SET DeviceName='{DeviceName}',Time='{DateTime.Now:yyyy-MM-dd HH:mm:ss}',Address='{address}' WHERE Time LIKE '{DateTime.Now:yyyy-MM-dd}%'";
+            string sql = $"UPDATE ipv6address SET DeviceName='{DeviceName}',Time='{DateTime.Now:yyyy-MM-dd HH:mm:ss}',Address='{address}' WHERE DeviceName='{DeviceName}'";
             newMySQL.ExecuteNonQuery(sql);
         }
 

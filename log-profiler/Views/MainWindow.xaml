@@ -29,7 +29,7 @@
                                 <Setter Property="Background" Value="#CD97F9"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsTimeout}" Value="False">
-                                <Setter Property="Background" Value="#40C409"/>
+                                <Setter Property="Background" Value="#74D46E"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsBaseData}" Value="True">
                                 <Setter Property="Background" Value="#68E7FF"/>
@@ -61,7 +61,13 @@
             <Setter Property="ContextMenu" Value="{StaticResource ListBoxConteMenu}"/>
         </Style>
     </Window.Resources>
-    <Grid >
+    <Window.Background>
+        <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+            <GradientStop Color="#62DDFD" Offset="0"/>
+            <GradientStop Color="#8662FD" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition Height="40"/>
@@ -72,14 +78,14 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="开始时间:" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="开始时间:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
             <hc:DateTimePicker SelectedDateTime="{Binding StartTime, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" Height="20" Margin="4"/>
-            <TextBlock Text="结束时间:" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="结束时间:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
             <hc:DateTimePicker SelectedDateTime="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" Height="20" Margin="4"/>
-            <TextBlock Text="设备:" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="设备:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
             <ComboBox ItemsSource="{Binding DeviceNameList}" SelectedItem="{Binding DeviceName}" Width="120" Height="20" Margin="4"/>
-            <Button Content="正则" Style="{StaticResource ButtonWarning}" Command="{Binding RegexCmd}" Margin="4"/>
-            <TextBlock Text="超时阈值(/ms):" VerticalAlignment="Center" Margin="4"/>
+            <Button Content="正则" Foreground="White" Style="{StaticResource ButtonWarning}" Command="{Binding RegexCmd}" Margin="4"/>
+            <TextBlock Text="超时阈值(/ms):" Foreground="White" VerticalAlignment="Center" Margin="4"/>
             <TextBox Text="{Binding TimeoutThreshold, Converter={StaticResource IntDataConverter}}" HorizontalContentAlignment="Center" Width="50" Height="20" Margin="4"/>
             <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
         </StackPanel>
@@ -93,33 +99,33 @@
                 <Image Source="pack://application:,,,/LogProfiler;component/Images/Setting.ico"/>
             </Button>
         </Grid>
-        <TextBlock Grid.Row="2" Text="占比宽度调整" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="White" HorizontalAlignment="Center"/>
         <Slider x:Name="slider" Grid.Row="3" Maximum="1" TickFrequency="0.1" SmallChange="0.01" TickPlacement="TopLeft" Value="{Binding SliderValue}"/>
-        <TabControl Grid.Row="4" Margin="8" Style="{StaticResource TabControlCapsule}" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">
-            <TabItem Header="Debug日志">
+        <TabControl Grid.Row="4" Margin="8" Background="Transparent" Style="{StaticResource TabControlCapsule}" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">
+            <TabItem Header="Debug日志" Foreground="White" Background="Transparent">
                 <ListBox ItemsSource="{Binding DebugLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
-            <TabItem Header="Info日志">
+            <TabItem Header="Info日志" Foreground="White" Background="Transparent">
                 <ListBox ItemsSource="{Binding InfoLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
-            <TabItem Header="Exception日志">
+            <TabItem Header="Exception日志" Foreground="White" Background="Transparent">
                 <ListBox ItemsSource="{Binding ExceptionLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
         </TabControl>
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="上一页" Command="{Binding PreviewPageCmd}" Margin="16,4,4,4"/>
+            <Button Content="上一页" Command="{Binding PreviewPageCmd}" Style="{StaticResource ButtonPrimary}" Margin="16,4,4,4"/>
             <TextBox x:Name="page" Text="{Binding Page}" HorizontalContentAlignment="Center" MinWidth="40" MaxHeight="30" Margin="4"/>
-            <Button Content="下一页" Command="{Binding NextPageCmd}" Margin="4"/>
+            <Button Content="下一页" Command="{Binding NextPageCmd}" Style="{StaticResource ButtonPrimary}" Margin="4"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="6">
-            <TextBlock Text="当前展示数量:" VerticalAlignment="Center" Margin="16,0"/>
-            <TextBlock Text="{Binding CurrentLogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
-            <TextBlock Text="(单页面最多显示:)" VerticalAlignment="Center" Margin="16,0"/>
-            <TextBox Text="{Binding PageSize}" HorizontalContentAlignment="Center" Width="50" Margin="4"/>
-            <TextBlock Text="筛选结果：" VerticalAlignment="Center" Margin="16,0"/>
-            <TextBlock Text="{Binding LogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
-            <TextBlock Text="超时数量：" VerticalAlignment="Center" Margin="16,0"/>
-            <TextBlock Text="{Binding TimeoutCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
+            <Label Content="当前展示数量:" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding CurrentLogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
+            <Label Content="(单页面最多显示:)" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding PageSize}" HorizontalContentAlignment="Center" Width="50" Margin="4"/>
+            <Label Content="筛选结果：" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding LogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
+            <Label Content="超时数量：" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding TimeoutCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>

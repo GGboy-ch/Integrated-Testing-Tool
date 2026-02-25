@@ -10,17 +10,23 @@
         WindowStartupLocation="CenterOwner"
         Title="设置" Height="200" Width="400">
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                <GradientStop Color="#62DDFD" Offset="0"/>
+                <GradientStop Color="#8662FD" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Margin="8">
-            <CheckBox Content="是否开机自启" IsChecked="{Binding IsAutoStart}" Margin="8"/>
-            <CheckBox Grid.Row="1" Content="关闭时隐藏到托盘" IsChecked="{Binding IsHideToTray}" Margin="8"/>
-            <CheckBox Grid.Row="2" Content=" 启动时自动更新" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
+            <CheckBox Content="是否开机自启" Foreground="White" IsChecked="{Binding IsAutoStart}" Margin="8"/>
+            <CheckBox Grid.Row="1" Content="关闭时隐藏到托盘" Foreground="White" IsChecked="{Binding IsHideToTray}" Margin="8"/>
+            <CheckBox Grid.Row="2" Content=" 启动时自动更新" Foreground="White" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <TextBlock Text="下载日志的域名：" VerticalAlignment="Center" Margin="8"/>
+            <TextBlock Text="下载日志的域名：" Foreground="White" VerticalAlignment="Center" Margin="8"/>
             <TextBox x:Name="textBox" Text="{Binding LogDownloadUri}" MinWidth="240" MaxHeight="30" Margin="8"/>
         </StackPanel>
     </Grid>

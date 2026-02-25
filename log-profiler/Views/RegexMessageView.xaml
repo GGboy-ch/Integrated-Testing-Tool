@@ -10,6 +10,12 @@
         WindowStartupLocation="CenterOwner"
         Title="正则筛选" Height="300" Width="600">
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                <GradientStop Color="#62DDFD" Offset="0"/>
+                <GradientStop Color="#8662FD" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
@@ -18,12 +24,13 @@
             <Button Content="添加" Style="{StaticResource ButtonInfo}" Command="{Binding AddRegexCmd}" Margin="8"/>
             <Button Content="{Binding DeleteButtonName}" Style="{StaticResource ButtonDanger}" Command="{Binding DeleteRegexCmd}" Margin="8"/>
             <Button Content="确定" Style="{StaticResource ButtonSuccess}" Command="{Binding SaveRegexCmd }" Margin="8"/>
-            <TextBlock Text="{Binding TextBlockText}" Style="{StaticResource TextBlockSubTitleBold}" Margin="8"/>
+            <TextBlock Text="{Binding TextBlockText}" Foreground="White" Style="{StaticResource TextBlockSubTitleBold}" Margin="8"/>
         </StackPanel>
         <ListBox 
             x:Name="listbox" 
             Grid.Row="1" 
             ItemsSource="{Binding RegexMessages}" 
+            Background="Transparent"
             SelectedItem="{Binding SelectedItem}" 
             PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown" Margin="8">
             <ListBox.ItemTemplate>

@@ -10,6 +10,12 @@
         WindowStartupLocation="CenterOwner"
         Title="日志下载界面" Height="320" Width="600">
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#62DDFD" Offset="0"/>
+                <GradientStop Color="#8662FD" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -19,7 +25,7 @@
             <TextBox MinHeight="30" MinWidth="240" Margin="8"/>
             <Button Content="下载" Style="{StaticResource ButtonPrimary}" Command="{Binding GetNewLogsCmd}" Margin="8"/>
         </StackPanel>
-        <GroupBox Grid.Row="1" Header="日志列表" Style="{StaticResource BaseStyle}" Margin="8">
+        <GroupBox Grid.Row="1" Header="日志列表" Foreground="White" Style="{StaticResource BaseStyle}" Margin="8">
             <ListBox ItemsSource="{Binding LogNameList}" SelectedItem="{Binding SelectedLog}"/>
         </GroupBox>
     </Grid>

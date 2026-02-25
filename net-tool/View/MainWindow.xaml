@@ -10,23 +10,42 @@
         mc:Ignorable="d"
         Icon="/Images/ipv6.png"
         WindowStartupLocation="CenterScreen"
-        Title="公网ip助手" Height="120" Width="450">
+        Title="公网ip助手" Height="160" Width="550">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Margin="2">
-            <CheckBox x:Name="isAutoStart" Content="开机自启" IsChecked="{Binding IsOpenStartup}" Margin="10,0"/>
-            <CheckBox Content="最小化至托盘" IsChecked="{Binding IsHideToTray}" Margin="10,0"/>
+        <Grid.Background>
+            <RadialGradientBrush Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                <GradientStop Color="White" Offset="0"/>
+                <GradientStop Color="#57C0F8" Offset="1"/>
+            </RadialGradientBrush>
+        </Grid.Background>
+        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+            <CheckBox x:Name="isAutoStart" Content="开机自启" Foreground="White" IsChecked="{Binding IsOpenStartup}" Margin="10,0"/>
+            <CheckBox Content="最小化至托盘" Foreground="White" IsChecked="{Binding IsHideToTray}" Margin="10,0"/>
             <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <TextBlock Text="归属地：" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                <TextBlock Text="归属地：" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <TextBox Text="{Binding DeviceName}" Margin="0,4" Width="150"/>
             </StackPanel>
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <TextBlock Text="IPv6地址" VerticalAlignment="Center" Margin="4"/>
-            <TextBox Text="{Binding IPv6Address}" Height="40" MinWidth="340" Margin="2,4"/>
-        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="本机IPv6地址：" Foreground="White" Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+            <TextBox Grid.Column="1" Text="{Binding IPv6Address}" MinHeight="30" MinWidth="360" Margin="2,4"/>
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Button Style="{StaticResource ButtonPrimary}" Command="{Binding GetIPListCmd}" Content="获取全部IPv6地址" Margin="4"/>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding IPv6Collection}" MinHeight="30" MinWidth="360" Margin="2,4"/>
+        </Grid>
     </Grid>
 </hc:Window>

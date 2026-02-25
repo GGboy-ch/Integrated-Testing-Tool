@@ -20,6 +20,7 @@
     <None Remove="Images\home.ico" />
     <None Remove="ipv6.png" />
     <None Remove="NetTool.config" />
+    <None Remove="Setting.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +28,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="NetTool.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\Setting.ico" />
   </ItemGroup>
 
   <ItemGroup>

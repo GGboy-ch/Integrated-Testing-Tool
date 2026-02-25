@@ -1,15 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using GeneralLibrary;
 using GeneralLibrary.Sql;
 using Microsoft.Win32;
 using MySql.Data.MySqlClient;
-using NetTool.Common;
-using System.Collections.Specialized;
+using NetTool.View;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Xml.Linq;
-using GeneralLibrary;
-using System.IO;
 
 namespace NetTool.ViewModuel
 {
@@ -87,6 +89,53 @@ namespace NetTool.ViewModuel
             set { deviceName = value; OnPropertyChanged(); }
         }
 
+        private string loginTip = "提示：请输入用户名和密码进行登录。";
+        /// <summary>
+        /// 登录提示信息
+        /// </summary>
+        public string LoginTip
+        {
+            get { return loginTip; }
+            set { loginTip = value; OnPropertyChanged(); }
+        }
+
+        private string username = "";
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        public string Username
+        {
+            get { return username; }
+            set { username = value; OnPropertyChanged(); }
+        }
+
+        private string password = "";
+        /// <summary>
+        /// 用户密码
+        /// </summary>
+        public string Password
+        {
+            get { return password; }
+            set { password = value; OnPropertyChanged(); }
+        }
+
+        private bool isLoginFailed = false;
+        /// <summary>
+        /// 登录状态
+        /// </summary>
+        public bool IsLoginFailed
+        {
+            get { return isLoginFailed; }
+            set { isLoginFailed = value; OnPropertyChanged(); }
+        }
+
+        public LoginView? LoginView { get; set; }
+
+        /// <summary>
+        /// 账号可使用的IPv6地址列表
+        /// </summary>
+        public ObservableCollection<string> IPv6Collection { get; set; } = new ObservableCollection<string>();
+
         private RelayCommand<object>? notifyCommand;
 
         public RelayCommand<object> NotifyCommand
@@ -116,6 +165,85 @@ namespace NetTool.ViewModuel
                 return notifyCommand;
             }
             set { notifyCommand = value; }
+        }
+
+        private RelayCommand? loginCmd;
+        /// <summary>
+        /// 登录命令
+        /// </summary>
+        public RelayCommand? LoginCmd
+        {
+            get => loginCmd ?? new RelayCommand(LoginCmdExd);
+            set => loginCmd = value;
+        }
+
+        private void LoginCmdExd()
+        {
+            NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
+            string sql = $"SELECT * FROM users WHERE username='{Username}' AND userpassword='{Password}'";
+            try
+            {
+                if (newMySQL.ExecuteReader(sql, "deviceList") is string device)
+                {
+                    if (!string.IsNullOrEmpty(device))
+                    {
+                        string[] deviceList = device.Split(',');
+                        IPv6Collection.Clear();
+                        foreach (var item in deviceList)
+                        {
+                            if (!string.IsNullOrEmpty(item))
+                            {
+                                sql = $"SELECT Address FROM ipv6Address WHERE DeviceName='{item}'";
+                                var ip = newMySQL.ExecuteReader(sql, "Address").ToString();
+                                if (!string.IsNullOrEmpty(ip))
+                                {
+                                    IPv6Collection.Add(ip);
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(IPv6Address))
+                        {
+                            IPv6Collection.Add(IPv6Address);
+                        }
+                        if (!deviceList.Contains(DeviceName))
+                        {
+                            device = string.Join(",", deviceList) + "," + DeviceName;
+                            sql = $"UPDATE users SET deviceList='{device}' WHERE username='{Username}' AND userpassword='{Password}'";
+                            newMySQL.ExecuteNonQuery(sql);
+                        }
+                        LoginTip = "登录成功！";
+                        IsLoginFailed = false;
+                        LoginView!.Close();
+                    }
+                    else
+                    {
+                        LoginTip = "登录失败，未找到对应用户信息！";
+                        IsLoginFailed = true;
+                    }
+                }
+                else
+                {
+                    LoginTip = "登录失败，未找到对应用户信息！";
+                    IsLoginFailed = true;
+                }
+            }
+            catch (Exception e)
+            {
+                LogHelper.Exception($"[LoginCmdExd] {e}");
+                LoginTip = "登录失败，发生异常！";
+                IsLoginFailed = true;
+            }
+            newMySQL.CloseSQL();
+        }
+
+        private RelayCommand? getIPListCmd;
+        /// <summary>
+        /// 打开登录窗口
+        /// </summary>
+        public RelayCommand? GetIPListCmd
+        {
+            get => getIPListCmd ?? new RelayCommand(() => { LoginView = new LoginView(this); LoginView.Show(); });
+            set => getIPListCmd = value;
         }
 
         public MainViewModuel()
@@ -235,7 +363,7 @@ namespace NetTool.ViewModuel
         public void SelectDataBase(string address)
         {
             string conStr = "Data Source=120.26.41.210;DataBase=IPv6;User=remoteuser;Password=1531079";
-            string sql = $"SELECT Time FROM ipv6Address WHERE Time LIKE '{DateTime.Now:yyyy-MM-dd}%' AND DeviceName='{DeviceName}'";
+            string sql = $"SELECT Time FROM ipv6Address WHERE DeviceName='{DeviceName}'";
             using (MySqlConnection con = new MySqlConnection(conStr))
             {
                 con.Open();
@@ -296,6 +424,104 @@ namespace NetTool.ViewModuel
             NewMySQL newMySQL = new NewMySQL("120.26.41.210", "IPv6", "remoteuser", "1531079");
             string sql = $"DELETE FROM ipv6Address WHERE DeviceName='{DeviceName}'";
             newMySQL.ExecuteNonQuery(sql);
+        }
+    }
+
+    public class NotifyBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// 使用CallerMemberName特性达到不显示指出属性名
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    /// <summary>
+    /// 提供一个辅助工具，用于使PasswordBox的Password属性能够进行数据绑定。
+    /// </summary>
+    public class PasswordBoxHelper
+    {
+        /// <summary>
+        /// 注册附加依赖属性"Password"，类型为string，当其值改变时触发OnPasswordPropertyChanged方法
+        /// </summary>
+        public static readonly DependencyProperty PasswordProperty = DependencyProperty.RegisterAttached(
+            "Password",
+            typeof(string),
+            typeof(PasswordBoxHelper),
+            new FrameworkPropertyMetadata("123", OnPasswordPropertyChanged));
+
+        /// <summary>
+        /// 私有静态依赖属性"IsUpdating"，用于跟踪PasswordBox密码更新状态
+        /// </summary>
+        private static readonly DependencyProperty IsUpdatingProperty = DependencyProperty.RegisterAttached(
+            "IsUpdating",
+            typeof(bool), typeof(PasswordBoxHelper));
+
+        /// <summary>
+        /// 获取附加属性"Password"的值
+        /// </summary>
+        public static string GetPassword(DependencyObject dp)
+        {
+            return (string)dp.GetValue(PasswordProperty);
+        }
+
+        /// <summary>
+        /// 设置附加属性"Password"的值
+        /// </summary>
+        public static void SetPassword(DependencyObject dp, string value)
+        {
+            dp.SetValue(PasswordProperty, value);
+        }
+
+        /// <summary>
+        /// 获取附加属性"IsUpdating"的值
+        /// </summary>
+        private static bool GetIsUpdating(DependencyObject dp)
+        {
+            return (bool)dp.GetValue(IsUpdatingProperty);
+        }
+
+        /// <summary>
+        /// 设置附加属性"IsUpdating"的值
+        /// </summary>
+        private static void SetIsUpdating(DependencyObject dp, bool value)
+        {
+            dp.SetValue(IsUpdatingProperty, value);
+        }
+
+        /// <summary>
+        /// 当"Password"属性发生变化时调用此方法，同步PasswordBox的实际密码与绑定值
+        /// </summary>
+        private static void OnPasswordPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is PasswordBox passwordBox)
+            {
+                passwordBox.PasswordChanged -= PasswordChanged;
+
+                // 防止在更新过程中引发无限循环
+                if (!(bool)GetIsUpdating(passwordBox))
+                {
+                    passwordBox.Password = (string)e.NewValue;
+                }
+                passwordBox.PasswordChanged += PasswordChanged;
+            }
+        }
+
+        /// <summary>
+        /// 密码更改事件处理程序，当PasswordBox的密码发生更改时，更新绑定到Password属性的值
+        /// </summary>
+        private static void PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is PasswordBox passwordBox)
+            {
+                SetIsUpdating(passwordBox, true);
+                SetPassword(passwordBox, passwordBox.Password);
+                SetIsUpdating(passwordBox, false);
+            }
         }
     }
 }

@@ -533,9 +533,19 @@ namespace LogProfiler.ViewModels
             openFileDialog.Multiselect = true;
             if (openFileDialog.ShowDialog() == true)
             {
-                string[] fileNames = openFileDialog.FileNames.Where(path => !tempPathList.Contains(path)).ToArray();//避免重复添加同一份日志
-                tempPathList.AddRange(fileNames);
-                _ = GetLogMessages(fileNames);
+                try
+                {
+                    string[] fileNames = openFileDialog.FileNames.Where(path => !tempPathList.Contains(path)).ToArray();//避免重复添加同一份日志
+                    if (fileNames.Length > 0)
+                    {
+                        tempPathList.AddRange(fileNames);
+                        _ = GetLogMessages(fileNames);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.Exception($"[GetLogCmdExd]:{ex}");
+                }
             }
         }
 
@@ -563,6 +573,7 @@ namespace LogProfiler.ViewModels
             DeviceNameList.Clear();
             LogDataCount = 0;
             CurrentLogDataCount = 0;
+            tempPathList.Clear();
         }
 
         private RelayCommand? regexCmd;
@@ -666,9 +677,10 @@ namespace LogProfiler.ViewModels
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         LogData tempdata = new LogData(DateTime.Now);
+                        Dictionary<string, LogData> lastLogByTip = new();
                         foreach (var log in OriginalLogDatas[SelectedTabIndex].Take(new Range(index - 50 < 0 ? 0: index - 50, index + 50)))
                         {
-                            LogData logData = GetLogData(log, tempdata, DisplayLogDatas[SelectedTabIndex]);
+                            LogData logData = GetLogData(log, tempdata, DisplayLogDatas[SelectedTabIndex].ToList(), lastLogByTip);
                             DisplayLogDatas[SelectedTabIndex].Add(logData);
                         }
                         if (DisplayLogDatas[SelectedTabIndex].Count > 0)
@@ -693,23 +705,26 @@ namespace LogProfiler.ViewModels
         /// <summary>
         /// 从日志数据集合中选择符合条件的日志数据
         /// </summary>
-        /// <param name="logDatas">目标日志集合</param>
+        /// <param name="templogDataList">目标日志集合</param>
         /// <param name="logs">所有日志集合</param>
         /// <returns></returns>
         private void SelectLogsAsync(List<LogData> templogDataList, List<LogData> logs)
         {
             templogDataList.Clear();
             LogData tempdata = new LogData(DateTime.Now);
+            // 新增：缓存每个 LogTip 的最后一条记录
+            Dictionary<string, LogData> lastLogByTip = new();
             string[] regexList = string.IsNullOrWhiteSpace(RegexStr) ? [] : RegexStr!.Split(",");
+            var regexes = regexList.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => new Regex(p, RegexOptions.Compiled)).ToList();
 
             if (!string.IsNullOrWhiteSpace(DeviceName) || regexList.Length > 0)//有设备名称或正则表达式筛选条件时
             {
                 foreach (var log in logs)
                 {
-                    if ((regexList.Length > 0 && regexList.All(pattern => Regex.IsMatch(log.LogContent, pattern))) ||
+                    if ((regexList.Length > 0 && regexes.All(pattern => pattern.IsMatch(log.LogContent))) ||
                         (!string.IsNullOrEmpty(DeviceName) && log.LogTip == DeviceName))
                     {
-                        LogData logData = GetLogData(log, tempdata, templogDataList);
+                        LogData logData = GetLogData(log, tempdata, templogDataList, lastLogByTip);
                         if (logData.LogDatetime > StartTime && logData.LogDatetime < EndTime)
                         {
                             templogDataList.Add(logData);
@@ -721,7 +736,7 @@ namespace LogProfiler.ViewModels
             {
                 foreach (var log in logs)//如果没有设备名称或正则表达式筛选条件时，直接筛选时间段内的日志数据
                 {
-                    LogData logData = GetLogData(log, tempdata, templogDataList);
+                    LogData logData = GetLogData(log, tempdata, templogDataList, lastLogByTip);
                     if (logData.LogDatetime > StartTime && logData.LogDatetime < EndTime)
                     {
                         templogDataList.Add(logData);
@@ -736,11 +751,12 @@ namespace LogProfiler.ViewModels
         /// <param name="log">需要处理的原始日志数据</param>
         /// <param name="tempdata">临时日志数据，用于缓存上一个日志数据</param>
         /// <param name="templogDataList">原始日志列表</param>
+        /// <param name="lastLogByTip">用于存储</param>
         /// <returns></returns>
-        private LogData GetLogData(LogData log, LogData tempdata, IEnumerable<LogData> templogDataList)
+        private LogData GetLogData(LogData log, LogData tempdata, List<LogData> templogDataList, Dictionary<string, LogData> lastLogByTip)
         {
             LogData logData = log.DeepCopy();
-            if (templogDataList.Count() == 0)//使用第一个日志的事件作为基准
+            if (templogDataList.Count == 0)//使用第一个日志的事件作为基准
             {
                 log.DeepCopy(tempdata);
                 logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http") ? 0 : 30; // 如果是第一个日志，设置一个默认的时间间隔
@@ -751,8 +767,8 @@ namespace LogProfiler.ViewModels
                 logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http")
                     ? 0
                     : (logData.LogDatetime - tempdata.LogDatetime).TotalMilliseconds;
-                LogData? lastLogData = templogDataList.LastOrDefault(data => !string.IsNullOrEmpty(data.LogTip) && data.LogTip == logData.LogTip);
-                if (TimeoutThreshold > 0 && !(logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http")) && lastLogData != null)//对于Http请求的日志记录，不算超时时间
+                if (TimeoutThreshold > 0 && !(logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http"))
+                    && !string.IsNullOrEmpty(logData.LogTip) && lastLogByTip.TryGetValue(logData.LogTip, out var lastLogData)) //对于Http请求的日志记录，不算超时时间
                 {
                     logData.IsTimeout = (logData.LogDatetime - lastLogData.LogDatetime) > TimeSpan.FromMilliseconds(TimeoutThreshold);
                 }
@@ -763,6 +779,10 @@ namespace LogProfiler.ViewModels
             }
             logData.RealLogDataLength = logData.LogDataLength * SliderValue;//计算界面上显示的真实宽度，即事件间隔*滑动条值
             logData.DeepCopy(tempdata);
+            if (!string.IsNullOrEmpty(logData.LogTip))
+            {
+                lastLogByTip[logData.LogTip] = logData;
+            }
             return logData;
         }
 
@@ -800,10 +820,10 @@ namespace LogProfiler.ViewModels
         {
             string logMessage = log.LogContent;
             string postRequest = string.Empty;
-            string pattern = @"\[(.*?)\]";
+            string pattern = @"\[(?<name>[0-9A-Za-z\u4e00-\u9fa5]{1,50})\]";
             Regex regex = new Regex(pattern);
             Match match = regex.Match(logMessage);
-            string deviceName = match.Success ? match.Groups[1].Value.Trim('[', ']') : string.Empty;
+            string deviceName = match.Success ? match.Groups["name"].Value : string.Empty;
             try
             {
                 if (logMessage.Contains("POST http") || logMessage.Contains("GET http"))//处理HTTP请求日志
@@ -858,13 +878,13 @@ namespace LogProfiler.ViewModels
                 };
             }
             List<string> deviceNames = new List<string>();
-            //此处使用异步方法逐行读取日志文件，会比较耗时，避免阻塞UI线程
-            await Task.Run(async () =>
+            //此处使用异步读取日志文件，避免阻塞UI线程
+            await Task.Run(() =>
             {
                 LogData temptime = new LogData(); // 记录上一个日志的时间
                 foreach (var file in files)
                 {
-                    await foreach (var line in ReadFileLineByLineAsync(file))
+                    foreach (var line in File.ReadLines(file))
                     {
                         try
                         {
@@ -933,9 +953,11 @@ namespace LogProfiler.ViewModels
         {
             using (var reader = new StreamReader(filePath))
             {
-                while (!reader.EndOfStream)
+                while (true)
                 {
-                    string line = await reader.ReadLineAsync() ?? string.Empty;
+                    var line = await reader.ReadLineAsync();
+                    if (line == null)
+                        break;
                     yield return line; // 逐行返回，按需处理
                 }
             }
@@ -1017,7 +1039,7 @@ namespace LogProfiler.ViewModels
         public bool IsAppInStartup()
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            return key!.GetValue("NetTool.exe") != null;
+            return key!.GetValue("LogProfiler.exe") != null;
         }
 
         /// <summary>
@@ -1026,7 +1048,7 @@ namespace LogProfiler.ViewModels
         public void AddAppToStartup()
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.SetValue("NetTool.exe", System.Windows.Forms.Application.ExecutablePath);
+            key!.SetValue("LogProfiler.exe", $"\"{System.Windows.Forms.Application.ExecutablePath}\"");
         }
 
         /// <summary>
@@ -1035,7 +1057,7 @@ namespace LogProfiler.ViewModels
         public void RemoveAppFromStartup()
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.DeleteValue("NetTool.exe", false);
+            key!.DeleteValue("LogProfiler.exe", false);
         }
 
         /// <summary>

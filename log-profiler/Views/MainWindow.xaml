@@ -43,7 +43,7 @@
                     <Ellipse Height="10" Width="10" StrokeThickness="2" Stroke="#FE5C20" Canvas.Top="{Binding TopofHalfRealLogDataLength}"/>
                     <Line X1="5" Y1="{Binding BottomofHalfRealLogDataLength}" X2="5" Y2="{Binding RealLogDataLength}" Stroke="Black"/>
                 </Canvas>
-                <TextBlock Text="{Binding LogContent}" Foreground="White" VerticalAlignment="Center" Margin="10,0"/>
+                <Label Content="{Binding LogContent}"  VerticalAlignment="Center" Margin="10,0"/>
             </StackPanel>
         </DataTemplate>
         <Style TargetType="ListBox" BasedOn="{StaticResource ListBoxBaseStyle}">

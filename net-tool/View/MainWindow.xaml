@@ -25,6 +25,7 @@
         </Grid.Background>
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
             <CheckBox x:Name="isAutoStart" Content="开机自启" Foreground="White" IsChecked="{Binding IsOpenStartup}" Margin="10,0"/>
+            <CheckBox Content="极简模式" Foreground="White" IsChecked="{Binding IsAutoClosedApp}" Margin="10,0"/>
             <CheckBox Content="最小化至托盘" Foreground="White" IsChecked="{Binding IsHideToTray}" Margin="10,0"/>
             <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <TextBlock Text="归属地：" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0"/>

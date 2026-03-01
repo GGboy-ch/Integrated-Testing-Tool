@@ -17,8 +17,8 @@ namespace SetupTool
         {
             try
             {
-                //string rootpath = "C:\\Users\\wayzim\\Desktop\\Tools\\IntegratedTestingTool\\log-profiler";
-                string rootpath = Environment.CurrentDirectory;
+                string rootpath = "C:\\Users\\Administrator\\source\\repos\\integrated-testing-tool\\log-profiler";
+                //string rootpath = Environment.CurrentDirectory;
                 Console.WriteLine($"需要打包项目所在的路径：{rootpath}");
                 string projectName = Path.GetFileNameWithoutExtension(new DirectoryInfo(rootpath).GetFiles().Where(file => file.Name.EndsWith(".csproj")).FirstOrDefault()!.FullName);
                 string scriptPath = AppDomain.CurrentDomain.BaseDirectory + "PackTool.iss";
@@ -34,6 +34,7 @@ namespace SetupTool
                 string version = string.Empty;
                 string uploadMessage = xmlDoc.Descendants(ns + "UploadMessage").FirstOrDefault()?.Value!;
                 string packpath = rootpath + "\\bin\\Release\\net8.0";
+                Console.WriteLine($"UploadMessage : {uploadMessage}");
 
                 if (isSDK)
                 {

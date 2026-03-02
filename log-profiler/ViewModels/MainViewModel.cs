@@ -1,13 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DeviceEmulator.ViewModel;
 using GeneralLibrary;
 using LogProfiler.Models;
 using LogProfiler.Views;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Linq;
@@ -1100,6 +1101,19 @@ namespace LogProfiler.ViewModels
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             LogDownloadUri = xmlDoc.Descendants("LogDownloadUri").FirstOrDefault()!.Value;
+        }
+    }
+
+    public class NotifyBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// 自定义通知方法
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void MyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

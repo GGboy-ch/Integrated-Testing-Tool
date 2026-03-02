@@ -5,17 +5,19 @@ using HTTPServer.Model;
 using HTTPServer.Veiw;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Application = System.Windows.Application;
 using File = System.IO.File;
 using MessageBox = HandyControl.Controls.MessageBox;
-using Application = System.Windows.Application;
 
 namespace HTTPServer.VeiwModel
 {
@@ -864,6 +866,19 @@ namespace HTTPServer.VeiwModel
                 get { return _address; }
                 set { _address = value; OnPropertyChanged(); }
             }
+        }
+    }
+
+    public class NotifyBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// 自定义通知方法
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void MyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DeviceEmulator.ViewModel;
 using LogProfiler.Models;
 using LogProfiler.Views;
 using System;

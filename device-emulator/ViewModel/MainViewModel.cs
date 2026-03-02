@@ -1,16 +1,18 @@
-﻿using System.Text;
+﻿using CommunityToolkit.Mvvm.Input;
 using DeviceEmulator.Model;
-using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using System.Net.Sockets;
-using System.Net;
 using DeviceEmulator.View;
+using GeneralLibrary;
+using Newtonsoft.Json;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-using Newtonsoft.Json;
-using System.IO;
-using GeneralLibrary;
-using System.Windows;
 using System.Windows.Navigation;
 
 namespace DeviceEmulator.ViewModel
@@ -896,6 +898,19 @@ namespace DeviceEmulator.ViewModel
                     ButtonList.Add(newData);
                 }
             }
+        }
+    }
+
+    public class NotifyBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// 自定义通知方法
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void MyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

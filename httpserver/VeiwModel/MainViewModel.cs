@@ -5,17 +5,19 @@ using HTTPServer.Model;
 using HTTPServer.Veiw;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Application = System.Windows.Application;
 using File = System.IO.File;
 using MessageBox = HandyControl.Controls.MessageBox;
-using Application = System.Windows.Application;
 
 namespace HTTPServer.VeiwModel
 {
@@ -64,7 +66,7 @@ namespace HTTPServer.VeiwModel
         public string SelectedRawUrl
         {
             get => selectedRawUrl;
-            set { selectedRawUrl = value; OnPropertyChanged(); }
+            set { selectedRawUrl = value; MyPropertyChanged(); }
         }
 
         private Visibility _IPListVisibility = Visibility.Collapsed;
@@ -74,7 +76,7 @@ namespace HTTPServer.VeiwModel
         public Visibility IPListVisibility
         {
             get { return _IPListVisibility; }
-            set { _IPListVisibility = value; OnPropertyChanged(); }
+            set { _IPListVisibility = value; MyPropertyChanged(); }
         }
 
         private Visibility _RecieveVisibility = Visibility.Visible;
@@ -84,7 +86,7 @@ namespace HTTPServer.VeiwModel
         public Visibility RecieveVisibility
         {
             get { return _RecieveVisibility; }
-            set { _RecieveVisibility = value; OnPropertyChanged(); }
+            set { _RecieveVisibility = value; MyPropertyChanged(); }
         }
 
         private Visibility _SettingVisibility = Visibility.Collapsed;
@@ -94,7 +96,7 @@ namespace HTTPServer.VeiwModel
         public Visibility SettingVisibility
         {
             get { return _SettingVisibility; }
-            set { _SettingVisibility = value; OnPropertyChanged(); }
+            set { _SettingVisibility = value; MyPropertyChanged(); }
         }
 
         private IPaddressMessage? _SelectedURL;
@@ -104,7 +106,7 @@ namespace HTTPServer.VeiwModel
         public IPaddressMessage? SelectedURL
         {
             get { return _SelectedURL; }
-            set { _SelectedURL = value; OnPropertyChanged(); }
+            set { _SelectedURL = value; MyPropertyChanged(); }
         }
 
         private Customer _SelectedCustomer = Customer.America;
@@ -117,7 +119,7 @@ namespace HTTPServer.VeiwModel
             set
             {
                 _SelectedCustomer = value;
-                OnPropertyChanged();
+                MyPropertyChanged();
                 ContentList.Clear();
                 string path = Path.Combine(Environment.CurrentDirectory, $"TXT\\{SelectedCustomer}");
                 if (!Directory.Exists(path))
@@ -142,7 +144,7 @@ namespace HTTPServer.VeiwModel
             set
             {
                 _ContentTypeSelectedIndex = value;
-                OnPropertyChanged();
+                MyPropertyChanged();
                 if (!string.IsNullOrWhiteSpace(ParticularText))
                 {
                     //根据选中的文本类型切换格式
@@ -180,7 +182,7 @@ namespace HTTPServer.VeiwModel
         public int ContentSelectedIndex
         {
             get { return _ContentSelectedIndex; }
-            set { _ContentSelectedIndex = value; OnPropertyChanged(); }
+            set { _ContentSelectedIndex = value; MyPropertyChanged(); }
         }
 
         private bool _IsUseTextBox;
@@ -190,7 +192,7 @@ namespace HTTPServer.VeiwModel
         public bool IsUseTextBox
         {
             get { return _IsUseTextBox; }
-            set { _IsUseTextBox = value; OnPropertyChanged(); }
+            set { _IsUseTextBox = value; MyPropertyChanged(); }
         }
 
         private string? _ReposeText;
@@ -200,7 +202,7 @@ namespace HTTPServer.VeiwModel
         public string? ReposeText
         {
             get { return _ReposeText; }
-            set { _ReposeText = value; OnPropertyChanged(); }
+            set { _ReposeText = value; MyPropertyChanged(); }
         }
 
         private string? _ParticularText;
@@ -210,7 +212,7 @@ namespace HTTPServer.VeiwModel
         public string? ParticularText
         {
             get { return _ParticularText; }
-            set { _ParticularText = value; OnPropertyChanged(); }
+            set { _ParticularText = value; MyPropertyChanged(); }
         }
 
         private string? _FileName;
@@ -220,7 +222,7 @@ namespace HTTPServer.VeiwModel
         public string? FileName
         {
             get { return _FileName; }
-            set { _FileName = value; OnPropertyChanged(); }
+            set { _FileName = value; MyPropertyChanged(); }
         }
 
         private int _Timeout = 3000;
@@ -230,7 +232,7 @@ namespace HTTPServer.VeiwModel
         public int Timeout
         {
             get => _Timeout;
-            set { _Timeout = value; OnPropertyChanged(); }
+            set { _Timeout = value; MyPropertyChanged(); }
         }
 
         private bool isTimeout;
@@ -240,7 +242,7 @@ namespace HTTPServer.VeiwModel
         public bool IsTimeout
         {
             get => isTimeout;
-            set { isTimeout = value; OnPropertyChanged(); }
+            set { isTimeout = value; MyPropertyChanged(); }
         }
 
         private int _RequestDatasCount;
@@ -250,7 +252,7 @@ namespace HTTPServer.VeiwModel
         public int RequestDatasCount
         {
             get => _RequestDatasCount;
-            set { _RequestDatasCount = value; OnPropertyChanged(); }
+            set { _RequestDatasCount = value; MyPropertyChanged(); }
         }
 
         private bool isHideToTray;
@@ -260,7 +262,7 @@ namespace HTTPServer.VeiwModel
         public bool IsHideToTray
         {
             get => isHideToTray;
-            set { isHideToTray = value; OnPropertyChanged(); }
+            set { isHideToTray = value; MyPropertyChanged(); }
         }
 
         private string logFilePath = "C:\\Users\\Administrator\\FTP\\PC\\文档\\Logs";
@@ -270,7 +272,7 @@ namespace HTTPServer.VeiwModel
         public string LogFilePath
         {
             get => logFilePath;
-            set { logFilePath = value; OnPropertyChanged(); }
+            set { logFilePath = value; MyPropertyChanged(); }
         }
 
         #endregion
@@ -862,8 +864,21 @@ namespace HTTPServer.VeiwModel
             public string? Address
             {
                 get { return _address; }
-                set { _address = value; OnPropertyChanged(); }
+                set { _address = value; MyPropertyChanged(); }
             }
+        }
+    }
+
+    public class NotifyBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// 自定义通知方法
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void MyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

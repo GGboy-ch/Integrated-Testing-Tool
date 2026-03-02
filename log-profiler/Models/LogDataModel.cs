@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.RightsManagement;
 using System.Text;
-using DeviceEmulator.ViewModel;
+using LogProfiler.ViewModels;
 using GeneralLibrary;
 
 namespace LogProfiler.Models

@@ -22,5 +22,6 @@ namespace HTTPServer.Model
         Turkiye,
         JD,
         Flash,
+        GuShanHLA
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using GeneralLibrary;
+using GeneralLibrary.Sql;
 using HTTPServer.CustomerBLL;
 using HTTPServer.Model;
 using HTTPServer.Veiw;
@@ -697,6 +698,11 @@ namespace HTTPServer.VeiwModel
                     case Customer.Flash:
                         {
                             customerBLL = new Flash(request, response);
+                            break;
+                        }
+                    case Customer.GuShanHLA:
+                        {
+                            customerBLL = new GuShanHLA(request, response);
                             break;
                         }
                     default:

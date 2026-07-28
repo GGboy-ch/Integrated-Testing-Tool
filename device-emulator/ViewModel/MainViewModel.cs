@@ -177,7 +177,6 @@ namespace DeviceEmulator.ViewModel
         static CancellationTokenSource stopcancellationToken = new CancellationTokenSource(); //停止接受上位机数据
         public ObservableCollection<string>? IPList { get; set; }
         public ObservableCollection<DeviceUDPClient> DeviceUDPClients { get; set; }
-        public ObservableCollection<PLCType> PLCTypes { get; set; }
         public ObservableCollection<CmdButton>? PSSPLCButtonList { get; set; }
         public ObservableCollection<CmdButton>? CameraButtonList { get; set; }
         public ObservableCollection<CmdButton>? BalanceWheelButtonList { get; set; }
@@ -583,13 +582,13 @@ namespace DeviceEmulator.ViewModel
             QuickSetingVM = new QuickSetingVM();
             RichTextBoxDocument = new FlowDocument();
             IPList = new ObservableCollection<string> { "127.0.0.1" };
-            PLCTypes = new ObservableCollection<PLCType> { PLCType.V3, PLCType.V4 };
             QuickSetingVM.PLCMessages += QuickSetingVM_PLCMessages;
             QuickSetingVM.CameraMessages += QuickSetingVM_CameraMessages;
             QuickSetingVM.BalanceWheelMessages += QuickSetingVM_BalanceWheelMessages;
             QuickSetingVM.SelectedIndexEventHandler += QuickSetingVM_SelectedIndexEventHandler;
             QuickSetingVM.SortPortMessages += QuickSetingVM_SortPortMessages;
             QuickSetingVM.LightMessages += QuickSetingVM_LightMessage;
+            QuickSetingVM.PlcTypeChanged +=(sender, e) => { PlcType = e; };
             IPAddress[] ip = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (IPAddress addr in ip)
             {

@@ -28,7 +28,7 @@
         </LinearGradientBrush>
     </Window.Background>
     <TabControl SelectedIndex="{Binding SelectedIndex}" Style="{StaticResource TabControlCapsule}" Margin="4" Background="Transparent" Foreground="White">
-        <hc:TabItem Header="集控PLC" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="自动供包PLC" Background="Transparent" Foreground="White">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="63*"/>
@@ -40,11 +40,13 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4,2" Background="Transparent" Grid.ColumnSpan="3">
-                    <TextBlock Text="单件线数:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,2"/>
+                    <Label Content="PLC协议版本:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4" Background="Transparent" Foreground="White"/>
+                    <ComboBox Width="60" Height="20" Margin="4,2" ItemsSource="{Binding PLCTypes}" SelectedItem="{Binding PlcType}"/>
+                    <Label Content="单件线数:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,2" Background="Transparent"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}" IsEditable="True"/>
                     <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4,2" Command="{Binding PLCCreateQuickCommandExd}"/>
                 </StackPanel>
-                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4" BorderBrush="White">
                     <DataGrid ItemsSource="{Binding PLCList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="线号" Binding="{Binding LineNo}"/>
@@ -52,7 +54,7 @@
                             <DataGridTextColumn Header="单件分离状态" Binding="{Binding PSS_status}"/>
                             <DataGridTextColumn Header="速度" Binding="{Binding Speed_status}"/>
                             <DataGridTextColumn Header="间距" Binding="{Binding Distance_status}"/>
-                            <DataGridTextColumn Width="*"/>
+                            <DataGridTextColumn Width="*" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
@@ -106,7 +108,7 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="触发时间" Binding="{Binding TriggerTime, Converter={StaticResource DateTimeConvert}}"/>
                             <DataGridTextColumn Header="包裹长度" Binding="{Binding Length}"/>
-                            <DataGridTextColumn Width="*"/>
+                            <DataGridTextColumn Width="*" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
@@ -142,7 +144,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="分拣口" Binding="{Binding SortPort}"/>
-                            <DataGridTextColumn Width="*"/>
+                            <DataGridTextColumn Width="*" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
@@ -184,7 +186,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Width="*"/>
+                            <DataGridTextColumn Width="*" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
@@ -220,7 +222,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Width="*"/>
+                            <DataGridTextColumn Width="*" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>

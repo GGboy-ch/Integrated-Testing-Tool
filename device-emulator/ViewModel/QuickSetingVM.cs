@@ -16,6 +16,14 @@ namespace DeviceEmulator.ViewModel
         public event EventHandler<ObservableCollection<BalanceWheel>>? BalanceWheelMessages;
         public event EventHandler<bool>? CloseWindow;
         public event EventHandler<int>? SelectedIndexEventHandler;
+        public event EventHandler<PLCType>? PlcTypeChanged;
+
+        private PLCType plcType;
+        public PLCType PlcType
+        {
+            get { return plcType; }
+            set { plcType = value; MyPropertyChanged(); PlcTypeChanged?.Invoke(this, PlcType); }
+        }
 
         private int lineNumber;
         /// <summary>
@@ -127,6 +135,7 @@ namespace DeviceEmulator.ViewModel
             set { selectedIndex = value; MyPropertyChanged(); SelectedIndexEventHandler?.Invoke(this, selectedIndex); }
         }
 
+        public ObservableCollection<PLCType> PLCTypes { get; set; } = new ObservableCollection<PLCType> { PLCType.V3, PLCType.V4 };
         public ObservableCollection<int> LineNumbers { get; set; } = new ObservableCollection<int>() { 1, 2, 3 };
         public ObservableCollection<string> CameraTypes { get; set; } = new ObservableCollection<string> { Properties.Res.ZKGW_DepthCameraForBarCode, Properties.Res.ZKGW_DepthCamera };
         public ObservableCollection<int> ResultTypes { get; set; } = new ObservableCollection<int> { 0, 1, 2 };

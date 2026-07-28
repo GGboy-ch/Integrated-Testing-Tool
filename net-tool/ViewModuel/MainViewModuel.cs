@@ -6,6 +6,7 @@ using MySql.Data.MySqlClient;
 using NetTool.View;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -68,13 +69,14 @@ namespace NetTool.ViewModuel
             {
                 isOpenStartup = value;
                 OnPropertyChanged();
+                string appName = Path.GetFileName(Environment.ProcessPath) ?? string.Empty;
                 if (isOpenStartup)
                 {
-                    AddAppToStartup(); // 添加到开机自启
+                    DesktopShortcut.AddAppToStartup(appName, System.Windows.Forms.Application.ExecutablePath); // 添加到开机自启
                 }
                 else
                 {
-                    RemoveAppFromStartup(); // 从开机自启中移除
+                    DesktopShortcut.RemoveAppFromStartup(appName); // 从开机自启中移除
                 }
             }
         }
@@ -262,35 +264,7 @@ namespace NetTool.ViewModuel
             {
                 SelectDataBase(IPv6Address);
             }
-            IsOpenStartup = IsAppInStartup();
-        }
-
-        /// <summary>
-        /// 检测是否开启了开机自启
-        /// </summary>
-        /// <returns></returns>
-        public static bool IsAppInStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            return key!.GetValue("NetTool.exe") != null;
-        }
-
-        /// <summary>
-        /// 开启开机自启
-        /// </summary>
-        public static void AddAppToStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.SetValue("NetTool.exe", $"\"{System.Windows.Forms.Application.ExecutablePath}\"");
-        }
-
-        /// <summary>
-        /// 关闭开机自启
-        /// </summary>
-        public static void RemoveAppFromStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.DeleteValue("NetTool.exe", false);
+            IsOpenStartup = DesktopShortcut.IsAppInStartup(Path.GetFileName(Environment.ProcessPath) ?? string.Empty);
         }
 
         /// <summary>

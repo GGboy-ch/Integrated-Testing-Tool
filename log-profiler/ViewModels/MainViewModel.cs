@@ -192,13 +192,14 @@ namespace LogProfiler.ViewModels
             {
                 isAutoStart = value; 
                 MyPropertyChanged();
+                string appName = Path.GetFileName(Environment.ProcessPath) ?? string.Empty;
                 if (isAutoStart)
                 {
-                    AddAppToStartup(); // 添加到开机自启
+                    DesktopShortcut.AddAppToStartup(appName, System.Windows.Forms.Application.ExecutablePath); // 添加到开机自启
                 }
                 else
                 {
-                    RemoveAppFromStartup(); // 从开机自启中移除
+                    DesktopShortcut.RemoveAppFromStartup(appName); // 从开机自启中移除
                 }
             }
         }
@@ -1034,34 +1035,6 @@ namespace LogProfiler.ViewModels
         }
 
         /// <summary>
-        /// 检测是否开启了开机自启
-        /// </summary>
-        /// <returns></returns>
-        public bool IsAppInStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            return key!.GetValue("LogProfiler.exe") != null;
-        }
-
-        /// <summary>
-        /// 开启开机自启
-        /// </summary>
-        public void AddAppToStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.SetValue("LogProfiler.exe", $"\"{System.Windows.Forms.Application.ExecutablePath}\"");
-        }
-
-        /// <summary>
-        /// 关闭开机自启
-        /// </summary>
-        public void RemoveAppFromStartup()
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            key!.DeleteValue("LogProfiler.exe", false);
-        }
-
-        /// <summary>
         /// 将缓存中的配置参数保存配置文件
         /// </summary>
         public void SaveConfig()
@@ -1094,7 +1067,7 @@ namespace LogProfiler.ViewModels
             OriginalLogDatas.Add(1, infoLogDatas);
             OriginalLogDatas.Add(2, exceptionLogDatas);
             regexMessageModel.RegexMessageEventHandler += RegexMessageModel_RegexMessageEventHandler;
-            IsAutoStart = IsAppInStartup(); // 检测是否开启了开机自启
+            IsAutoStart = DesktopShortcut.IsAppInStartup(Path.GetFileName(Environment.ProcessPath) ?? string.Empty); // 检测是否开启了开机自启
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
             DesktopShortcut.CreateDesktopShortcut(assemblyName, "日志查询工具", "日志查询工具，用于便捷搜索基于log4net第三方库记录的日志");
             string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";

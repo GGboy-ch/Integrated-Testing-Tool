@@ -14,7 +14,7 @@ namespace DeviceEmulator.Model
     /// <summary>
     /// 单件分离
     /// </summary>
-    public class PSS : NotifyBase
+    public class PLC : NotifyBase
     {
         private int lineNo;
         /// <summary>

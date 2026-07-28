@@ -9,7 +9,7 @@ namespace DeviceEmulator.ViewModel
 {
     public class QuickSetingVM : NotifyBase
     {
-        public event EventHandler<ObservableCollection<PSS>>? PSSMessages;
+        public event EventHandler<ObservableCollection<PLC>>? PLCMessages;
         public event EventHandler<ObservableCollection<Camera>>? CameraMessages;
         public event EventHandler<ObservableCollection<SortPort>>? SortPortMessages;
         public event EventHandler<ObservableCollection<Light>>? LightMessages;
@@ -28,10 +28,10 @@ namespace DeviceEmulator.ViewModel
             {
                 lineNumber = value;
                 MyPropertyChanged();
-                PSSList.Clear();
+                PLCList.Clear();
                 for (int i = 1; i <= LineNumber; i++)
                 {
-                    PSSList.Add(new PSS { LineNo = i });
+                    PLCList.Add(new PLC { LineNo = i });
                 }
             }
         }
@@ -135,13 +135,13 @@ namespace DeviceEmulator.ViewModel
         public ObservableCollection<int> SortPortNums { get; set; } = new ObservableCollection<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         public ObservableCollection<int> BalanceWheelNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 ,4, 5, 6, 7};
         public ObservableCollection<int> LightNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 };
-        public ObservableCollection<PSS> PSSList { get; set; } = new ObservableCollection<PSS>();
+        public ObservableCollection<PLC> PLCList { get; set; } = new ObservableCollection<PLC>();
         public ObservableCollection<Camera> CameraList { get; set; } = new ObservableCollection<Camera>();
         public ObservableCollection<BalanceWheel> BalanceWheelList { get; set; } = new ObservableCollection<BalanceWheel>() { new BalanceWheel { Name = Properties.Res.BalanceWheel, ResultType = 0, SortPort = 2 } };
         public ObservableCollection<SortPort> SortPortsList { get; set; } = new ObservableCollection<SortPort> { new SortPort { PortNo = 1, PortState = SortPortState.Nomal } };
         public ObservableCollection<Light> LightList { get; set; } = new ObservableCollection<Light>();
         public ObservableCollection<SortPortState> SortPortStateList { get; set; } = new ObservableCollection<SortPortState> { SortPortState.Nomal, SortPortState.FullPackage, SortPortState.FullThrought, SortPortState.Locked, SortPortState.DoorClosed };
-        public ObservableCollection<string> DeviceTypeList { get; set; } = new ObservableCollection<string> { Properties.Res.PSS, Properties.Res.Camera, Properties.Res.BalanceWheel, Properties.Res.PortStateBoard };
+        public ObservableCollection<string> DeviceTypeList { get; set; } = new ObservableCollection<string> { Properties.Res.PLC, Properties.Res.Camera, Properties.Res.BalanceWheel, Properties.Res.PortStateBoard };
 
         public QuickSetingVM()
         {
@@ -149,25 +149,25 @@ namespace DeviceEmulator.ViewModel
         }
 
 
-        private RelayCommand? pssCreateQuickCommandExd;
+        private RelayCommand? plcCreateQuickCommandExd;
         /// <summary>
-        /// 用于生成PSS快捷命令按钮
+        /// 用于生成PLC快捷命令按钮
         /// </summary>
-        public RelayCommand? PSSCreateQuickCommandExd
+        public RelayCommand? PLCCreateQuickCommandExd
         {
             get
             {
-                if (pssCreateQuickCommandExd == null)
+                if (plcCreateQuickCommandExd == null)
                 {
-                    pssCreateQuickCommandExd = new RelayCommand(() =>
+                    plcCreateQuickCommandExd = new RelayCommand(() =>
                     {
-                        PSSMessages?.Invoke(this, PSSList);
+                        PLCMessages?.Invoke(this, PLCList);
                         CloseWindow?.Invoke(this, true);
                     });
                 }
-                return pssCreateQuickCommandExd;
+                return plcCreateQuickCommandExd;
             }
-            set { pssCreateQuickCommandExd = value; }
+            set { plcCreateQuickCommandExd = value; }
         }
 
         private RelayCommand? cameraCreateQuickCommandExd;

@@ -575,7 +575,7 @@ namespace DeviceEmulator.ViewModel
             SortPortBoardButtonList = new ObservableCollection<CmdButton>();
             DeviceUDPClients = new ObservableCollection<DeviceUDPClient>
             {
-                new DeviceUDPClient(Properties.Res.PLC, "127.0.0.1", 3021, "127.0.0.1", 4134),
+                new DeviceUDPClient(Properties.Res.PLC, "127.0.0.1", 2012, "127.0.0.1", 5760),
                 new DeviceUDPClient(Properties.Res.BalanceWheel, "127.0.0.1", 9001, "127.0.0.1", 9000, true),
                 new DeviceUDPClient (Properties.Res.Camera, "127.0.0.1", 5555, "127.0.0.1", 6666, true),
             };
@@ -584,7 +584,7 @@ namespace DeviceEmulator.ViewModel
             RichTextBoxDocument = new FlowDocument();
             IPList = new ObservableCollection<string> { "127.0.0.1" };
             PLCTypes = new ObservableCollection<PLCType> { PLCType.V3, PLCType.V4 };
-            QuickSetingVM.PSSMessages += QuickSetingVM_PSSMessages;
+            QuickSetingVM.PLCMessages += QuickSetingVM_PLCMessages;
             QuickSetingVM.CameraMessages += QuickSetingVM_CameraMessages;
             QuickSetingVM.BalanceWheelMessages += QuickSetingVM_BalanceWheelMessages;
             QuickSetingVM.SelectedIndexEventHandler += QuickSetingVM_SelectedIndexEventHandler;
@@ -721,7 +721,7 @@ namespace DeviceEmulator.ViewModel
             }
         }
 
-        private void QuickSetingVM_PSSMessages(object? sender, ObservableCollection<PSS> e)
+        private void QuickSetingVM_PLCMessages(object? sender, ObservableCollection<PLC> e)
         {
             try
             {
@@ -731,7 +731,7 @@ namespace DeviceEmulator.ViewModel
                 data[2] = 0x00;
                 data[3] = 0x2A;
                 data[4] = 0x01;
-                foreach (PSS type in e)
+                foreach (PLC type in e)
                 {
                     GetMessage(type).CopyTo(data, 5 + 7 * i);
                     i++;
@@ -739,7 +739,7 @@ namespace DeviceEmulator.ViewModel
                 data[1] = (byte)data.Length;
                 if (PSSPLCButtonList?.Where(pss => pss.Content == "2A01").Count() == 0)//判断是否已经存在该按钮
                 {
-                    PSSPLCButtonList.Add(new CmdButton { Content = "2A01", CommandText = data, CmdDeviceType = Properties.Res.PSS, CommandExd = QuickCommandExd });
+                    PSSPLCButtonList.Add(new CmdButton { Content = "2A01", CommandText = data, CmdDeviceType = Properties.Res.PLC, CommandExd = QuickCommandExd });
                 }
                 else
                 {
@@ -764,7 +764,7 @@ namespace DeviceEmulator.ViewModel
         /// </summary>
         /// <param name="pss">单件分离PLC</param>
         /// <returns></returns>
-        public byte[] GetMessage(PSS pss)
+        public byte[] GetMessage(PLC pss)
         {
             byte[]? data;
             if (PlcType == PLCType.V4)

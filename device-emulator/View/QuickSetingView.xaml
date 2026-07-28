@@ -42,10 +42,10 @@
                 <StackPanel Orientation="Horizontal" Margin="4,2" Background="Transparent" Grid.ColumnSpan="3">
                     <TextBlock Text="单件线数:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,2"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4,2" Command="{Binding PSSCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4,2" Command="{Binding PLCCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
-                    <DataGrid ItemsSource="{Binding PSSList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
+                    <DataGrid ItemsSource="{Binding PLCList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="线号" Binding="{Binding LineNo}"/>
                             <DataGridTextColumn Header="叠件分离状态" Binding="{Binding SPS_status}"/>

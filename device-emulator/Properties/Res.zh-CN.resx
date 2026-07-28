@@ -123,6 +123,9 @@
   <data name="Camera" xml:space="preserve">
     <value>相机</value>
   </data>
+  <data name="PLC" xml:space="preserve">
+    <value>集控PLC</value>
+  </data>
   <data name="PortStateBoard" xml:space="preserve">
     <value>格口</value>
   </data>

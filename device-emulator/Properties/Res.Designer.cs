@@ -79,6 +79,15 @@ namespace DeviceEmulator.Properties {
         }
         
         /// <summary>
+        ///   查找类似 PLC 的本地化字符串。
+        /// </summary>
+        internal static string PLC {
+            get {
+                return ResourceManager.GetString("PLC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 PortStateBoard 的本地化字符串。
         /// </summary>
         internal static string PortStateBoard {

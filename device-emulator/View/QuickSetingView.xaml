@@ -28,7 +28,7 @@
         </LinearGradientBrush>
     </Window.Background>
     <TabControl SelectedIndex="{Binding SelectedIndex}" Style="{StaticResource TabControlCapsule}" Margin="4" Background="Transparent" Foreground="White">
-        <hc:TabItem Header="PSS" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="集控PLC" Background="Transparent" Foreground="White">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="63*"/>

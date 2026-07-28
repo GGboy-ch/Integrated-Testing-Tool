@@ -575,7 +575,7 @@ namespace DeviceEmulator.ViewModel
             SortPortBoardButtonList = new ObservableCollection<CmdButton>();
             DeviceUDPClients = new ObservableCollection<DeviceUDPClient>
             {
-                new DeviceUDPClient(Properties.Res.PSS, "127.0.0.1", 3021, "127.0.0.1", 4134),
+                new DeviceUDPClient(Properties.Res.PLC, "127.0.0.1", 3021, "127.0.0.1", 4134),
                 new DeviceUDPClient(Properties.Res.BalanceWheel, "127.0.0.1", 9001, "127.0.0.1", 9000, true),
                 new DeviceUDPClient (Properties.Res.Camera, "127.0.0.1", 5555, "127.0.0.1", 6666, true),
             };

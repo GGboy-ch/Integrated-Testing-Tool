@@ -67,7 +67,7 @@ namespace HTTPServer.CustomerBLL
             }
             else if (Request?.RawUrl == "/AutoSort/Sort")
             {
-                if (requestDic.ContainsKey("Barcodes") && (requestDic["Barcodes"]!.ToString()!.Contains("noread") || requestDic["Barcodes"]!.ToString() == "[]"))
+                if (requestDic.ContainsKey("Barcodes") && (requestDic["Barcodes"] == null || requestDic["Barcodes"]!.ToString()!.Contains("noread") || requestDic["Barcodes"]!.ToString() == "[]"))
                 {
                     string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{CustomerName}GetSortNoSortplan.txt";
                     string json = File.ReadAllText(path, Encoding.UTF8);

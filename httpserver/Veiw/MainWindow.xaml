@@ -64,8 +64,29 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </GroupBox>
-                <GroupBox Header="接收内容" Style="{StaticResource BaseStyle}" Visibility="{Binding RecieveVisibility}" Margin="4">
-                    <ListBox ItemsSource="{Binding RequestDatas}"/>
+                <GroupBox Header="请求记录" Style="{StaticResource BaseStyle}" Visibility="{Binding RecieveVisibility}" Margin="4">
+                    <ListBox ItemsSource="{Binding DisplayDatas}" MaxHeight="300">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Title}" Margin="8"/>
+                                    <Button Content="显示详情" Command="{Binding DataContext.DisplayMessageCmd, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}" CommandParameter="{Binding TriggerTime}" Style="{StaticResource ButtonSuccess}"/>
+                                    <Popup IsOpen="{Binding IsOpen}" StaysOpen="False" Placement="Right">
+                                        <Border Background="White" CornerRadius="7">
+                                            <StackPanel Orientation="Horizontal">
+                                                <GroupBox Header="请求参数:" Style="{StaticResource BaseStyle}" Margin="4">
+                                                    <TextBlock Text="{Binding RequestData}" TextWrapping="Wrap"/>
+                                                </GroupBox>
+                                                <GroupBox Header="响应参数:" Style="{StaticResource BaseStyle}" Margin="4">
+                                                    <TextBlock Text="{Binding ResponseData}" TextWrapping="Wrap"/>
+                                                </GroupBox>
+                                            </StackPanel>
+                                        </Border>
+                                    </Popup>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </GroupBox>
                 <GroupBox Header="返回内容" Style="{StaticResource BaseStyle}" Visibility="{Binding SettingVisibility}" Margin="4">
                     <Grid>

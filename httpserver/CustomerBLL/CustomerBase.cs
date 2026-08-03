@@ -110,10 +110,7 @@ namespace HTTPServer.CustomerBLL
                 {
                     return new Dictionary<string, object?>();
                 }
-                foreach (var key in requestDic.Keys)
-                {
-                    disaplayData += $"\"{key}\":\"{requestDic[key]}\" \r\n";
-                }
+                disaplayData += ClientData;
                 ProcessRequest(requestDic, ref response, rawurl, contentFile);
             }
             catch (Exception ex)

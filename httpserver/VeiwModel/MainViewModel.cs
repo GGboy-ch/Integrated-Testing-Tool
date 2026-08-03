@@ -30,7 +30,7 @@ namespace HTTPServer.VeiwModel
         /// <summary>
         /// 接收的请求参数列表
         /// </summary>
-        public ObservableCollection<string> RequestDatas { get; set; } = new ObservableCollection<string>();
+        public ObservableCollection<DisplayData> DisplayDatas { get; set; } = new ObservableCollection<DisplayData>();
         /// <summary>
         /// 可以IP列表
         /// </summary>
@@ -292,7 +292,7 @@ namespace HTTPServer.VeiwModel
         /// </summary>
         private void ClearCmdCxd()
         {
-            RequestDatas.Clear();
+            DisplayDatas.Clear();
             RequestDatasCount = 0;
         }
 
@@ -495,6 +495,26 @@ namespace HTTPServer.VeiwModel
             addResponsetext.ShowDialog();
         }
 
+        private RelayCommand<object>? _DisplayMessageCmd;
+        public RelayCommand<object>? DisplayMessageCmd
+        {
+            get => _DisplayMessageCmd ??= new RelayCommand<object>((param) =>
+            {
+                foreach (DisplayData item in DisplayDatas)
+                {
+                    if (item.TriggerTime.ToString() == param!.ToString())
+                    {
+                        item.IsOpen = !item.IsOpen;
+                    }
+                    else
+                    {
+                        item.IsOpen = false;
+                    }
+                }
+            });
+            set => _DisplayMessageCmd = value;
+        }
+
         #endregion
 
         public MainViewModel()
@@ -664,8 +684,10 @@ namespace HTTPServer.VeiwModel
             {
                 //需要注意：request中的请求参数被获取过一次之后就会丢失，请避免重复调用带request的构造函数
                 CustomerBase customerBLL = new CustomerBase();
-                string requestdata = $"数据来源：{request.RemoteEndPoint}\t请求方式: {request.HttpMethod}\t 请求参数：\r\n";
-                LogHelper.Debug($"[{index}] {requestdata}");
+                DisplayData displayData = new DisplayData() { TriggerTime = DateTime.Now };
+                displayData.Title = $"请求时间：{displayData.TriggerTime:yyyy-MM-dd HH:mm:ss.fff}\t数据来源：{request.RemoteEndPoint}\t请求方式: {request.HttpMethod}";
+                string requestdata = string.Empty;
+                LogHelper.Debug($"[{index}] {displayData.Title}\r\n 请求参数：\r\n");
 
                 //根据当前客户类型使用相应的客户逻辑
                 switch (SelectedCustomer)
@@ -736,9 +758,11 @@ namespace HTTPServer.VeiwModel
                 RequestDatasCount++;
                 Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                 {
-                    if (RequestDatas.Count < 1000)
+                    if (DisplayDatas.Count < 1000)
                     {
-                        RequestDatas.Add(requestdata);
+                        displayData.RequestData = requestdata;
+                        displayData.ResponseData = JsonConvert.SerializeObject(directory, Formatting.Indented);
+                        DisplayDatas.Add(displayData);
                     }
                 }));
             }

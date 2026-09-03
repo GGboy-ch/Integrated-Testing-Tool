@@ -49,6 +49,7 @@ namespace LogProfiler.Models
         }
 
         private double reallogDataLength = 30;
+        private int logContentNewLineCount;
         /// <summary>
         /// 日志数据在时间轴上实际所占宽度
         /// </summary>
@@ -58,7 +59,7 @@ namespace LogProfiler.Models
             set
             {
                 reallogDataLength = value;
-                int length = 30 * GetLogContentNewLineCount();
+                int length = 30 * logContentNewLineCount;
                 if (reallogDataLength < 30)
                 {
                     reallogDataLength = 30;
@@ -119,41 +120,45 @@ namespace LogProfiler.Models
         }
 
         private string logContent = string.Empty;
+        private StringBuilder? logContentBuilder;
         /// <summary>
         /// 日志内容
         /// </summary>
         public string LogContent
         {
             get => logContent;
-            set { logContent = value; MyPropertyChanged(); }
+            set
+            {
+                logContent = value;
+                logContentNewLineCount = CountNewLines(logContent);
+                MyPropertyChanged();
+            }
         }
 
         public LogData(string logData)
         {
-            try
+            logType = logData switch
             {
-                LogType = logData switch
-                {
-                    string s when s.Contains("INFO") => "INFO",
-                    string s when s.Contains("ERROR") => "ERROR",
-                    string s when s.Contains("DEBUG") => "DEBUG",
-                    _ => "UNKNOWN",
-                };
-                DateTime.TryParseExact(logData[..23], "yyyy-MM-dd HH:mm:ss,fff", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime logDateTime);
-                if (logDateTime == default)//除去时间信息，其余的都是日志内容
-                {
-                    LogContent = logData;
-                }
-                else
-                {
-                    LogContent = logData[24..];
-                }
-            }
-            catch (ArgumentOutOfRangeException) { /*忽略异常*/ }
-            catch (Exception ex)
+                string s when s.Contains("INFO", StringComparison.Ordinal) => "INFO",
+                string s when s.Contains("ERROR", StringComparison.Ordinal) => "ERROR",
+                string s when s.Contains("DEBUG", StringComparison.Ordinal) => "DEBUG",
+                _ => "UNKNOWN",
+            };
+
+            DateTime parsedDateTime = default;
+            bool hasTimestamp = logData.Length >= 23 &&
+                                DateTime.TryParseExact(logData.AsSpan(0, 23), "yyyy-MM-dd HH:mm:ss,fff", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime);
+            if (hasTimestamp)
             {
-                LogHelper.Exception($"[CreateLogData]:{ex}");
+                logDatetime = parsedDateTime;
+                logContent = logData.Length > 24 ? logData[24..] : string.Empty;
             }
+            else
+            {
+                logContent = logData;
+            }
+
+            logContentNewLineCount = CountNewLines(logContent);
         }
 
         public LogData(DateTime dateTime) : base()
@@ -163,6 +168,28 @@ namespace LogProfiler.Models
 
         public LogData() { }
 
+        public void AppendLogContent(string content)
+        {
+            logContentBuilder ??= new StringBuilder(logContent);
+            if (logContentBuilder.Length > 0)
+            {
+                logContentBuilder.Append("\r\n");
+            }
+            logContentBuilder.Append(content);
+        }
+
+        public void CompleteLogContent()
+        {
+            if (logContentBuilder == null)
+            {
+                return;
+            }
+
+            logContent = logContentBuilder.ToString();
+            logContentNewLineCount = CountNewLines(logContent);
+            logContentBuilder = null;
+        }
+
         /// <summary>
         /// 深拷贝
         /// </summary>
@@ -171,29 +198,33 @@ namespace LogProfiler.Models
         {
             return new LogData
             {
-                LogDatetime = this.LogDatetime,
-                LogType = this.LogType,
-                LogTip = this.LogTip,
-                LogContent = this.LogContent,
-                LogDataLength = this.LogDataLength,
-                RealLogDataLength = this.RealLogDataLength,
-                TopofHalfRealLogDataLength = this.TopofHalfRealLogDataLength,
-                BottomofHalfRealLogDataLength = this.BottomofHalfRealLogDataLength,
-                IsTimeout = this.IsTimeout
+                logDatetime = logDatetime,
+                logType = logType,
+                logTip = logTip,
+                logContent = logContent,
+                logContentNewLineCount = logContentNewLineCount,
+                logDataLength = logDataLength,
+                reallogDataLength = reallogDataLength,
+                topofHalfRealLogDataLength = topofHalfRealLogDataLength,
+                bottomofHalfRealLogDataLength = bottomofHalfRealLogDataLength,
+                isTimeout = isTimeout,
+                isBaseData = isBaseData
             };
         }
 
         public void DeepCopy(LogData logData)
         {
-            logData.LogDatetime = this.LogDatetime;
-            logData.LogType = this.LogType;
-            logData.LogTip = this.LogTip;
-            logData.LogContent = this.LogContent;
-            logData.LogDataLength = this.LogDataLength;
-            logData.RealLogDataLength = this.RealLogDataLength;
-            logData.TopofHalfRealLogDataLength = this.TopofHalfRealLogDataLength;
-            logData.BottomofHalfRealLogDataLength = this.BottomofHalfRealLogDataLength;
-            logData.IsTimeout = this.IsTimeout;
+            logData.logDatetime = logDatetime;
+            logData.logType = logType;
+            logData.logTip = logTip;
+            logData.logContent = logContent;
+            logData.logContentNewLineCount = logContentNewLineCount;
+            logData.logDataLength = logDataLength;
+            logData.reallogDataLength = reallogDataLength;
+            logData.topofHalfRealLogDataLength = topofHalfRealLogDataLength;
+            logData.bottomofHalfRealLogDataLength = bottomofHalfRealLogDataLength;
+            logData.isTimeout = isTimeout;
+            logData.isBaseData = isBaseData;
         }
 
         /// <summary>
@@ -202,15 +233,23 @@ namespace LogProfiler.Models
         /// <returns></returns>
         public int GetLogContentNewLineCount()
         {
-            if (string.IsNullOrEmpty(LogContent))
+            return logContentNewLineCount;
+        }
+
+        private static int CountNewLines(string content)
+        {
+            if (string.IsNullOrEmpty(content))
+            {
                 return 0;
+            }
+
             // 统计 \r\n, \n, \r 的数量，避免重复计数
             int count = 0;
-            for (int i = 0; i < LogContent.Length; i++)
+            for (int i = 0; i < content.Length; i++)
             {
-                if (LogContent[i] == '\r')
+                if (content[i] == '\r')
                 {
-                    if (i + 1 < LogContent.Length && LogContent[i + 1] == '\n')
+                    if (i + 1 < content.Length && content[i + 1] == '\n')
                     {
                         count++;
                         i++; // 跳过\n
@@ -220,7 +259,7 @@ namespace LogProfiler.Models
                         count++;
                     }
                 }
-                else if (LogContent[i] == '\n')
+                else if (content[i] == '\n')
                 {
                     count++;
                 }

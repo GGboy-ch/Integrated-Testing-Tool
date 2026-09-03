@@ -11,18 +11,33 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Threading;
 using System.Xml.Linq;
 
 namespace LogProfiler.ViewModels
 {
     public class MainViewModel : NotifyBase
     {
+        private static readonly HttpClient HttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+        private static readonly Regex DeviceNameRegex = new Regex(
+            @"\[(?<name>[0-9A-Za-z\u4e00-\u9fa5]{1,50})\]",
+            RegexOptions.Compiled,
+            TimeSpan.FromSeconds(2));
         private int tempPage = -1;
         int index = 0;//用于记录当前HTTP请求的索引
         public EventHandler<bool>? OnTipClosing;//事件处理器
         private RegexMessageModel regexMessageModel = new RegexMessageModel();
-        List<string> tempPathList = new List<string>();//临时存放日志文件路径的列表，用于在正则表达式中筛选日志文件
+        private readonly HashSet<string> tempPathList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);//临时存放已导入的日志文件路径
         List<int> tempPageList = new List<int>() { 1, 1, 1 };//临时存放页码的列表，用于在正则表达式中筛选日志文件
+        private readonly DispatcherTimer sliderUpdateTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(100)
+        };
+        private CancellationTokenSource? selectCancellationTokenSource;
+        private IReadOnlyList<Regex> compiledRegexes = Array.Empty<Regex>();
 
         #region 属性
 
@@ -53,7 +68,13 @@ namespace LogProfiler.ViewModels
         public double SliderValue
         {
             get => sliderValue;
-            set { sliderValue = value; MyPropertyChanged(); ChangeCollectionTimeSpan(); }
+            set
+            {
+                sliderValue = value;
+                MyPropertyChanged();
+                sliderUpdateTimer.Stop();
+                sliderUpdateTimer.Start();
+            }
         }
 
         private string deviceName = string.Empty;
@@ -154,7 +175,7 @@ namespace LogProfiler.ViewModels
             {
                 _Page = value;
                 _Page = _Page < 1 ? 1 : _Page;
-                int maxlogCount = CurrentLogDatas[SelectedTabIndex].Count / 300 + 1;              
+                int maxlogCount = Math.Max(1, (int)Math.Ceiling(CurrentLogDatas[SelectedTabIndex].Count / (double)PageSize));
                 _Page = _Page > maxlogCount ? maxlogCount : _Page;
                 _ = UpdateMainWindow(SelectedTabIndex);
                 MyPropertyChanged();
@@ -237,17 +258,17 @@ namespace LogProfiler.ViewModels
         /// <summary>
         /// 日志数据集合
         /// </summary>
-        public ObservableCollection<LogData> DebugLogDatas { get; set; }
+        public RangeObservableCollection<LogData> DebugLogDatas { get; set; }
         private List<LogData> debugLogDatas = new List<LogData>();
         private List<LogData> currentdebugLogDatas = new List<LogData>();
-        public ObservableCollection<LogData> InfoLogDatas { get; set; }
+        public RangeObservableCollection<LogData> InfoLogDatas { get; set; }
         private List<LogData> infoLogDatas = new List<LogData>();
         private List<LogData> currentinfoLogDatas = new List<LogData>();
-        public ObservableCollection<LogData> ExceptionLogDatas { get; set; }
+        public RangeObservableCollection<LogData> ExceptionLogDatas { get; set; }
         private List<LogData> exceptionLogDatas = new List<LogData>();
         private List<LogData> currentexceptionLogDatas = new List<LogData>();
 
-        Dictionary<int, ObservableCollection<LogData>> DisplayLogDatas = new Dictionary<int, ObservableCollection<LogData>>();
+        Dictionary<int, RangeObservableCollection<LogData>> DisplayLogDatas = new Dictionary<int, RangeObservableCollection<LogData>>();
         Dictionary<int, List<LogData>> CurrentLogDatas = new Dictionary<int, List<LogData>>();
         Dictionary<int, List<LogData>> OriginalLogDatas = new Dictionary<int, List<LogData>>();
         public ObservableCollection<string> DeviceNameList { get; set; }//设备名称列表，供下拉框选择
@@ -271,17 +292,15 @@ namespace LogProfiler.ViewModels
         private async Task GetLogNameListAsync()
         {
             string url = LogDownloadUri + "/GetLogNameList";
-            using (HttpClient client = new HttpClient())
             {
                 try
                 {
-                    client.Timeout = TimeSpan.FromMinutes(1); // 设置超时时间为1分钟
-                    if (string.IsNullOrEmpty(url))
+                    if (string.IsNullOrWhiteSpace(LogDownloadUri))
                     {
                         return;
                     }
                     index++;
-                    HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    using HttpResponseMessage response = await HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
                     string str = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(str))
@@ -342,14 +361,13 @@ namespace LogProfiler.ViewModels
             string url = LogDownloadUri + $"/{SelectedLog}";
             string fileName = string.Empty;
             DateTime starttime = default;
-            using (HttpClient client = new HttpClient())
             {
                 ProgressBarView progressBarView = new ProgressBarView(this);
                 var ownerWindow = Application.Current.Windows.OfType<DownloadLogView>().FirstOrDefault();
+                EventHandler? ownerLocationChanged = null;
                 try
                 {
-                    client.Timeout = TimeSpan.FromMinutes(1);
-                    if (string.IsNullOrEmpty(url))
+                    if (string.IsNullOrWhiteSpace(LogDownloadUri))
                     {
                         return;
                     }
@@ -360,22 +378,18 @@ namespace LogProfiler.ViewModels
                     }
                     progressBarView.Owner = ownerWindow ?? Application.Current.MainWindow;
                     progressBarView.Show();
-                    ownerWindow!.IsHitTestVisible = false;
-
                     if (ownerWindow != null)//关闭主窗口，并让加载界面随主界面移动
                     {
                         ownerWindow.IsHitTestVisible = false;
-                        ownerWindow.LocationChanged += (s, e) =>
+                        ownerLocationChanged = (s, e) =>
                         {
-                            if (ownerWindow != null)
-                            {
-                                progressBarView.Left = ownerWindow.Left + (ownerWindow.Width - progressBarView.Width) / 2;
-                                progressBarView.Top = ownerWindow.Top + (ownerWindow.Height - progressBarView.Height) / 2;
-                            }
+                            progressBarView.Left = ownerWindow.Left + (ownerWindow.Width - progressBarView.Width) / 2;
+                            progressBarView.Top = ownerWindow.Top + (ownerWindow.Height - progressBarView.Height) / 2;
                         };
+                        ownerWindow.LocationChanged += ownerLocationChanged;
                     }
                     starttime = DateTime.Now;
-                    HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    using HttpResponseMessage response = await HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
                     fileName = response.RequestMessage?.RequestUri?.Segments.LastOrDefault() ?? string.Empty;
                     string savePath = Path.Combine(path, fileName);
@@ -384,9 +398,9 @@ namespace LogProfiler.ViewModels
                     var canReportProgress = totalBytes != -1;
 
                     using (var stream = await response.Content.ReadAsStreamAsync())
-                    using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 65536, true))
                     {
-                        var buffer = new byte[8192];
+                        var buffer = new byte[65536];
                         long totalRead = 0;
                         int read;
                         var lastReportTime = DateTime.Now;
@@ -406,7 +420,7 @@ namespace LogProfiler.ViewModels
                                 string speedText = canReportProgress
                                         ? $"下载进度: {UnitConvert(totalRead)} / {UnitConvert(totalBytes)}  速度: {UnitConvert(speed)}/s"
                                         : $"已下载: {UnitConvert(totalRead)}  速度: {UnitConvert(speed)}/s";
-                                double speedValue = (totalRead * 100) / totalBytes;
+                                double speedValue = canReportProgress ? (totalRead * 100d) / totalBytes : 0;
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     progressBarView.SetProgress(speedValue, speedText);
@@ -417,17 +431,25 @@ namespace LogProfiler.ViewModels
                         }
                     }
 
-                    progressBarView.Close();
-                    ownerWindow!.IsHitTestVisible = true;
                     MessageBox.Show($"下载完成！保存路径为：{savePath}");
                     LogHelper.Info($"{fileName}下载完成，耗时：{(DateTime.Now - starttime).TotalMilliseconds}ms");
                 }
                 catch (Exception ex)
                 {
-                    progressBarView.Close();
-                    ownerWindow!.IsHitTestVisible = true;
                     LogHelper.Exception($"下载失败: {ex}");
                     LogHelper.Info($"{fileName}下载失败，耗时：{(DateTime.Now - starttime).TotalMilliseconds}ms");
+                }
+                finally
+                {
+                    if (ownerWindow != null)
+                    {
+                        if (ownerLocationChanged != null)
+                        {
+                            ownerWindow.LocationChanged -= ownerLocationChanged;
+                        }
+                        ownerWindow.IsHitTestVisible = true;
+                    }
+                    progressBarView.Close();
                 }
             }
         }
@@ -516,17 +538,17 @@ namespace LogProfiler.ViewModels
             }
         }
 
-        private RelayCommand? getLogCmd;
-        public RelayCommand GetLogCmd
+        private AsyncRelayCommand? getLogCmd;
+        public AsyncRelayCommand GetLogCmd
         {
-            get => getLogCmd ?? new RelayCommand(GetLogCmdExd);
+            get => getLogCmd ?? new AsyncRelayCommand(GetLogCmdExdAsync);
             set => getLogCmd = value;
         }
 
         /// <summary>
         /// 获取日志文件内容
         /// </summary>
-        private void GetLogCmdExd()
+        private async Task GetLogCmdExdAsync()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();//选择需要分析的日志文件
             openFileDialog.InitialDirectory = "C:\\Users\\wayzim\\Desktop\\LogTest";
@@ -537,16 +559,15 @@ namespace LogProfiler.ViewModels
             {
                 try
                 {
-                    string[] fileNames = openFileDialog.FileNames.Where(path => !tempPathList.Contains(path)).ToArray();//避免重复添加同一份日志
+                    string[] fileNames = openFileDialog.FileNames.Where(tempPathList.Add).ToArray();//避免重复添加同一份日志
                     if (fileNames.Length > 0)
                     {
-                        tempPathList.AddRange(fileNames);
-                        _ = GetLogMessages(fileNames);
+                        await GetLogMessages(fileNames);
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.Exception($"[GetLogCmdExd]:{ex}");
+                    LogHelper.Exception($"[GetLogCmdExdAsync]:{ex}");
                 }
             }
         }
@@ -595,36 +616,53 @@ namespace LogProfiler.ViewModels
             regexMessageView.ShowDialog();
         }
 
-        private RelayCommand? selectCmd;
-        public RelayCommand SelectCmd
+        private AsyncRelayCommand? selectCmd;
+        public AsyncRelayCommand SelectCmd
         {
-            get => selectCmd ?? new RelayCommand(SelectCmdExd);
+            get => selectCmd ?? new AsyncRelayCommand(SelectCmdExdAsync);
             set => selectCmd = value;
         }
 
         /// <summary>
         /// 根据时间段选择日志文件
         /// </summary>
-        private void SelectCmdExd()
+        private async Task SelectCmdExdAsync()
         {
+            selectCancellationTokenSource?.Cancel();
+            selectCancellationTokenSource?.Dispose();
+            selectCancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = selectCancellationTokenSource.Token;
+
             try
             {
-                TimeoutCount = 0;
                 tempPage = -1;
-                SelectLogsAsync(currentdebugLogDatas, debugLogDatas);
-                _ = UpdateMainWindow(0);
-                SelectLogsAsync(currentinfoLogDatas, infoLogDatas);
-                _ = UpdateMainWindow(1);
-                SelectLogsAsync(currentexceptionLogDatas, exceptionLogDatas);
-                Task t = UpdateMainWindow(2).ContinueWith(t => {
-                    CurrentLogDataCount = DisplayLogDatas[SelectedTabIndex].Count;
-                    LogDataCount = currentdebugLogDatas.Count + currentinfoLogDatas.Count + currentexceptionLogDatas.Count;
-                    Page = 1;
-                });
+                DateTime queryStartTime = StartTime;
+                DateTime queryEndTime = EndTime;
+                string queryDeviceName = DeviceName;
+                IReadOnlyList<Regex> queryRegexes = compiledRegexes;
+                Task<FilterResult>[] filterTasks =
+                [
+                    Task.Run(() => SelectLogs(debugLogDatas, queryStartTime, queryEndTime, queryDeviceName, queryRegexes, cancellationToken), cancellationToken),
+                    Task.Run(() => SelectLogs(infoLogDatas, queryStartTime, queryEndTime, queryDeviceName, queryRegexes, cancellationToken), cancellationToken),
+                    Task.Run(() => SelectLogs(exceptionLogDatas, queryStartTime, queryEndTime, queryDeviceName, queryRegexes, cancellationToken), cancellationToken)
+                ];
+                FilterResult[] results = await Task.WhenAll(filterTasks);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                ReplaceList(currentdebugLogDatas, results[0].Logs);
+                ReplaceList(currentinfoLogDatas, results[1].Logs);
+                ReplaceList(currentexceptionLogDatas, results[2].Logs);
+                TimeoutCount = results.Sum(result => result.TimeoutCount);
+                LogDataCount = results.Sum(result => result.Logs.Count);
+                _Page = 1;
+                MyPropertyChanged(nameof(Page));
+                await Task.WhenAll(UpdateMainWindow(0), UpdateMainWindow(1), UpdateMainWindow(2));
+                CurrentLogDataCount = DisplayLogDatas[SelectedTabIndex].Count;
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                LogHelper.Exception($"[SelectCmdExd]:{ex}");
+                LogHelper.Exception($"[SelectCmdExdAsync]:{ex}");
             }
         }
 
@@ -658,46 +696,57 @@ namespace LogProfiler.ViewModels
             Page++;
         }
 
-        private RelayCommand? searchContiguousCmd;
-        public RelayCommand SearchContiguousCmd
+        private AsyncRelayCommand? searchContiguousCmd;
+        public AsyncRelayCommand SearchContiguousCmd
         {
-            get => searchContiguousCmd ?? new RelayCommand(SearchContiguousCmdExd);
+            get => searchContiguousCmd ?? new AsyncRelayCommand(SearchContiguousCmdExdAsync);
             set => searchContiguousCmd = value;
         }
 
         /// <summary>
         /// 搜索相邻日志命令
         /// </summary>
-        private void SearchContiguousCmdExd()
+        private async Task SearchContiguousCmdExdAsync()
         {
             try
             {
                 int index = OriginalLogDatas[SelectedTabIndex].FindIndex(log => log.LogDatetime == DisplayLogDatas[SelectedTabIndex][SelectedLogIndex].LogDatetime);
-                DisplayLogDatas[SelectedTabIndex].Clear();
-                Task.Run(async () =>
+                if (index < 0)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    return;
+                }
+
+                int startIndex = Math.Max(0, index - 50);
+                int endIndex = Math.Min(OriginalLogDatas[SelectedTabIndex].Count, index + 50);
+                List<LogData> adjacentLogs = await Task.Run(() =>
+                {
+                    List<LogData> result = new List<LogData>(endIndex - startIndex);
+                    LogData tempdata = new LogData(DateTime.Now);
+                    Dictionary<string, LogData> lastLogByTip = new();
+                    int timeoutCount = 0;
+                    for (int currentIndex = startIndex; currentIndex < endIndex; currentIndex++)
                     {
-                        LogData tempdata = new LogData(DateTime.Now);
-                        Dictionary<string, LogData> lastLogByTip = new();
-                        foreach (var log in OriginalLogDatas[SelectedTabIndex].Take(new Range(index - 50 < 0 ? 0: index - 50, index + 50)))
-                        {
-                            LogData logData = GetLogData(log, tempdata, DisplayLogDatas[SelectedTabIndex].ToList(), lastLogByTip);
-                            DisplayLogDatas[SelectedTabIndex].Add(logData);
-                        }
-                        if (DisplayLogDatas[SelectedTabIndex].Count > 0)
-                        {
-                            CurrentLogDataCount = DisplayLogDatas[SelectedTabIndex].Count;
-                        }
-                        LogDataCount = DebugLogDatas.Count + InfoLogDatas.Count + ExceptionLogDatas.Count;
-                        int selectedIndex = index - 50 > 0 ? 50 : index;
-                        DisplayLogDatas[SelectedTabIndex][selectedIndex].IsBaseData = true;
-                    });
+                        LogData logData = GetLogData(
+                            OriginalLogDatas[SelectedTabIndex][currentIndex],
+                            tempdata,
+                            result,
+                            lastLogByTip,
+                            ref timeoutCount);
+                        result.Add(logData);
+                    }
+
+                    return result;
                 });
+
+                int selectedIndex = index - startIndex;
+                adjacentLogs[selectedIndex].IsBaseData = true;
+                DisplayLogDatas[SelectedTabIndex].ReplaceRange(adjacentLogs);
+                CurrentLogDataCount = adjacentLogs.Count;
+                LogDataCount = CurrentLogDatas.Values.Sum(logs => logs.Count);
             }
             catch (Exception ex)
             {
-                LogHelper.Exception($"[SearchContiguousCmdExd]:{ex}");
+                LogHelper.Exception($"[SearchContiguousCmdExdAsync]:{ex}");
             }
         }
 
@@ -710,42 +759,85 @@ namespace LogProfiler.ViewModels
         /// <param name="templogDataList">目标日志集合</param>
         /// <param name="logs">所有日志集合</param>
         /// <returns></returns>
-        private void SelectLogsAsync(List<LogData> templogDataList, List<LogData> logs)
+        private FilterResult SelectLogs(
+            List<LogData> logs,
+            DateTime queryStartTime,
+            DateTime queryEndTime,
+            string queryDeviceName,
+            IReadOnlyList<Regex> queryRegexes,
+            CancellationToken cancellationToken)
         {
-            templogDataList.Clear();
+            int startIndex = FindFirstLogAfter(logs, queryStartTime);
+            int endIndex = FindFirstLogAtOrAfter(logs, queryEndTime);
+            List<LogData> selectedLogs = new List<LogData>(Math.Max(0, endIndex - startIndex));
             LogData tempdata = new LogData(DateTime.Now);
-            // 新增：缓存每个 LogTip 的最后一条记录
             Dictionary<string, LogData> lastLogByTip = new();
-            string[] regexList = string.IsNullOrWhiteSpace(RegexStr) ? [] : RegexStr!.Split(",");
-            var regexes = regexList.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => new Regex(p, RegexOptions.Compiled)).ToList();
+            int timeoutCount = 0;
+            bool hasFilter = !string.IsNullOrWhiteSpace(queryDeviceName) || queryRegexes.Count > 0;
 
-            if (!string.IsNullOrWhiteSpace(DeviceName) || regexList.Length > 0)//有设备名称或正则表达式筛选条件时
+            for (int index = startIndex; index < endIndex; index++)
             {
-                foreach (var log in logs)
+                cancellationToken.ThrowIfCancellationRequested();
+                LogData log = logs[index];
+                if (hasFilter &&
+                    !((queryRegexes.Count > 0 && queryRegexes.All(pattern => pattern.IsMatch(log.LogContent))) ||
+                      (!string.IsNullOrEmpty(queryDeviceName) && log.LogTip == queryDeviceName)))
                 {
-                    if ((regexList.Length > 0 && regexes.All(pattern => pattern.IsMatch(log.LogContent))) ||
-                        (!string.IsNullOrEmpty(DeviceName) && log.LogTip == DeviceName))
-                    {
-                        LogData logData = GetLogData(log, tempdata, templogDataList, lastLogByTip);
-                        if (logData.LogDatetime > StartTime && logData.LogDatetime < EndTime)
-                        {
-                            templogDataList.Add(logData);
-                        }
-                    }
+                    continue;
                 }
+
+                LogData logData = GetLogData(log, tempdata, selectedLogs, lastLogByTip, ref timeoutCount);
+                selectedLogs.Add(logData);
             }
-            else
-            {
-                foreach (var log in logs)//如果没有设备名称或正则表达式筛选条件时，直接筛选时间段内的日志数据
-                {
-                    LogData logData = GetLogData(log, tempdata, templogDataList, lastLogByTip);
-                    if (logData.LogDatetime > StartTime && logData.LogDatetime < EndTime)
-                    {
-                        templogDataList.Add(logData);
-                    }
-                }
-            }
+
+            return new FilterResult(selectedLogs, timeoutCount);
         }
+
+        private static int FindFirstLogAfter(List<LogData> logs, DateTime value)
+        {
+            int left = 0;
+            int right = logs.Count;
+            while (left < right)
+            {
+                int middle = left + (right - left) / 2;
+                if (logs[middle].LogDatetime <= value)
+                {
+                    left = middle + 1;
+                }
+                else
+                {
+                    right = middle;
+                }
+            }
+            return left;
+        }
+
+        private static int FindFirstLogAtOrAfter(List<LogData> logs, DateTime value)
+        {
+            int left = 0;
+            int right = logs.Count;
+            while (left < right)
+            {
+                int middle = left + (right - left) / 2;
+                if (logs[middle].LogDatetime < value)
+                {
+                    left = middle + 1;
+                }
+                else
+                {
+                    right = middle;
+                }
+            }
+            return left;
+        }
+
+        private static void ReplaceList(List<LogData> target, IEnumerable<LogData> source)
+        {
+            target.Clear();
+            target.AddRange(source);
+        }
+
+        private sealed record FilterResult(List<LogData> Logs, int TimeoutCount);
 
         /// <summary>
         /// 从缓存列表中获取日志数据，并计算时间间隔、超时状态、界面显示的真实宽度等信息
@@ -755,21 +847,28 @@ namespace LogProfiler.ViewModels
         /// <param name="templogDataList">原始日志列表</param>
         /// <param name="lastLogByTip">用于存储</param>
         /// <returns></returns>
-        private LogData GetLogData(LogData log, LogData tempdata, List<LogData> templogDataList, Dictionary<string, LogData> lastLogByTip)
+        private LogData GetLogData(
+            LogData log,
+            LogData tempdata,
+            IReadOnlyCollection<LogData> templogDataList,
+            Dictionary<string, LogData> lastLogByTip,
+            ref int timeoutCount)
         {
             LogData logData = log.DeepCopy();
+            bool isHttpRequest = logData.LogContent.Contains("GET http", StringComparison.Ordinal) ||
+                                 logData.LogContent.Contains("POST http", StringComparison.Ordinal);
             if (templogDataList.Count == 0)//使用第一个日志的事件作为基准
             {
                 log.DeepCopy(tempdata);
-                logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http") ? 0 : 30; // 如果是第一个日志，设置一个默认的时间间隔
+                logData.LogDataLength = isHttpRequest ? 0 : 30; // 如果是第一个日志，设置一个默认的时间间隔
             }
             else
             {
                 //对于Http请求和参数，不设置时间间隔，只需要显示返回的事件即可
-                logData.LogDataLength = logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http")
+                logData.LogDataLength = isHttpRequest
                     ? 0
                     : (logData.LogDatetime - tempdata.LogDatetime).TotalMilliseconds;
-                if (TimeoutThreshold > 0 && !(logData.LogContent.Contains("GET http") || logData.LogContent.Contains("POST http"))
+                if (TimeoutThreshold > 0 && !isHttpRequest
                     && !string.IsNullOrEmpty(logData.LogTip) && lastLogByTip.TryGetValue(logData.LogTip, out var lastLogData)) //对于Http请求的日志记录，不算超时时间
                 {
                     logData.IsTimeout = (logData.LogDatetime - lastLogData.LogDatetime) > TimeSpan.FromMilliseconds(TimeoutThreshold);
@@ -777,7 +876,7 @@ namespace LogProfiler.ViewModels
             }
             if (logData.IsTimeout)
             {
-                TimeoutCount++;
+                timeoutCount++;
             }
             logData.RealLogDataLength = logData.LogDataLength * SliderValue;//计算界面上显示的真实宽度，即事件间隔*滑动条值
             logData.DeepCopy(tempdata);
@@ -798,11 +897,7 @@ namespace LogProfiler.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    DisplayLogDatas[selectedIndex].Clear();
-                    foreach (var log in CurrentLogDatas[selectedIndex].Skip((Page - 1) * PageSize).Take(PageSize))
-                    {
-                        DisplayLogDatas[selectedIndex].Add(log);
-                    }
+                    DisplayLogDatas[selectedIndex].ReplaceRange(CurrentLogDatas[selectedIndex].Skip((Page - 1) * PageSize).Take(PageSize));
                     CurrentLogDataCount = DisplayLogDatas[selectedIndex].Count > 0 ? DisplayLogDatas[selectedIndex].Count : 0;
                     tempPage = Page;
                 });
@@ -822,15 +917,14 @@ namespace LogProfiler.ViewModels
         {
             string logMessage = log.LogContent;
             string postRequest = string.Empty;
-            string pattern = @"\[(?<name>[0-9A-Za-z\u4e00-\u9fa5]{1,50})\]";
-            Regex regex = new Regex(pattern);
-            Match match = regex.Match(logMessage);
+            Match match = DeviceNameRegex.Match(logMessage);
             string deviceName = match.Success ? match.Groups["name"].Value : string.Empty;
             try
             {
                 if (logMessage.Contains("POST http") || logMessage.Contains("GET http"))//处理HTTP请求日志
                 {
-                    postRequest = logMessage.Split('/').Last();
+                    int separatorIndex = logMessage.LastIndexOf('/');
+                    postRequest = separatorIndex >= 0 ? logMessage[(separatorIndex + 1)..] : logMessage;
                 }
                 if (int.TryParse(deviceName, out int Tip))
                 {
@@ -879,7 +973,7 @@ namespace LogProfiler.ViewModels
                     }
                 };
             }
-            List<string> deviceNames = new List<string>();
+            HashSet<string> deviceNames = new HashSet<string>(StringComparer.Ordinal);
             //此处使用异步读取日志文件，避免阻塞UI线程
             await Task.Run(() =>
             {
@@ -893,16 +987,13 @@ namespace LogProfiler.ViewModels
                             if (!string.IsNullOrWhiteSpace(line))
                             {
                                 LogData logData = new LogData(line);
-                                DateTime.TryParseExact(line[..23], "yyyy-MM-dd HH:mm:ss,fff", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime logDateTime);
+                                DateTime logDateTime = logData.LogDatetime;
                                 if (logDateTime != default)
                                 {
                                     logData.LogDatetime = logDateTime;
                                     temptime = logData.DeepCopy();
                                     string devicename = GetDeviceName(logData);
-                                    if (!deviceNames.Contains(devicename))
-                                    {
-                                        deviceNames.Add(devicename);
-                                    }
+                                    deviceNames.Add(devicename);
                                     temptime.LogTip = logData.LogTip;
                                 }
                                 else
@@ -932,7 +1023,16 @@ namespace LogProfiler.ViewModels
                         }
                     }
                 }
+
+                foreach (LogData log in debugLogDatas.Concat(infoLogDatas).Concat(exceptionLogDatas))
+                {
+                    log.CompleteLogContent();
+                }
             });
+
+            debugLogDatas.Sort((left, right) => left.LogDatetime.CompareTo(right.LogDatetime));
+            infoLogDatas.Sort((left, right) => left.LogDatetime.CompareTo(right.LogDatetime));
+            exceptionLogDatas.Sort((left, right) => left.LogDatetime.CompareTo(right.LogDatetime));
 
             foreach (var deviceName in deviceNames)
             {
@@ -941,8 +1041,12 @@ namespace LogProfiler.ViewModels
                     DeviceNameList.Add(deviceName);
                 }
             }
-            StartTime = OriginalLogDatas.Where(data => data.Value.Count > 0).FirstOrDefault().Value.First().LogDatetime;//设置开始时间为日志数据的第一条记录时间
-            EndTime = OriginalLogDatas.Where(data => data.Value.Count > 0).LastOrDefault().Value.Last().LogDatetime;//设置结束时间为日志数据的最后一条记录时间
+            List<LogData>[] nonEmptyLogs = OriginalLogDatas.Values.Where(logs => logs.Count > 0).ToArray();
+            if (nonEmptyLogs.Length > 0)
+            {
+                StartTime = nonEmptyLogs.Min(logs => logs[0].LogDatetime);
+                EndTime = nonEmptyLogs.Max(logs => logs[^1].LogDatetime);
+            }
             OnTipClosing?.Invoke(this, true);//关闭提示窗口
         }
 
@@ -979,9 +1083,7 @@ namespace LogProfiler.ViewModels
             }
             if (temptime.LogDatetime != logData.LogDatetime)
             {
-                string tempdata = logList.Last().LogContent + "\r\n";
-                tempdata += logData.LogContent; // 将当前日志内容添加到上一个日志内容中
-                logList.Last().LogContent = tempdata; // 更新上一个日志的内容
+                logList.Last().AppendLogContent(logData.LogContent);
             }
             else
             {
@@ -999,10 +1101,7 @@ namespace LogProfiler.ViewModels
         {
             try
             {
-                foreach (var logDatas in DisplayLogDatas.Values)
-                {
-                    ChangeLogDataLength(logDatas);
-                }
+                ChangeLogDataLength(DisplayLogDatas[SelectedTabIndex]);
             }
             catch (Exception ex)
             {
@@ -1027,10 +1126,27 @@ namespace LogProfiler.ViewModels
 
         private void RegexMessageModel_RegexMessageEventHandler(object? sender, string e)
         {
-            if (!string.IsNullOrWhiteSpace(e))
+            try
             {
                 RegexStr = e;
-                DeviceName = string.Empty; // 清除设备名称筛选条件
+                compiledRegexes = string.IsNullOrWhiteSpace(e)
+                    ? Array.Empty<Regex>()
+                    : e.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(pattern => new Regex(
+                            pattern,
+                            RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                            TimeSpan.FromSeconds(2)))
+                        .ToArray();
+                if (compiledRegexes.Count > 0)
+                {
+                    DeviceName = string.Empty; // 清除设备名称筛选条件
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                compiledRegexes = Array.Empty<Regex>();
+                LogHelper.Exception($"[正则表达式无效]:{ex}");
+                MessageBox.Show($"正则表达式无效：{ex.Message}");
             }
         }
 
@@ -1052,9 +1168,9 @@ namespace LogProfiler.ViewModels
 
         public MainViewModel()
         {
-            DebugLogDatas = new ObservableCollection<LogData>();
-            InfoLogDatas = new ObservableCollection<LogData>();
-            ExceptionLogDatas = new ObservableCollection<LogData>();
+            DebugLogDatas = new RangeObservableCollection<LogData>();
+            InfoLogDatas = new RangeObservableCollection<LogData>();
+            ExceptionLogDatas = new RangeObservableCollection<LogData>();
             DeviceNameList = new ObservableCollection<string>() { string.Empty };
             LogNameList = new ObservableCollection<string>();
             DisplayLogDatas.Add(0, DebugLogDatas);
@@ -1066,6 +1182,11 @@ namespace LogProfiler.ViewModels
             OriginalLogDatas.Add(0, debugLogDatas);
             OriginalLogDatas.Add(1, infoLogDatas);
             OriginalLogDatas.Add(2, exceptionLogDatas);
+            sliderUpdateTimer.Tick += (sender, args) =>
+            {
+                sliderUpdateTimer.Stop();
+                ChangeCollectionTimeSpan();
+            };
             regexMessageModel.RegexMessageEventHandler += RegexMessageModel_RegexMessageEventHandler;
             IsAutoStart = DesktopShortcut.IsAppInStartup(Path.GetFileName(Environment.ProcessPath) ?? string.Empty); // 检测是否开启了开机自启
             string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");

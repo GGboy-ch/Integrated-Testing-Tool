@@ -22,6 +22,7 @@ namespace LogProfiler.Views
     public partial class TipWindow : Window
     {
         private bool isAllowToClose = false;
+        private MainViewModel? mainViewModel;
         public TipWindow(string text)
         {
             InitializeComponent();
@@ -31,7 +32,19 @@ namespace LogProfiler.Views
 
         public TipWindow(string text, MainViewModel mainViewModel) : this(text)
         {
+            this.mainViewModel = mainViewModel;
             mainViewModel.OnTipClosing += OnContextMenuClosing;
+            Closed += TipWindow_Closed;
+        }
+
+        private void TipWindow_Closed(object? sender, EventArgs e)
+        {
+            if (mainViewModel != null)
+            {
+                mainViewModel.OnTipClosing -= OnContextMenuClosing;
+                mainViewModel = null;
+            }
+            Closed -= TipWindow_Closed;
         }
 
         private void OnContextMenuClosing(object? sender, bool o)

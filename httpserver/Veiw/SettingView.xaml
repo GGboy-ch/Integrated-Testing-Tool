@@ -3,18 +3,83 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HTTPServer.Veiw" 
-        xmlns:veiwmodel="clr-namespace:HTTPServer.VeiwModel" 
+        xmlns:veiwmodel="clr-namespace:HTTPServer.VeiwModel"
         d:DataContext="{d:DesignInstance Type=veiwmodel:MainViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
-        Title="设置" Height="225" Width="480">
-    <StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="日志文件存放路径：" Margin="4"  VerticalAlignment="Center"/>
-            <TextBox MaxHeight="30" MinWidth="200" Text="{Binding LogFilePath}" Margin="4"/>
-            <Button Content="预览" Command="{Binding PreviewCmd}" Style="{StaticResource ButtonSuccess}" Margin="4"/>
-        </StackPanel>
-        <CheckBox Content="关闭软件时是否隐藏到托盘" IsChecked="{Binding IsHideToTray}" Margin="8"/>
-    </StackPanel>
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Title="设置"
+        Height="290"
+        Width="560"
+        Background="#F4F7FB">
+    <Grid Margin="20">
+        <Border Background="White"
+                BorderBrush="#E4E9F2"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="22">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="22"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="应用设置" FontSize="18" FontWeight="SemiBold" Foreground="#172033"/>
+                    <TextBlock Text="配置日志保存位置和窗口关闭行为"
+                               Margin="0,4,0,0"
+                               FontSize="12"
+                               Foreground="#667085"/>
+                </StackPanel>
+
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="36"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="日志文件保存路径" FontWeight="SemiBold" Foreground="#344054"/>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding LogFilePath, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="8,5"
+                                 VerticalContentAlignment="Center"/>
+                        <Button Grid.Column="2"
+                                Content="选择文件夹"
+                                Padding="16,5"
+                                Style="{StaticResource ButtonPrimary}"
+                                Command="{Binding PreviewCmd}"/>
+                    </Grid>
+                </Grid>
+
+                <Border Grid.Row="4" Background="#F8FAFC" CornerRadius="7" Padding="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="关闭时隐藏到托盘" FontWeight="SemiBold" Foreground="#344054"/>
+                            <TextBlock Text="关闭主窗口后，服务仍在后台运行"
+                                       Margin="0,3,0,0"
+                                       FontSize="12"
+                                       Foreground="#667085"/>
+                        </StackPanel>
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding IsHideToTray}"
+                                  VerticalAlignment="Center"
+                                  Margin="16,0,0,0"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

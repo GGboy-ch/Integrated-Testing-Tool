@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,12 +14,23 @@ namespace SetupTool
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private const string FtpUri = "ftp://120.26.41.210:21/";
+
+        private const string FtpUserName = "PC";
+
+        private const string FtpPassword = "cdh1531079";
+
+        private const string FtpRemoteDirectory = "PC/程序";
+
+        private const bool FtpEnableSsl = false;
+
+        static int Main(string[] args)
         {
             try
             {
-                //string rootpath = "C:\\Users\\Administrator\\source\\repos\\integrated-testing-tool\\log-profiler";
-                string rootpath = Environment.CurrentDirectory;
+                string rootpath = args.Length > 0 && !string.IsNullOrWhiteSpace(args[0])
+                    ? Path.GetFullPath(args[0])
+                    : Environment.CurrentDirectory;
                 Console.WriteLine($"需要打包项目所在的路径：{rootpath}");
                 string projectName = Path.GetFileNameWithoutExtension(new DirectoryInfo(rootpath).GetFiles().Where(file => file.Name.EndsWith(".csproj")).FirstOrDefault()!.FullName);
                 string scriptPath = AppDomain.CurrentDomain.BaseDirectory + "PackTool.iss";
@@ -162,10 +174,20 @@ namespace SetupTool
                         File.Delete(rootpath + $"\\bin\\{file}");
                     }
                 }
+
+                string installerPath = Path.Combine(rootpath, "bin", $"{projectName}.exe");
+                if (!File.Exists(installerPath))
+                {
+                    throw new FileNotFoundException("打包完成后未找到安装包。", installerPath);
+                }
+
+                UploadInstallerToFtp(installerPath);
+                return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[打包失败，失败原因]：{ex.Message}");
+                return 1;
             }
         }
 
@@ -206,54 +228,156 @@ namespace SetupTool
         /// <param name="innoSetupPath">Inno Setup 可执行文件路径</param>
         private static void UseInnoSetup(string scriptPath, string innoSetupPath)
         {
-            try
+            // 创建进程信息
+            ProcessStartInfo processInfo = new ProcessStartInfo
             {
-                // 创建进程信息
-                ProcessStartInfo processInfo = new ProcessStartInfo
+                FileName = innoSetupPath,
+                Arguments = $"\"{scriptPath}\"", // 引号用于处理路径中的空格
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            // 启动进程
+            using (Process process = new Process { StartInfo = processInfo })
+            {
+                process.Start();
+
+                // 读取输出信息
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+
+                // 显示结果
+                Console.WriteLine("Inno Setup Output:");
+                Console.WriteLine(output);
+
+                if (!string.IsNullOrWhiteSpace(error))
                 {
-                    FileName = innoSetupPath,
-                    Arguments = $"\"{scriptPath}\"", // 引号用于处理路径中的空格
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                    Console.WriteLine("Inno Setup Errors:");
+                    Console.WriteLine(error);
+                }
 
-                // 启动进程
-                using (Process process = new Process { StartInfo = processInfo })
+                if (process.ExitCode != 0)
                 {
-                    process.Start();
+                    throw new InvalidOperationException($"Inno Setup 打包失败，退出码：{process.ExitCode}。");
+                }
 
-                    // 读取输出信息
-                    string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
+                Console.WriteLine("Build completed successfully.");
+            }
+        }
 
-                    process.WaitForExit();
+        /// <summary>
+        /// 将安装包上传到FTP服务器。
+        /// </summary>
+        /// <param name="installerPath">本地安装包路径</param>
+        private static void UploadInstallerToFtp(string installerPath)
+        {
+            if (string.IsNullOrWhiteSpace(FtpUri))
+            {
+                Console.WriteLine("未配置FTP服务器地址，跳过FTP上传。");
+                return;
+            }
 
-                    // 显示结果
-                    Console.WriteLine("Inno Setup Output:");
-                    Console.WriteLine(output);
+            if (!Uri.TryCreate(FtpUri, UriKind.Absolute, out Uri? ftpUri) || ftpUri.Scheme != Uri.UriSchemeFtp)
+            {
+                throw new InvalidOperationException("FTP服务器地址必须是有效的 ftp:// 地址。");
+            }
 
-                    if (!string.IsNullOrWhiteSpace(error))
-                    {
-                        Console.WriteLine("Inno Setup Errors:");
-                        Console.WriteLine(error);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Build completed successfully.");
-                    }
+            if (string.IsNullOrWhiteSpace(FtpUserName) || string.IsNullOrWhiteSpace(FtpPassword))
+            {
+                throw new InvalidOperationException("FTP用户名和密码不能为空。");
+            }
+
+            NetworkCredential credential = new NetworkCredential(FtpUserName, FtpPassword);
+            Uri remoteFileUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(installerPath));
+
+            Console.WriteLine($"开始上传安装包：{remoteFileUri}");
+            EnsureFtpDirectoryExists(remoteFileUri, credential, FtpEnableSsl);
+
+#pragma warning disable SYSLIB0014
+            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(remoteFileUri);
+            request.Method = WebRequestMethods.Ftp.UploadFile;
+            request.Credentials = credential;
+            request.EnableSsl = FtpEnableSsl;
+            request.UseBinary = true;
+            request.UsePassive = true;
+            request.KeepAlive = false;
+            request.Timeout = 60000;
+            request.ReadWriteTimeout = 60000;
+
+            using FileStream input = File.OpenRead(installerPath);
+            request.ContentLength = input.Length;
+            using (Stream output = request.GetRequestStream())
+            {
+                input.CopyTo(output);
+            }
+
+            using FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+            Console.WriteLine($"FTP上传成功：{response.StatusDescription?.Trim()}");
+        }
+
+        /// <summary>
+        /// 创建FTP远程目录。
+        /// </summary>
+        private static void EnsureFtpDirectoryExists(Uri remoteFileUri, NetworkCredential credential, bool enableSsl)
+        {
+            string[] segments = remoteFileUri.AbsolutePath
+                .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .SkipLast(1)
+                .ToArray();
+            Uri serverRoot = new UriBuilder(remoteFileUri.Scheme, remoteFileUri.Host, remoteFileUri.Port).Uri;
+            string currentPath = string.Empty;
+
+            foreach (string segment in segments)
+            {
+                currentPath += $"/{segment}";
+                Uri directoryUri = new Uri(serverRoot, currentPath);
+
+                try
+                {
+#pragma warning disable SYSLIB0014
+                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(directoryUri);
+                    request.Method = WebRequestMethods.Ftp.MakeDirectory;
+                    request.Credentials = credential;
+                    request.EnableSsl = enableSsl;
+                    request.UsePassive = true;
+                    request.KeepAlive = false;
+                    request.Timeout = 60000;
+
+                    using FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                }
+                catch (WebException ex) when (ex.Response is FtpWebResponse response && response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
+                {
+                    response.Dispose();
                 }
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// 组装FTP远程文件地址。
+        /// </summary>
+        private static Uri BuildRemoteFileUri(Uri ftpUri, string remoteDirectory, string fileName)
+        {
+            string basePath = Uri.UnescapeDataString(ftpUri.AbsolutePath).Trim('/');
+            string directory = remoteDirectory.Trim().Trim('/').Replace('\\', '/');
+            string[] pathSegments = new[] { basePath, directory, fileName }
+                .Where(segment => !string.IsNullOrWhiteSpace(segment))
+                .SelectMany(segment => segment.Split('/', StringSplitOptions.RemoveEmptyEntries))
+                .Select(Uri.EscapeDataString)
+                .ToArray();
+            UriBuilder builder = new UriBuilder(ftpUri)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+                Path = string.Join('/', pathSegments)
+            };
+            return builder.Uri;
         }
 
         public static void AddToPath(string newPath, bool prepend = false)
         {
-            string currentPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            string currentPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
             var paths = new HashSet<string>(currentPath.Split(';'));
 
             if (!paths.Contains(newPath))

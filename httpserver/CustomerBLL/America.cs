@@ -20,7 +20,7 @@ namespace HTTPServer.CustomerBLL
 
         protected override void ProcessRequest(Dictionary<string, object?> requestDic, ref Dictionary<string, object?> response, string rawurl = "", string contentFile = "")
         {
-            if (Request?.RawUrl == "/AutoSort/CreateBatch")
+            if (GetRequestPath() == "/AutoSort/CreateBatch")
             {
                 if (requestDic != null && requestDic.ContainsKey("ChuteCode"))
                 {
@@ -48,24 +48,24 @@ namespace HTTPServer.CustomerBLL
                     }
                 }
             }
-            else if (Request?.RawUrl == "/SorterProgram/GetSorterRuleData")
+            else if (GetRequestPath() == "/SorterProgram/GetSorterRuleData")
             {
                 string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{CustomerName}GetSorterRuleData.txt";
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
             }
-            else if (Request?.RawUrl == "/Sorter/SetSorterRule")
+            else if (GetRequestPath() == "/Sorter/SetSorterRule")
             {
                 string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{CustomerName}SetSorterRule.txt";
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
             }
-            else if (Request?.RawUrl == "/AutoSort/DropChute")
+            else if (GetRequestPath() == "/AutoSort/DropChute")
             {
                 response!.Add("Code", "200");
                 response!.Add("Message", null);
             }
-            else if (Request?.RawUrl == "/AutoSort/Sort")
+            else if (GetRequestPath() == "/AutoSort/Sort")
             {
                 if (requestDic.ContainsKey("Barcodes") && (requestDic["Barcodes"] == null || requestDic["Barcodes"]!.ToString()!.Contains("noread") || requestDic["Barcodes"]!.ToString() == "[]"))
                 {
@@ -83,13 +83,13 @@ namespace HTTPServer.CustomerBLL
                     response.Add("ChuteCode", new int[] { chutecode });
                 }
             }
-            else if (Request?.RawUrl == "/AutoSort/ChutePrint")
+            else if (GetRequestPath() == "/AutoSort/ChutePrint")
             {
                 string path = $"{Environment.CurrentDirectory}\\TXT\\{CustomerName}\\{CustomerName}ChutePrintNormal.txt";
                 string json = File.ReadAllText(path, Encoding.UTF8);
                 response = JsonConvert.DeserializeObject<Dictionary<string, object>>(CustomerBase.ConvertToJsonString(json))!;
             }
-            else if (Request?.RawUrl == "/getPort")
+            else if (GetRequestPath() == "/getPort")
             {
                 response.Add("code", 200);
                 response.Add("data", new List<Dictionary<string, object>>
@@ -100,7 +100,94 @@ namespace HTTPServer.CustomerBLL
                     }
                 });
             }
+            else if (GetRequestPath() == "/AutoSort/LockChute")
+            {
+                response.Add("Code", 200);
+                response.Add("Message", "成功");
+            }
+            else if (GetRequestPath() == "/open-api/api/upload/image")
+            {
+                // 只模拟图片信息登记，不访问对象存储或处理图片二进制。
+                response.Add("code", 200);
+                response.Add("msg", "Success");
+            }
+            else if (GetRequestPath() == "/AutoSort/QueryChuteInfo")
+            {
+                response = CreateChuteInfoResponse(requestDic);
+            }
             base.ProcessRequest(requestDic, ref response, rawurl, contentFile);
+        }
+
+        public override Dictionary<string, object?>? GETResponseContent(ref string disaplayData, string rawurl = "", string contentFile = "")
+        {
+            if (GetRequestPath() != "/AutoSort/GetCurrentSortPlanName")
+            {
+                return base.GETResponseContent(ref disaplayData, rawurl, contentFile);
+            }
+
+            string? machineCode = Request?.QueryString["machine_code"];
+            disaplayData += Request?.Url?.Query;
+            Dictionary<string, object?> response = new Dictionary<string, object?>
+            {
+                { "Code", string.IsNullOrWhiteSpace(machineCode) ? 10000 : 200 },
+                { "Message", string.IsNullOrWhiteSpace(machineCode) ? "machine_code不能为空" : "成功" },
+                { "RuleName", string.IsNullOrWhiteSpace(machineCode) ? string.Empty : "默认分拣方案" }
+            };
+            // 保留界面选择的自定义响应模板覆盖能力。
+            base.ProcessRequest(ref response, rawurl, contentFile);
+            return response;
+        }
+
+        private string GetRequestPath()
+        {
+            string path = Request?.Url?.AbsolutePath ?? string.Empty;
+            const string prefix = "/wmd-sims";
+            return path.StartsWith(prefix + "/", StringComparison.Ordinal)
+                ? path[prefix.Length..]
+                : path;
+        }
+
+        private static Dictionary<string, object?> CreateChuteInfoResponse(Dictionary<string, object?> request)
+        {
+            if (!request.TryGetValue("MachineCode", out object? machineCode) ||
+                string.IsNullOrWhiteSpace(machineCode?.ToString()))
+            {
+                return new Dictionary<string, object?>
+                {
+                    { "Code", 10000 },
+                    { "Message", "MachineCode不能为空" }
+                };
+            }
+
+            // 与现有 Sort 模拟逻辑保持一致，默认启用 1～9 号格口。
+            IEnumerable<int> chuteCodes = Enumerable.Range(1, 9);
+            if (request.TryGetValue("ChuteCodeList", out object? value) &&
+                value is Newtonsoft.Json.Linq.JArray requestedCodes && requestedCodes.Count > 0)
+            {
+                chuteCodes = requestedCodes
+                    .Select(item => int.TryParse(item.ToString(), out int code) ? (int?)code : null)
+                    .Where(code => code.HasValue && code.Value >= 1 && code.Value <= 9)
+                    .Select(code => code!.Value)
+                    .Distinct();
+            }
+
+            return new Dictionary<string, object?>
+            {
+                { "Code", 200 },
+                { "Message", null },
+                {
+                    "ChuteContainerTypeList",
+                    chuteCodes.Select(code => new Dictionary<string, object?>
+                    {
+                        { "ChuteCode", code.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                        { "ContainerType", "C" },
+                        { "BagLabelCode", null },
+                        { "BagCountPieces", null },
+                        { "SortItems", Array.Empty<object>() },
+                        { "SortItemFieldValues", string.Empty }
+                    }).ToArray()
+                }
+            };
         }
     }
 }

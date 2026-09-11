@@ -17,6 +17,10 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260911 1.0.0.3
+安装包名称附带版本号和更新简介
+版本及更新简介统一由 AssemblyInfo.cs 维护，移除项目中的 UploadMessage。
+
 20260911 1.0.0.2
 设备名称支持空格和符号。
 设备筛选与正则筛选同时生效，启用正则时保留设备筛选条件。
@@ -37,5 +41,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.2";
+    public const string Current = "1.0.0.3";
 }

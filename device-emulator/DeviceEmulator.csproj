@@ -14,7 +14,6 @@
     <UseWPF>true</UseWPF>
     <ProjectGuid>{FC87A154-1C80-4D06-86C0-C4DCC160555D}</ProjectGuid>
     <ApplicationIcon>DeviceEmulator.ico</ApplicationIcon>
-    <UploadMessage>创建下位机模拟工具，用于模拟一部分底层设备进行通讯</UploadMessage>
   </PropertyGroup>
 
   <ItemGroup>

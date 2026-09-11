@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -42,9 +45,7 @@ namespace SetupTool
 
                 bool isSDK = xmlDoc.Root.ToString().Contains("Sdk");
                 string projectGuid = xmlDoc.Descendants(ns + "ProjectGuid").FirstOrDefault()?.Value!;
-                string uploadMessage = xmlDoc.Descendants(ns + "UploadMessage").FirstOrDefault()?.Value!;
                 string packpath = rootpath + "\\bin\\Release\\net8.0";
-                Console.WriteLine($"UploadMessage : {uploadMessage}");
 
                 if (isSDK)
                 {
@@ -74,7 +75,9 @@ namespace SetupTool
 
                 string version = AssemblyName.GetAssemblyName(assemblyPath).Version?.ToString()
                     ?? throw new InvalidOperationException("编译产物缺少程序集版本。");
-                Console.WriteLine($"安装包版本：{version}");
+                string uploadMessage = ReadUpdateSummary(assemblyPath, version);
+                Console.WriteLine($"安装包版本：{version}，更新简介：{uploadMessage}");
+                string installerBaseName = BuildInstallerBaseName(projectName, version, uploadMessage);
                 int i = 0;
 
                 //编辑[Files]段
@@ -128,10 +131,14 @@ namespace SetupTool
                             case "MyOutputDir":
                                 iss[i] = $"#define MyOutputDir \"{rootpath}\""; break;
                             case "MyUpdateMessage":
-                                iss[i] = $"#define MyUpdateMessage \"{uploadMessage}\""; break;
+                                iss[i] = $"#define MyUpdateMessage \"{uploadMessage.Replace("\"", "\"\"")}\""; break;
                             default:
                                 break;
                         }
+                    }
+                    if (iss[i].StartsWith("OutputBaseFilename="))
+                    {
+                        iss[i] = $"OutputBaseFilename={installerBaseName}";
                     }
                     if (iss[i].StartsWith("SetupIconFile"))
                     {
@@ -184,7 +191,7 @@ namespace SetupTool
                     }
                 }
 
-                string installerPath = Path.Combine(rootpath, "bin", $"{projectName}.exe");
+                string installerPath = Path.Combine(rootpath, "bin", $"{installerBaseName}.exe");
                 if (!File.Exists(installerPath))
                 {
                     throw new FileNotFoundException("打包完成后未找到安装包。", installerPath);
@@ -198,6 +205,89 @@ namespace SetupTool
                 Console.WriteLine($"[打包失败，失败原因]：{ex.Message}");
                 return 1;
             }
+        }
+
+        /// <summary>
+        /// 读取 AssemblyInfo.cs 编译后的 ChangeLog，不加载或执行目标程序及其依赖。
+        /// 最新记录格式为：日期 版本，下一非空行为本次更新简介。
+        /// </summary>
+        internal static string ReadUpdateSummary(string assemblyPath, string version)
+        {
+            using FileStream stream = File.OpenRead(assemblyPath);
+            using PEReader pe = new PEReader(stream);
+            MetadataReader reader = pe.GetMetadataReader();
+            foreach (CustomAttributeHandle handle in reader.GetAssemblyDefinition().GetCustomAttributes())
+            {
+                CustomAttribute attribute = reader.GetCustomAttribute(handle);
+                if (attribute.Constructor.Kind != HandleKind.MemberReference)
+                {
+                    continue;
+                }
+
+                MemberReference constructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                if (constructor.Parent.Kind != HandleKind.TypeReference)
+                {
+                    continue;
+                }
+
+                TypeReference type = reader.GetTypeReference((TypeReferenceHandle)constructor.Parent);
+                if (reader.GetString(type.Namespace) != "System.Reflection" ||
+                    reader.GetString(type.Name) != "AssemblyMetadataAttribute")
+                {
+                    continue;
+                }
+
+                BlobReader value = reader.GetBlobReader(attribute.Value);
+                if (value.ReadUInt16() != 1 || value.ReadSerializedString() != "ChangeLog")
+                {
+                    continue;
+                }
+
+                string[] lines = (value.ReadSerializedString() ?? string.Empty)
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (lines.Length < 2)
+                {
+                    throw new InvalidOperationException("AssemblyInfo.cs 的 ChangeLog 缺少版本或更新简介。");
+                }
+
+                Match header = Regex.Match(lines[0], @"^\d{4}-?\d{2}-?\d{2}\s+(\d+\.\d+\.\d+\.\d+)$");
+                if (!header.Success || header.Groups[1].Value != version ||
+                    Regex.IsMatch(lines[1], @"^\d{4}-?\d{2}-?\d{2}\s+\d+\.\d+\.\d+\.\d+$"))
+                {
+                    throw new InvalidOperationException("AssemblyInfo.cs 的最新 ChangeLog 必须与当前版本一致，并包含更新简介。");
+                }
+
+                return lines[1];
+            }
+
+            throw new InvalidOperationException("AssemblyInfo.cs 未定义 ChangeLog 更新日志。");
+        }
+
+        /// <summary>
+        /// 生成工具名-版本号-更新简介格式的安装包名称（不含扩展名）。
+        /// </summary>
+        internal static string BuildInstallerBaseName(string projectName, string version, string? updateMessage)
+        {
+            string summary = string.IsNullOrWhiteSpace(updateMessage) ? "更新" : updateMessage;
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            summary = new string(summary.Select(character =>
+                invalidChars.Contains(character) || character == '{' || character == '}'
+                    ? '_'
+                    : character).ToArray());
+            summary = summary.Trim().TrimEnd('.');
+            if (string.IsNullOrWhiteSpace(summary))
+            {
+                summary = "更新";
+            }
+
+            // 限制简介长度，避免安装包文件名过长；保留完整工具名和版本号。
+            if (summary.Length > 60)
+            {
+                int length = char.IsHighSurrogate(summary[59]) ? 59 : 60;
+                summary = summary[..length].TrimEnd(' ', '.');
+            }
+
+            return $"{projectName}-{version}-{summary}";
         }
 
         /// <summary>

@@ -36,14 +36,12 @@ namespace SetupTool
                 string scriptPath = AppDomain.CurrentDomain.BaseDirectory + "PackTool.iss";
                 Console.WriteLine($"开始打包。。。");
                 List<string> specialFiles = new List<string>();
-                List<string> assemblyInfos = File.ReadAllLines(rootpath + "\\AssemblyInfo.cs").ToList();
                 List<string> iss = File.ReadAllLines(scriptPath).ToList();
                 XDocument xmlDoc = XDocument.Load(rootpath + $"\\{projectName}.csproj");
                 XNamespace ns = xmlDoc.Root!.GetDefaultNamespace();
 
                 bool isSDK = xmlDoc.Root.ToString().Contains("Sdk");
                 string projectGuid = xmlDoc.Descendants(ns + "ProjectGuid").FirstOrDefault()?.Value!;
-                string version = string.Empty;
                 string uploadMessage = xmlDoc.Descendants(ns + "UploadMessage").FirstOrDefault()?.Value!;
                 string packpath = rootpath + "\\bin\\Release\\net8.0";
                 Console.WriteLine($"UploadMessage : {uploadMessage}");
@@ -53,19 +51,30 @@ namespace SetupTool
                     if (!Directory.Exists(packpath))
                     {
                         specialFiles = GetSpecialFiles(projectName, rootpath + "\\bin\\Release\\net8.0-windows");
-                        version = xmlDoc.Descendants(ns + "AssemblyVersion").FirstOrDefault()?.Value!;
                     }
                     else
                     {
                         specialFiles = GetSpecialFiles(projectName, packpath);
-                        version = xmlDoc.Descendants(ns + "AssemblyVersion").FirstOrDefault()?.Value!;
                     }
                 }
                 else
                 {
                     specialFiles = GetSpecialFiles(projectName, rootpath + "\\bin\\Release");
-                    version = ExtractStr(assemblyInfos.Where(str => str.StartsWith("[assembly: AssemblyVersion")).FirstOrDefault()!);
                 }
+                // 直接读取编译产物，保证安装包与程序使用相同版本。
+                string assemblyName = xmlDoc.Descendants(ns + "AssemblyName").FirstOrDefault()?.Value ?? projectName;
+                string buildOutput = isSDK
+                    ? (Directory.Exists(packpath) ? packpath : rootpath + "\\bin\\Release\\net8.0-windows")
+                    : rootpath + "\\bin\\Release";
+                string assemblyPath = Path.Combine(buildOutput, assemblyName + (isSDK ? ".dll" : ".exe"));
+                if (!File.Exists(assemblyPath))
+                {
+                    throw new FileNotFoundException("未找到编译产物，无法读取安装包版本。", assemblyPath);
+                }
+
+                string version = AssemblyName.GetAssemblyName(assemblyPath).Version?.ToString()
+                    ?? throw new InvalidOperationException("编译产物缺少程序集版本。");
+                Console.WriteLine($"安装包版本：{version}");
                 int i = 0;
 
                 //编辑[Files]段
@@ -189,17 +198,6 @@ namespace SetupTool
                 Console.WriteLine($"[打包失败，失败原因]：{ex.Message}");
                 return 1;
             }
-        }
-
-        /// <summary>
-        /// 提取AssemblyInfo.cs文件中的内容
-        /// </summary>
-        /// <param name="str">需要处理的字符串</param>
-        /// <returns></returns>
-        private static string ExtractStr(string str)
-        {
-            string str2 = str.Substring(str.IndexOf('"') + 1, str.LastIndexOf('"') - str.IndexOf('"') - 1);
-            return str2;
         }
 
         /// <summary>

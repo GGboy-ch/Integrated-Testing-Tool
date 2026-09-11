@@ -14,4 +14,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="3.4.0" />
+  </ItemGroup>
+
 </Project>

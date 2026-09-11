@@ -5,6 +5,10 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260911 1.0.0.2
+更新 NuGet 依赖
+调整日志及相关组件依赖版本，与公共库依赖保持一致。
+
 20260911 1.0.0.1
 安装包名称附带版本号和更新简介
 读取目标程序集中的 AssemblyInfo.cs 版本和 ChangeLog，校验最新日志版本。
@@ -13,5 +17,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.1";
+    public const string Current = "1.0.0.2";
 }

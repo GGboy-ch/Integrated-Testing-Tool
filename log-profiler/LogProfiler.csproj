@@ -2,17 +2,20 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- 版本由 AssemblyInfo.cs 统一定义，避免 SDK 重复生成属性。 -->
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	<ProjectGuid>{42101128-73F8-4ACD-AD03-266E386E8F51}</ProjectGuid>
+    <ProjectGuid>{42101128-73F8-4ACD-AD03-266E386E8F51}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Logprofiler.ico</ApplicationIcon>
-	<Company>Dickred</Company>
-	<AssemblyTitle>日志查询工具</AssemblyTitle>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <FileVersion>1.0.0.1</FileVersion>
-	<UploadMessage>创建日志查询工具，用于分析处理log4net记录的日志</UploadMessage>
+    <Company>Dickred</Company>
+    <UploadMessage>创建日志查询工具，用于分析处理log4net记录的日志</UploadMessage>
   </PropertyGroup>
 
   <ItemGroup>

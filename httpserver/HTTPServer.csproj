@@ -2,15 +2,19 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- 版本由 AssemblyInfo.cs 统一定义，避免 SDK 重复生成属性。 -->
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	<ProjectGuid>{EE0DCE06-9B39-47DD-9639-A6823794C8B5}</ProjectGuid>
+    <ProjectGuid>{EE0DCE06-9B39-47DD-9639-A6823794C8B5}</ProjectGuid>
     <ApplicationIcon>HTTPServer.ico</ApplicationIcon>
-	<AssemblyTitle>HTTP服务器</AssemblyTitle>
-	<UploadMessage>创建HTTP服务器，本地处理简单的POST和GET请求并返回JSON内容</UploadMessage>
-	<AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <UploadMessage>创建HTTP服务器，本地处理简单的POST和GET请求并返回JSON内容</UploadMessage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

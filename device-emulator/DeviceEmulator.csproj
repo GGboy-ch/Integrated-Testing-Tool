@@ -2,15 +2,19 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- 版本由 AssemblyInfo.cs 统一定义，避免 SDK 重复生成属性。 -->
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	<ProjectGuid>{FC87A154-1C80-4D06-86C0-C4DCC160555D}</ProjectGuid>
+    <ProjectGuid>{FC87A154-1C80-4D06-86C0-C4DCC160555D}</ProjectGuid>
     <ApplicationIcon>DeviceEmulator.ico</ApplicationIcon>
-	<AssemblyTitle>下位机模拟工具</AssemblyTitle>
-	<UploadMessage>创建下位机模拟工具，用于模拟一部分底层设备进行通讯</UploadMessage>
-	<AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <UploadMessage>创建下位机模拟工具，用于模拟一部分底层设备进行通讯</UploadMessage>
   </PropertyGroup>
 
   <ItemGroup>

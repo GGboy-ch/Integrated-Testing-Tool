@@ -23,7 +23,7 @@ namespace LogProfiler.ViewModels
             Timeout = TimeSpan.FromMinutes(1)
         };
         private static readonly Regex DeviceNameRegex = new Regex(
-            @"\[(?<name>[0-9A-Za-z\u4e00-\u9fa5]{1,50})\]",
+            @"\[(?<name>[^\[\]\r\n]{1,50})\]",
             RegexOptions.Compiled,
             TimeSpan.FromSeconds(2));
         private int tempPage = -1;
@@ -773,15 +773,14 @@ namespace LogProfiler.ViewModels
             LogData tempdata = new LogData(DateTime.Now);
             Dictionary<string, LogData> lastLogByTip = new();
             int timeoutCount = 0;
-            bool hasFilter = !string.IsNullOrWhiteSpace(queryDeviceName) || queryRegexes.Count > 0;
+            bool hasDeviceFilter = !string.IsNullOrWhiteSpace(queryDeviceName);
 
             for (int index = startIndex; index < endIndex; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 LogData log = logs[index];
-                if (hasFilter &&
-                    !((queryRegexes.Count > 0 && queryRegexes.All(pattern => pattern.IsMatch(log.LogContent))) ||
-                      (!string.IsNullOrEmpty(queryDeviceName) && log.LogTip == queryDeviceName)))
+                if ((hasDeviceFilter && log.LogTip != queryDeviceName) ||
+                    !queryRegexes.All(pattern => pattern.IsMatch(log.LogContent)))
                 {
                     continue;
                 }
@@ -1137,10 +1136,6 @@ namespace LogProfiler.ViewModels
                             RegexOptions.Compiled | RegexOptions.CultureInvariant,
                             TimeSpan.FromSeconds(2)))
                         .ToArray();
-                if (compiledRegexes.Count > 0)
-                {
-                    DeviceName = string.Empty; // 清除设备名称筛选条件
-                }
             }
             catch (ArgumentException ex)
             {

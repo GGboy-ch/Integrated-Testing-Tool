@@ -15,7 +15,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Logprofiler.ico</ApplicationIcon>
     <Company>Dickred</Company>
-    <UploadMessage>创建日志查询工具，用于分析处理log4net记录的日志</UploadMessage>
+    <UploadMessage>1.0.0.2：设备名称支持空格和符号；设备与正则筛选同时生效并保留设备条件；限制正则输入框最大宽度。</UploadMessage>
   </PropertyGroup>
 
   <ItemGroup>

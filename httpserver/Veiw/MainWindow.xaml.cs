@@ -19,11 +19,8 @@ namespace HTTPServer
 {
     public partial class MainWindow : HandyControl.Controls.Window
     {
-        private int selectedIndex = -1;
-        private readonly System.Windows.Threading.DispatcherTimer jsonFormatTimer = new()
-        {
-            Interval = TimeSpan.FromMilliseconds(500)
-        };
+        private bool isJsonFormatPending;
+        private bool isWindowClosed;
         private bool isFormattingJson;
         public MainViewModel MainViewModel { get; set; }
         public MainWindow()
@@ -34,32 +31,53 @@ namespace HTTPServer
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = MainViewModel;
             this.Closing += MainWindow_Closing;
-            jsonFormatTimer.Tick += JsonFormatTimer_Tick;
             MainViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.ContentTypeSelectedIndex))
                 {
-                    jsonFormatTimer.Stop();
-                    jsonFormatTimer.Start();
+                    RequestJsonFormatting();
                 }
             };
-            Closed += (_, _) => jsonFormatTimer.Stop();
+            Closed += (_, _) => isWindowClosed = true;
+            RequestJsonFormatting();
         }
 
         private void ParticularTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (isFormattingJson)
+            RequestJsonFormatting();
+        }
+
+        private void ParticularTextBox_IsKeyboardFocusWithinChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is false)
+            {
+                FormatJsonWhenUnfocused();
+                MainViewModel?.TrySaveCurrentTemplate();
+            }
+        }
+
+        private void RequestJsonFormatting()
+        {
+            if (isFormattingJson || isJsonFormatPending || isWindowClosed ||
+                MainViewModel == null || ParticularTextBox == null ||
+                ParticularTextBox.IsKeyboardFocusWithin || MainViewModel.ContentTypeSelectedIndex != 0)
             {
                 return;
             }
-            jsonFormatTimer.Stop();
-            jsonFormatTimer.Start();
+            // 等本次焦点和绑定更新完成后执行，不再等待输入停顿。
+            isJsonFormatPending = true;
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                isJsonFormatPending = false;
+                FormatJsonWhenUnfocused();
+            }));
         }
 
-        private void JsonFormatTimer_Tick(object? sender, EventArgs e)
+        private void FormatJsonWhenUnfocused()
         {
-            jsonFormatTimer.Stop();
-            if (MainViewModel.ContentTypeSelectedIndex != 0 ||
+            // 排队期间可能重新获得焦点或切换格式，执行前再次确认。
+            if (isWindowClosed || isFormattingJson || ParticularTextBox.IsKeyboardFocusWithin ||
+                MainViewModel.ContentTypeSelectedIndex != 0 ||
                 string.IsNullOrWhiteSpace(ParticularTextBox.Text))
             {
                 return;
@@ -148,6 +166,12 @@ namespace HTTPServer
         /// <param name="e"></param>
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            ParticularTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
+            if (!MainViewModel.TrySaveCurrentTemplate())
+            {
+                e.Cancel = true;
+                return;
+            }
             if (MainViewModel.IsHideToTray)
             {
                 this.Hide();
@@ -156,19 +180,8 @@ namespace HTTPServer
             else
             {
                 MainViewModel.SaveConfig();
-                MainViewModel.Close();
             }
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            MainViewModel.SelectedChangedEvent(selectedIndex);
-            selectedIndex = ((HandyControl.Controls.ComboBox)sender).SelectedIndex;
-        }
-
-        private void Customer_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-             MainViewModel.CustomerChangedEvent();
-        }
     }
 }

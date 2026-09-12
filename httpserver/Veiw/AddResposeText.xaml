@@ -12,6 +12,8 @@
                 ShowInTaskbar="False"
                 Title="添加响应模板"
                 Height="230"
+                MinHeight="230"
+                SizeToContent="Height"
                 Width="460"
                 Background="#F4F7FB">
     <Grid Margin="8">
@@ -35,7 +37,7 @@
                                FontWeight="SemiBold"
                                Foreground="#172033"/>
                     <TextBlock Text="输入模板名称，系统会自动创建文本文件"
-                               Margin="8"
+                               Margin="0,8,0,0"
                                FontSize="12"
                                Foreground="#667085"/>
                 </StackPanel>

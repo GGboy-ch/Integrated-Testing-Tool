@@ -119,19 +119,8 @@ namespace HTTPServer.VeiwModel
             get { return _SelectedCustomer; }
             set
             {
-                _SelectedCustomer = value;
-                MyPropertyChanged();
-                ContentList.Clear();
-                string path = Path.Combine(Environment.CurrentDirectory, $"TXT\\{SelectedCustomer}");
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt", SearchOption.TopDirectoryOnly);
-                foreach (var file in files)
-                {
-                    ContentList.Add(file.Name);
-                }
+                if (isChangingTemplate || value == _SelectedCustomer) return;
+                if (!TryChangeCustomer(value)) RestoreTemplateSelection();
             }
         }
 
@@ -162,7 +151,7 @@ namespace HTTPServer.VeiwModel
                             }
                         case 1:
                             {
-                                ParticularText = ParticularText.Replace("\r\n", string.Empty).Replace(" ", string.Empty);
+                                // Text 模式保留编辑原文，不能删除字符串中的空格和换行后再保存。
                                 if (!string.IsNullOrEmpty(ReposeText))
                                 {
                                     ReposeText = ReposeText.Replace("\r\n", string.Empty).Replace(" ", string.Empty);
@@ -176,14 +165,22 @@ namespace HTTPServer.VeiwModel
             }
         }
 
-        private int _ContentSelectedIndex = 0;
+        private int _ContentSelectedIndex = -1;
+        private bool isChangingTemplate;
+        private bool isSavingTemplate;
+        private string? currentTemplatePath;
+        private string savedTemplateText = string.Empty;
         /// <summary>
         /// 返回内容选中项
         /// </summary>
         public int ContentSelectedIndex
         {
             get { return _ContentSelectedIndex; }
-            set { _ContentSelectedIndex = value; MyPropertyChanged(); }
+            set
+            {
+                if (isChangingTemplate || value == _ContentSelectedIndex) return;
+                if (!TryChangeTemplate(value)) RestoreTemplateSelection();
+            }
         }
 
         private bool _IsUseTextBox;
@@ -338,6 +335,7 @@ namespace HTTPServer.VeiwModel
                         }
                         if (type.ToString() == "2")
                         {
+                            if (!TrySaveCurrentTemplate()) return;
                             SaveConfig();
                             Application.Current.Shutdown();
                         }
@@ -538,6 +536,7 @@ namespace HTTPServer.VeiwModel
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             LogFilePath = xmlDoc.Descendants("LogFilePath").FirstOrDefault()!.Value;
+            TryChangeCustomer(_SelectedCustomer);
         }
 
         #region 方法
@@ -792,84 +791,106 @@ namespace HTTPServer.VeiwModel
         }
 
         /// <summary>
-        /// 软件关闭时调用，保存最后一次的响应参数文本文件
+        /// 保存到加载时记录的文件路径，不依赖当前列表索引，也不强制解析 JSON。
         /// </summary>
-        public void Close()
+        public bool TrySaveCurrentTemplate()
         {
+            if (isSavingTemplate) return false;
+            string text = ParticularText ?? string.Empty;
+            if (currentTemplatePath == null)
+            {
+                if (text.Length == 0) return true;
+                MessageBox.Show("当前没有关联的响应模板，请先选择或创建模板。");
+                return false;
+            }
+            if (text == savedTemplateText) return true;
+            string temporaryPath = currentTemplatePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            isSavingTemplate = true;
             try
             {
-                if (ContentList.Count > 0)
-                {
-                    if (!string.IsNullOrEmpty(ParticularText)) //如果有特定的文本信息，则转换为Json格式
-                    {
-                        ParticularText = CustomerBase.ConvertToJsonString(ParticularText);
-                    }
-                    if (ContentSelectedIndex >= 0) //如果选中了返回内容列表中的某一项
-                    {
-                        File.WriteAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[ContentSelectedIndex]}", ParticularText, Encoding.UTF8);//将关闭前最后一次返回的响应参数保存到本地
-                    }
-                }
+                File.WriteAllText(temporaryPath, text, new UTF8Encoding(true));
+                // 先完整写入同目录临时文件，再替换，避免写入失败破坏原模板。
+                File.Move(temporaryPath, currentTemplatePath, true);
+                savedTemplateText = text;
+                return true;
             }
             catch (Exception ex)
             {
-                LogHelper.Exception($"[Close]:{ex}");
+                MessageBox.Show($"响应模板保存失败，已保留当前编辑内容。\r\n{currentTemplatePath}\r\n{ex.Message}");
+                return false;
+            }
+            finally
+            {
+                try { if (File.Exists(temporaryPath)) File.Delete(temporaryPath); }
+                catch (Exception ex) { LogHelper.Exception($"[TemplateCleanup]:{ex}"); }
+                isSavingTemplate = false;
             }
         }
 
-        /// <summary>
-        /// 当选择的返回内容列表发生变化时触发
-        /// </summary>
-        /// <param name="selectedindex"></param>
-        public void SelectedChangedEvent(int selectedindex)
+        private bool TryChangeTemplate(int index)
         {
+            if (index < 0 || index >= ContentList.Count || !TrySaveCurrentTemplate()) return false;
             try
             {
-                if (ContentList.Count > 0)
-                {
-                    if (selectedindex >= 0) //如果已选中了返回内容列表中的某一项，先保存该项的内容到本地
-                    {
-                        if (!string.IsNullOrEmpty(ParticularText))
-                        {
-                            ParticularText = CustomerBase.ConvertToJsonString(ParticularText);
-                        }
-                        File.WriteAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[selectedindex]}", ParticularText, Encoding.UTF8);
-                    }
-                    ParticularText = File.ReadAllText($"{Environment.CurrentDirectory}\\TXT\\{SelectedCustomer}\\{ContentList[ContentSelectedIndex]}", Encoding.UTF8);
-                }
-                else
-                {
-                    ParticularText = string.Empty;
-                }
+                string path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "TXT",
+                    SelectedCustomer.ToString(), ContentList[index]));
+                string text = File.ReadAllText(path, Encoding.UTF8);
+                currentTemplatePath = path;
+                savedTemplateText = text;
+                _ContentSelectedIndex = index;
+                ParticularText = text;
+                MyPropertyChanged(nameof(ContentSelectedIndex));
+                return true;
             }
             catch (Exception ex)
             {
-                LogHelper.Exception($"[SelectedChangedEvent]:{ex}");
+                MessageBox.Show($"响应模板加载失败，仍保留原模板。\r\n{ex.Message}");
+                return false;
             }
         }
 
-        /// <summary>
-        /// 客户类型发生变化时触发
-        /// </summary>
-        public void CustomerChangedEvent()
+        private bool TryChangeCustomer(Customer customer)
         {
+            if (!TrySaveCurrentTemplate()) return false;
             try
             {
+                string directory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "TXT", customer.ToString()));
+                Directory.CreateDirectory(directory);
+                string[] files = Directory.GetFiles(directory, "*.txt", SearchOption.TopDirectoryOnly);
+                string? path = files.FirstOrDefault();
+                string text = path == null ? string.Empty : File.ReadAllText(path, Encoding.UTF8);
+                // 读取成功后才提交切换，屏蔽清空列表触发的中间选中状态。
+                isChangingTemplate = true;
+                _SelectedCustomer = customer;
+                currentTemplatePath = path;
+                savedTemplateText = text;
                 ContentList.Clear();
-                string path = Path.Combine(Environment.CurrentDirectory, $"TXT\\{SelectedCustomer}");
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt", SearchOption.TopDirectoryOnly);
-                foreach (var file in files)
-                {
-                    ContentList.Add(file.Name);
-                }
+                foreach (string file in files) ContentList.Add(Path.GetFileName(file));
+                _ContentSelectedIndex = files.Length == 0 ? -1 : 0;
+                ParticularText = text;
+                MyPropertyChanged(nameof(SelectedCustomer));
+                MyPropertyChanged(nameof(ContentSelectedIndex));
+                return true;
             }
             catch (Exception ex)
             {
-                LogHelper.Exception($"[CustomerChangedEvent]:{ex}");
+                MessageBox.Show($"客户模板加载失败。\r\n{ex.Message}");
+                return false;
             }
+            finally
+            {
+                isChangingTemplate = false;
+            }
+        }
+
+        private void RestoreTemplateSelection()
+        {
+            // 等 TwoWay 绑定本次回写结束后恢复界面，避免选中项与编辑文件不一致。
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MyPropertyChanged(nameof(SelectedCustomer));
+                MyPropertyChanged(nameof(ContentSelectedIndex));
+            }));
         }
 
         public void SaveConfig()

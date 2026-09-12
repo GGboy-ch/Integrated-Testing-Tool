@@ -14,7 +14,7 @@
                 Height="230"
                 Width="460"
                 Background="#F4F7FB">
-    <Grid Margin="20">
+    <Grid Margin="8">
         <Border Background="White"
                 BorderBrush="#E4E9F2"
                 BorderThickness="1"
@@ -35,7 +35,7 @@
                                FontWeight="SemiBold"
                                Foreground="#172033"/>
                     <TextBlock Text="输入模板名称，系统会自动创建文本文件"
-                               Margin="0,4,0,0"
+                               Margin="8"
                                FontSize="12"
                                Foreground="#667085"/>
                 </StackPanel>

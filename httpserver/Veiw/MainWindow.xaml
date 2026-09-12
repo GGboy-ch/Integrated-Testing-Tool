@@ -44,7 +44,7 @@
 
         <Style x:Key="NavigationButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="44"/>
-            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -86,7 +86,7 @@
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemBaseStyle}">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,0,0,8"/>
+                        <Setter Property="Margin" Value="8"/>
                         <Style.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter Property="IsSelected" Value="True"/>
@@ -109,7 +109,7 @@
                 Background="White"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-            <Grid Margin="24,0">
+            <Grid Margin="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -123,17 +123,17 @@
                                Foreground="{StaticResource TextPrimaryBrush}"/>
                     <TextBlock Text="本地请求模拟与响应调试"
                                Style="{StaticResource CaptionStyle}"
-                               Margin="0,3,0,0"/>
+                               Margin="8"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="客户" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
+                    <TextBlock Text="客户" Style="{StaticResource CaptionStyle}" Margin="8"/>
                     <ComboBox Width="150"
                               Height="32"
                               ItemsSource="{Binding CustomerList}"
                               SelectedItem="{Binding SelectedCustomer}"
                               SelectionChanged="Customer_SelectionChanged"/>
-                    <Border Background="#F4F7FB" CornerRadius="7" Padding="10,5" Margin="16,0,0,0">
+                    <Border Background="#F4F7FB" CornerRadius="7" Padding="10,5" Margin="8">
                         <StackPanel Orientation="Horizontal">
                             <CheckBox x:Name="checkBox"
                                       IsChecked="{Binding IsTimeout}"
@@ -142,7 +142,7 @@
                             <TextBox Text="{Binding Timeout, UpdateSourceTrigger=PropertyChanged}"
                                      Width="72"
                                      Height="28"
-                                     Margin="10,0,4,0"
+                                     Margin="8"
                                      HorizontalContentAlignment="Center"
                                      VerticalContentAlignment="Center"
                                      IsEnabled="{Binding Path=IsChecked, ElementName=checkBox}"/>
@@ -151,7 +151,7 @@
                     </Border>
                     <Button Width="34"
                             Height="34"
-                            Margin="12,0,0,0"
+                            Margin="8"
                             Padding="8"
                             ToolTip="设置"
                             Style="{StaticResource ButtonCustom}"
@@ -163,7 +163,7 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Margin="20">
+        <Grid Grid.Row="1" Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="190"/>
                 <ColumnDefinition Width="16"/>
@@ -178,7 +178,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock Text="工作区"
-                               Margin="12,10,12,12"
+                               Margin="8"
                                FontSize="12"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextSecondaryBrush}"/>
@@ -193,11 +193,11 @@
                                 Command="{Binding ShowSettingCmd}"
                                 Style="{StaticResource NavigationButtonStyle}"/>
                     </StackPanel>
-                    <Border Grid.Row="2" Background="#F4F7FB" CornerRadius="7" Padding="12" Margin="0,12,0,0">
+                    <Border Grid.Row="2" Background="#F4F7FB" CornerRadius="7" Padding="12" Margin="8">
                         <StackPanel>
                             <TextBlock Text="当前请求数" Style="{StaticResource CaptionStyle}"/>
                             <TextBlock Text="{Binding RequestDatasCount}"
-                                       Margin="0,4,0,0"
+                                       Margin="8"
                                        FontSize="24"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource PrimaryBrush}"/>
@@ -223,7 +223,7 @@
                                 <TextBlock Text="请求记录" Style="{StaticResource SectionTitleStyle}"/>
                                 <TextBlock Text="查看服务器收到的请求和返回内容"
                                            Style="{StaticResource CaptionStyle}"
-                                           Margin="0,4,0,0"/>
+                                           Margin="8"/>
                             </StackPanel>
                             <Border Grid.Column="1" Background="#EFF6FF" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
                                 <TextBlock Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold">
@@ -253,11 +253,11 @@
                                                            TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Text="{Binding TriggerTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss.fff}}"
                                                            Style="{StaticResource CaptionStyle}"
-                                                           Margin="0,5,0,0"/>
+                                                           Margin="8"/>
                                             </StackPanel>
                                             <Button Grid.Column="1"
                                                     Content="查看详情"
-                                                    Margin="16,0,0,0"
+                                                    Margin="8"
                                                     Padding="14,5"
                                                     VerticalAlignment="Center"
                                                     Style="{StaticResource ButtonSuccess}"
@@ -325,7 +325,7 @@
                             <TextBlock Text="监听地址" Style="{StaticResource SectionTitleStyle}"/>
                             <TextBlock Text="选择本机地址并启动 HTTP 监听"
                                        Style="{StaticResource CaptionStyle}"
-                                       Margin="0,4,0,0"/>
+                                       Margin="8"/>
                         </StackPanel>
                         <ListBox Grid.Row="2" ItemsSource="{Binding IPList}" SelectedItem="{Binding SelectedURL}">
                             <ListBox.ItemTemplate>
@@ -343,7 +343,7 @@
                                             <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
                                                      Height="32"
                                                      VerticalContentAlignment="Center"
-                                                     Margin="0,0,12,0"/>
+                                                     Margin="8"/>
                                             <Button Grid.Column="1"
                                                     Content="开始监听"
                                                     Padding="16,5"
@@ -370,37 +370,38 @@
                             <TextBlock Text="返回内容" Style="{StaticResource SectionTitleStyle}"/>
                             <TextBlock Text="为指定请求路径配置模拟响应"
                                        Style="{StaticResource CaptionStyle}"
-                                       Margin="0,4,0,0"/>
+                                       Margin="8"/>
                         </StackPanel>
 
                         <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="8" Padding="12">
                             <WrapPanel VerticalAlignment="Center">
-                                <TextBlock Text="格式" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
+                                <TextBlock Text="格式" Style="{StaticResource CaptionStyle}" Margin="8"/>
                                 <hc:ComboBox ItemsSource="{Binding ContentTypeList}"
                                              SelectedIndex="{Binding ContentTypeSelectedIndex}"
                                              Width="100"
                                              Height="30"
-                                             Margin="0,0,16,0"/>
-                                <TextBlock Text="请求路径" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
+                                             Margin="8"/>
+                                <TextBlock Text="请求路径" Style="{StaticResource CaptionStyle}" Margin="8"/>
                                 <hc:ComboBox ItemsSource="{Binding RawUrlList}"
                                              SelectedItem="{Binding SelectedRawUrl}"
                                              Width="150"
                                              Height="30"
-                                             Margin="0,0,16,0"/>
-                                <TextBlock Text="响应模板" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
+                                             Margin="8"/>
+                                <TextBlock Text="响应模板" Style="{StaticResource CaptionStyle}" Margin="8"/>
                                 <hc:ComboBox ItemsSource="{Binding ContentList}"
                                              SelectedIndex="{Binding ContentSelectedIndex}"
                                              SelectionChanged="ComboBox_SelectionChanged"
                                              Width="160"
                                              Height="30"
-                                             Margin="0,0,12,0"/>
+                                             Margin="8"/>
                                 <CheckBox Content="使用指定内容"
                                           IsChecked="{Binding IsUseTextBox}"
                                           VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                                          Margin="8"/>
                                 <Button Content="新增模板"
                                         Command="{Binding OpenAddControlCmd}"
                                         Padding="14,5"
+                                        Margin="8"
                                         Style="{StaticResource ButtonSuccess}"/>
                             </WrapPanel>
                         </Border>
@@ -418,7 +419,8 @@
                             </Grid.RowDefinitions>
                             <TextBlock Text="指定响应内容" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Grid.Column="2" Text="实际响应预览" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBox Grid.Row="2"
+                            <TextBox x:Name="ParticularTextBox" Grid.Row="2"
+                                     TextChanged="ParticularTextBox_TextChanged"
                                      Text="{Binding ParticularText, UpdateSourceTrigger=PropertyChanged}"
                                      IsEnabled="{Binding IsUseTextBox}"
                                      AcceptsReturn="True"
@@ -450,15 +452,15 @@
                 Background="White"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0">
-            <Grid Margin="24,0">
+            <Grid Margin="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" Fill="#22C55E" Margin="0,0,8,0"/>
+                    <Ellipse Width="8" Height="8" Fill="#22C55E" Margin="8"/>
                     <TextBlock Text="服务控制台就绪" Style="{StaticResource CaptionStyle}"/>
-                    <TextBlock Text=" · 已记录 " Style="{StaticResource CaptionStyle}" Margin="12,0,0,0"/>
+                    <TextBlock Text=" · 已记录 " Style="{StaticResource CaptionStyle}" Margin="8"/>
                     <TextBlock Text="{Binding RequestDatasCount}" Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <TextBlock Text=" 个请求" Style="{StaticResource CaptionStyle}"/>
                 </StackPanel>

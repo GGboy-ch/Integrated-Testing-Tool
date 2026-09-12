@@ -153,7 +153,7 @@ namespace HTTPServer.VeiwModel
                     {
                         case 0:
                             {
-                                ParticularText = CustomerBase.ConvertToJsonString(ParticularText);
+                                // 指定响应内容由编辑器延迟格式化，允许切换时内容尚未完成。
                                 if (!string.IsNullOrEmpty(ReposeText))
                                 {
                                     ReposeText = CustomerBase.ConvertToJsonString(ReposeText);

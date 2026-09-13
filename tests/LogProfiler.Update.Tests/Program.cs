@@ -22,7 +22,8 @@ void Assert(bool value, string message)
 }
 
 async Task Run(string name, AutoUpdateStatus expected, bool available = true, bool badHash = false,
-    bool failSave = false, bool failLaunch = false, bool offline = false, bool cancelBeforeLaunch = false)
+    bool failSave = false, bool failLaunch = false, bool offline = false, bool cancelBeforeLaunch = false,
+    bool enabled = true, bool disabledBeforeInstall = false)
 {
     var events = new List<string>();
     int requests = 0;
@@ -57,21 +58,24 @@ async Task Run(string name, AutoUpdateStatus expected, bool available = true, bo
         return !failLaunch;
     });
     var service = new StartupUpdateService(updater);
-    var result = await service.RunAsync(current, _ =>
+    var result = await service.RunAsync(current, enabled, _ =>
     {
+        if (disabledBeforeInstall) return Task.FromResult(false);
         events.Add("save");
         if (failSave) throw new IOException("simulated config save failure");
         if (cancelBeforeLaunch) cancellation.Cancel();
         return Task.FromResult(true);
     }, () => events.Add("exit"), cancellation.Token);
     Assert(result.Status == expected, name + ": " + result.Message);
+    if (!enabled) Assert(requests == 0 && events.Count == 0, "disabled update must not access network");
+    if (disabledBeforeInstall) Assert(!events.Contains("launch"), "disabled before install must not launch");
     Assert(events.Contains("exit") == (expected == AutoUpdateStatus.InstallerStarted), "incorrect exit decision");
     if (expected == AutoUpdateStatus.InstallerStarted)
         Assert(string.Join(",", events) == "download,save,launch,exit", "incorrect lifecycle order");
     if (failSave || badHash || cancelBeforeLaunch)
         Assert(!events.Contains("launch"), "must not launch on failed preparation or validation");
     int beforeRepeat = requests;
-    var repeat = await service.RunAsync(current, _ => throw new Exception("unexpected save"),
+    var repeat = await service.RunAsync(current, true, _ => throw new Exception("unexpected save"),
         () => throw new Exception("unexpected exit"), CancellationToken.None);
     Assert(repeat.Status == AutoUpdateStatus.AlreadyRunning && requests == beforeRepeat, "startup ran twice");
     if (result.InstallerPath != null)
@@ -92,7 +96,21 @@ try
     await Run("launch failure keeps app running", AutoUpdateStatus.Failed, failLaunch: true);
     await Run("network failure keeps app running", AutoUpdateStatus.Failed, offline: true);
     await Run("cancellation before launch keeps app running", AutoUpdateStatus.Cancelled, cancelBeforeLaunch: true);
-    Console.WriteLine($"PASS: 7 scenarios, {assertions} assertions; LogProfiler version {current}");
+    await Run("disabled setting skips all requests", AutoUpdateStatus.NoUpdate, enabled: false);
+    await Run("disabled before install blocks installer", AutoUpdateStatus.Cancelled, disabledBeforeInstall: true);
+    var config = System.Xml.Linq.XDocument.Parse("<configuration><Other>preserved</Other></configuration>");
+    Assert(!AutoUpdatePreference.Read(config), "legacy configuration must default to disabled");
+    AutoUpdatePreference.Write(config, true);
+    var configPath = Path.Combine(root, "test.config");
+    config.Save(configPath);
+    config = System.Xml.Linq.XDocument.Load(configPath);
+    Assert(AutoUpdatePreference.Read(config), "enabled preference must survive reload");
+    AutoUpdatePreference.Write(config, false);
+    Assert(!AutoUpdatePreference.Read(config), "disabled preference must persist");
+    Assert(config.Root!.Element("Other")!.Value == "preserved", "other settings must remain");
+    config.Root.Element("IsAutoUpdate")!.Value = "invalid";
+    Assert(!AutoUpdatePreference.Read(config), "invalid preference must default to disabled");
+    Console.WriteLine($"PASS: 9 update scenarios plus configuration checks, {assertions} assertions; LogProfiler version {current}");
 }
 finally
 {

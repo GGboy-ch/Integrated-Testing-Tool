@@ -20,13 +20,16 @@ namespace LogProfiler.Services
 
         internal StartupUpdateService(AutoUpdateHelper updater) => this.updater = updater;
 
-        public async Task<AutoUpdateResult> RunAsync(Version version,
+        public async Task<AutoUpdateResult> RunAsync(Version version, bool isAutoUpdateEnabled,
             Func<CancellationToken, Task<bool>> saveBeforeInstall,
             Action exitForUpdate,
             CancellationToken cancellationToken)
         {
             if (Interlocked.Exchange(ref hasStarted, 1) != 0)
                 return new(AutoUpdateStatus.AlreadyRunning, "本次启动已经检查过更新。");
+
+            if (!isAutoUpdateEnabled)
+                return new(AutoUpdateStatus.NoUpdate, "未启用启动时自动更新，已跳过检查。");
 
             AutoUpdateResult result = await updater.CheckAndUpdateAsync(
                 softwareName: "LogProfiler",

@@ -25,6 +25,18 @@ namespace LogProfiler.Views
         {
             InitializeComponent();
             this.DataContext = mainViewModel;
+            Closing += (_, e) =>
+            {
+                try
+                {
+                    mainViewModel.SaveConfig();
+                }
+                catch (Exception ex)
+                {
+                    e.Cancel = true;
+                    System.Windows.MessageBox.Show(this, $"设置保存失败，请重试。\r\n{ex.Message}", "保存设置");
+                }
+            };
         }
     }
 }

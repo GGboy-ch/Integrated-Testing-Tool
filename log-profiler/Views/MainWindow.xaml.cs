@@ -43,10 +43,11 @@ namespace LogProfiler
             {
                 Version version = typeof(App).Assembly.GetName().Version
                     ?? throw new InvalidOperationException("无法读取 LogProfiler 版本。");
-                var result = await startupUpdate.RunAsync(version,
+                var result = await startupUpdate.RunAsync(version, _viewModel.IsAutoUpdate,
                     async cancellationToken => await Dispatcher.InvokeAsync(() =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+                        if (!_viewModel.IsAutoUpdate) return false;
                         _viewModel.SaveConfig();
                         // 配置保存成功后暂时禁止修改，避免安装启动前产生未保存变更。
                         IsEnabled = false;

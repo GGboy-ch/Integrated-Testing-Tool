@@ -17,6 +17,11 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260913 1.0.0.5
+启动自动更新由设置开关控制
+仅勾选启动时自动更新后检查新版本，保存并恢复设置，旧配置默认关闭。
+安装前再次检查开关，关闭设置窗口时保存配置。
+
 20260911 1.0.0.4
 更新 NuGet 依赖
 调整日志及相关组件依赖版本，与公共库依赖保持一致。
@@ -45,5 +50,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.4";
+    public const string Current = "1.0.0.5";
 }

@@ -1156,6 +1156,7 @@ namespace LogProfiler.ViewModels
             XElement logDownloadUri = xmlDoc.Descendants("LogDownloadUri").FirstOrDefault()!;
             logDownloadUri.SetValue(LogDownloadUri);
             ishidetoTray.SetValue(IsHideToTray);
+            Services.AutoUpdatePreference.Write(xmlDoc, IsAutoUpdate);
             xmlDoc.Save(configpath);
         }
 
@@ -1189,6 +1190,7 @@ namespace LogProfiler.ViewModels
             string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            isAutoUpdate = Services.AutoUpdatePreference.Read(xmlDoc);
             LogDownloadUri = xmlDoc.Descendants("LogDownloadUri").FirstOrDefault()!.Value;
         }
     }

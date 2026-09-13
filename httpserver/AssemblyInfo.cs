@@ -17,6 +17,12 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260913 1.0.0.3
+日志列表和下载迁移至 PersonalWeb
+移除 HTTPServer 的 GetLogNameList 接口、通用日志目录下载分支及相关辅助方法。
+移除日志目录选择控件和 LogFilePath 配置读写，保留客户模拟响应、客户专用下载和程序自身日志记录。
+日志列表和下载由 PersonalWeb 通过原有 HTTPS 地址提供。
+
 20260911 1.0.0.2
 更新 NuGet 依赖
 调整日志及相关组件依赖版本，与公共库依赖保持一致。
@@ -40,5 +46,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.2";
+    public const string Current = "1.0.0.3";
 }

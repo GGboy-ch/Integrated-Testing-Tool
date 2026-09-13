@@ -9,6 +9,16 @@ namespace LogProfiler
     public partial class App : Application
     {
         public static TaskbarIcon? mTaskbarIcon;
+        private readonly CancellationTokenSource updateCancellation = new();
+        internal CancellationToken UpdateCancellationToken => updateCancellation.Token;
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            updateCancellation.Cancel();
+            mTaskbarIcon?.Dispose();
+            base.OnExit(e);
+            updateCancellation.Dispose();
+        }
     }
 
 }

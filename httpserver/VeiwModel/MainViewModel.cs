@@ -14,7 +14,6 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using Application = System.Windows.Application;
 using File = System.IO.File;
@@ -263,16 +262,6 @@ namespace HTTPServer.VeiwModel
             set { isHideToTray = value; MyPropertyChanged(); }
         }
 
-        private string logFilePath = "C:\\Users\\Administrator\\FTP\\PC\\文档\\Logs";
-        /// <summary>
-        /// 日志文件的存放路径
-        /// </summary>
-        public string LogFilePath
-        {
-            get => logFilePath;
-            set { logFilePath = value; MyPropertyChanged(); }
-        }
-
         #endregion
 
         #region 命令
@@ -291,25 +280,6 @@ namespace HTTPServer.VeiwModel
         {
             DisplayDatas.Clear();
             RequestDatasCount = 0;
-        }
-
-        private RelayCommand? previewCmd;
-        public RelayCommand? PreviewCmd
-        {
-            get => previewCmd ??= new RelayCommand(PreviewCmdCxd);
-            set => previewCmd = value;
-        }
-
-        /// <summary>
-        /// 预览命令，选择日志文件存放路径
-        /// </summary>
-        private void PreviewCmdCxd()
-        {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                LogFilePath = folderBrowserDialog.SelectedPath ?? LogFilePath;
-            }
         }
 
         private RelayCommand<object>? notifyCommand;
@@ -535,7 +505,6 @@ namespace HTTPServer.VeiwModel
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
-            LogFilePath = xmlDoc.Descendants("LogFilePath").FirstOrDefault()!.Value;
             TryChangeCustomer(_SelectedCustomer);
         }
 
@@ -556,17 +525,7 @@ namespace HTTPServer.VeiwModel
                     RawUrlList.Add(request.RawUrl);
                 }));
             }
-            // 判断是否为文件下载请求
-            if (request != null && IsFileDownloadRequest(request.RawUrl, out string fileName, out string mimeType))
-            {
-                context.Response.ContentType = mimeType;
-                context.Response.AddHeader("Content-Disposition", $"attachment; filename={fileName}");
-            }
-            else
-            {
-                context.Response.ContentType = "application/json";
-                context.Response.AddHeader("Content-type", "application/json");
-            }
+            context.Response.ContentType = "application/json";
             context.Response.ContentEncoding = Encoding.UTF8;
             string? returnObj = null;
             if (request!.InputStream != Stream.Null)
@@ -589,80 +548,14 @@ namespace HTTPServer.VeiwModel
             {
                 using (var stream = response.OutputStream)
                 {
-                    if (request.RawUrl == "/GetLogNameList")
-                    {
-                        var data = Encoding.UTF8.GetBytes(GetLogNameList());
-                        response.ContentLength64 = data.Length;
-                        stream.Write(data, 0, data.Length);
-                    }
-                    else if (IsFileDownloadRequest(request.RawUrl, out fileName, out mimeType))
-                    {
-                        byte[] data = GetFile(request, fileName);
-                        response.ContentLength64 = data.Length;
-                        stream.Write(data, 0, data.Length);
-                    }
-                    else
-                    {
-                        response.ContentLength64 = returnByteArr.Length;
-                        stream.Write(returnByteArr, 0, returnByteArr.Length);
-                    }
+                    response.ContentLength64 = returnByteArr.Length;
+                    stream.Write(returnByteArr, 0, returnByteArr.Length);
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.Exception($"[Result]:{ex}");
             }
-        }
-
-        // 新增方法：判断是否为文件下载请求，并获取文件名和MIME类型
-        private bool IsFileDownloadRequest(string? rawUrl, out string fileName, out string mimeType)
-        {
-            fileName = string.Empty;
-            mimeType = "application/octet-stream";
-            if (string.IsNullOrEmpty(rawUrl)) return false;
-            // 只处理以.扩展名结尾的文件请求
-            var ext = Path.GetExtension(rawUrl);
-            if (!string.IsNullOrEmpty(ext))
-            {
-                fileName = rawUrl.Trim('/');
-                mimeType = GetMimeTypeByExtension(ext);
-                return true;
-            }
-            return false;
-        }
-
-        // 新增方法：根据扩展名返回MIME类型
-        private string GetMimeTypeByExtension(string ext)
-        {
-            return ext.ToLower() switch
-            {
-                ".txt" => "text/plain",
-                ".json" => "application/json",
-                ".log" => "application/octet-stream",
-                ".pdf" => "application/pdf",
-                ".jpg" => "image/jpeg",
-                ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".zip" => "application/zip",
-                ".rar" => "application/x-rar-compressed",
-                ".xml" => "application/xml",
-                _ => "application/octet-stream"
-            };
-        }
-
-        // 修改GetFile方法，支持返回任意类型文件
-        private byte[] GetFile(HttpListenerRequest request, string fileName)
-        {
-            fileName = request.RawUrl!.Trim('/');
-            var files = new DirectoryInfo(LogFilePath).GetFiles("*", SearchOption.AllDirectories);
-            var file = files.FirstOrDefault(f => f.Name == fileName);
-            if (file != null)
-            {
-                return File.ReadAllBytes(file.FullName);
-            }
-            // 文件不存在时返回空字节数组
-            return Array.Empty<byte>();
         }
 
         /// <summary>
@@ -779,17 +672,6 @@ namespace HTTPServer.VeiwModel
             return JsonConvert.SerializeObject(directory);
         }
 
-        private string GetLogNameList()
-        {
-            List<string> logNameList = new List<string>();
-            var files = new DirectoryInfo(LogFilePath).GetFiles("*", SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                logNameList.Add(file.Name);
-            }
-            return string.Join("|", logNameList) ?? string.Empty;
-        }
-
         /// <summary>
         /// 保存到加载时记录的文件路径，不依赖当前列表索引，也不强制解析 JSON。
         /// </summary>
@@ -898,9 +780,7 @@ namespace HTTPServer.VeiwModel
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
-            XElement logFilePath = xmlDoc.Descendants("LogFilePath").FirstOrDefault()!;
             ishidetoTray.SetValue(IsHideToTray);
-            logFilePath.SetValue(LogFilePath);
             xmlDoc.Save(configpath);
         }
 

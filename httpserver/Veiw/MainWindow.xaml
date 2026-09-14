@@ -291,6 +291,7 @@
                                                                 <TextBlock Text="{Binding RequestData}"
                                                                            FontFamily="Consolas"
                                                                            FontSize="12"
+                                                                           Foreground="Black"
                                                                            TextWrapping="Wrap"/>
                                                             </ScrollViewer>
                                                         </Border>
@@ -299,6 +300,7 @@
                                                                 <TextBlock Text="{Binding ResponseData}"
                                                                            FontFamily="Consolas"
                                                                            FontSize="12"
+                                                                           Foreground="Black"
                                                                            TextWrapping="Wrap"/>
                                                             </ScrollViewer>
                                                         </Border>

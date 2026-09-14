@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260914 1.0.0.4
+修复查看详情显示异常问题
+
 20260913 1.0.0.3
 日志列表和下载迁移至 PersonalWeb
 移除 HTTPServer 的 GetLogNameList 接口、通用日志目录下载分支及相关辅助方法。

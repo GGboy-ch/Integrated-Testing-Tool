@@ -1,0 +1,66 @@
+version: '1.0'
+name: net-build-test
+displayName: .NET 构建与测试
+stages:
+  - name: build
+    displayName: 构建
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@shell
+        name: dotnet_build
+        displayName: .NET 构建
+        commands:
+          - '# 安装 .NET SDK（如构建环境未预装）'
+          - '# dotnet --version'
+          - ''
+          - '# 恢复依赖'
+          - 'dotnet restore IntegratedTestingTool.sln'
+          - ''
+          - '# 构建解决方案（Release 配置）'
+          - 'dotnet build IntegratedTestingTool.sln --configuration Release --no-restore'
+          - ''
+          - '# 运行单元测试（如有）'
+          - 'dotnet test IntegratedTestingTool.sln --configuration Release --no-build --logger trx'
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - './**/bin/Release/'
+            type: .tar.gz
+        settings: []
+        caches:
+          - '~/.nuget/packages'
+        notify: []
+        strategy:
+          retry: '0'
+          resource:
+            cpu: '2'
+            memory: '4'
+  - name: deploy
+    displayName: 部署
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: deploy@agent
+        name: deploy_step
+        displayName: 部署到主机
+        deployArtifact:
+          - name: output
+            target: '~/gitee_go/deploy'
+            source: build
+            dependArtifact: BUILD_ARTIFACT
+            artifactRepository: default
+            artifactName: output
+            artifactVersion: latest
+        script: |-
+          echo '部署完成，可在此添加启动脚本'
+          # 示例：启动某个子项目
+          # nohup dotnet ./IntegratedTestingTool/bin/Release/net8.0/IntegratedTestingTool.dll > app.log 2>&1 &
+        notify: []
+        strategy:
+          retry: '0'
+triggers:
+  trigger: manual
+notify: []
+strategy:
+  blocking: true

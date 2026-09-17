@@ -75,6 +75,9 @@
     <None Update="TXT\America\AmericaChutePrintNormal.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="TXT\America\AmericaQueryChuteInfo.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="TXT\America\AmericaCreateBatchs.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

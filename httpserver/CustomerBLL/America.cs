@@ -159,35 +159,25 @@ namespace HTTPServer.CustomerBLL
                 };
             }
 
-            // 与现有 Sort 模拟逻辑保持一致，默认启用 1～9 号格口。
-            IEnumerable<int> chuteCodes = Enumerable.Range(1, 9);
+            string path = Path.Combine(Environment.CurrentDirectory, "TXT", CustomerName, "AmericaQueryChuteInfo.txt");
+            string json = File.ReadAllText(path, Encoding.UTF8);
+            Dictionary<string, object?> response = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json)!;
+
             if (request.TryGetValue("ChuteCodeList", out object? value) &&
                 value is Newtonsoft.Json.Linq.JArray requestedCodes && requestedCodes.Count > 0)
             {
-                chuteCodes = requestedCodes
+                HashSet<string> chuteCodes = requestedCodes
                     .Select(item => int.TryParse(item.ToString(), out int code) ? (int?)code : null)
-                    .Where(code => code.HasValue && code.Value >= 1 && code.Value <= 9)
-                    .Select(code => code!.Value)
-                    .Distinct();
+                    .Where(code => code.HasValue && code.Value >= 1 && code.Value <= 186)
+                    .Select(code => code!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                    .ToHashSet();
+
+                Newtonsoft.Json.Linq.JArray chuteList = (Newtonsoft.Json.Linq.JArray)response["ChuteContainerTypeList"]!;
+                response["ChuteContainerTypeList"] = new Newtonsoft.Json.Linq.JArray(
+                    chuteList.Where(item => chuteCodes.Contains(item["ChuteCode"]?.ToString() ?? string.Empty)));
             }
 
-            return new Dictionary<string, object?>
-            {
-                { "Code", 200 },
-                { "Message", null },
-                {
-                    "ChuteContainerTypeList",
-                    chuteCodes.Select(code => new Dictionary<string, object?>
-                    {
-                        { "ChuteCode", code.ToString(System.Globalization.CultureInfo.InvariantCulture) },
-                        { "ContainerType", "C" },
-                        { "BagLabelCode", null },
-                        { "BagCountPieces", null },
-                        { "SortItems", Array.Empty<object>() },
-                        { "SortItemFieldValues", string.Empty }
-                    }).ToArray()
-                }
-            };
+            return response;
         }
     }
 }

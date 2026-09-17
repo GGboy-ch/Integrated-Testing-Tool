@@ -1,24 +1,17 @@
-﻿using HandyControl.Controls;
-using Hardcodet.Wpf.TaskbarNotification;
+﻿using Hardcodet.Wpf.TaskbarNotification;
 using HTTPServer.VeiwModel;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace HTTPServer
 {
     public partial class MainWindow : HandyControl.Controls.Window
     {
+        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
+        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/HTTPServer-{Assembly.GetExecutingAssembly().GetName().Version}";
+        private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private bool isJsonFormatPending;
         private bool isWindowClosed;
         private bool isFormattingJson;
@@ -31,6 +24,13 @@ namespace HTTPServer
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = MainViewModel;
             this.Closing += MainWindow_Closing;
+            manualUpdate = new(this, () => ManualUpdateUrl, () =>
+            {
+                ParticularTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
+                if (!MainViewModel.TrySaveCurrentTemplate()) return false;
+                MainViewModel.SaveConfig();
+                return true;
+            });
             MainViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.ContentTypeSelectedIndex))
@@ -166,6 +166,7 @@ namespace HTTPServer
         /// <param name="e"></param>
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (manualUpdate?.IsExitingForUpdate == true) return;
             ParticularTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
             if (!MainViewModel.TrySaveCurrentTemplate())
             {

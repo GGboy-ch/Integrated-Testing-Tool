@@ -47,9 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="GeneralLibrary">
-      <HintPath>..\general-library\GeneralLibrary\bin\Debug\net8.0\GeneralLibrary.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\general-library\GeneralLibrary\GeneralLibrary.csproj" />
     <Reference Include="Interop.IWshRuntimeLibrary">
       <HintPath>..\httpserver\obj\Debug\net8.0-windows\Interop.IWshRuntimeLibrary.dll</HintPath>
     </Reference>
@@ -72,4 +70,7 @@
 <Target Name="PackProject" AfterTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Exec Command="&quot;..\SetupTool\bin\Debug\net8.0\SetupTool.exe&quot; $(ProjectDir)" />
 </Target>
+  <ItemGroup>
+    <Compile Include="..\Shared\ManualUpdateController.cs" Link="Updates\ManualUpdateController.cs" />
+  </ItemGroup>
 </Project>

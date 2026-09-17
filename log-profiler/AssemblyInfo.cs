@@ -17,6 +17,11 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260917 1.0.0.6
+新增手动更新按钮
+通过预留的 PersonalWeb GET 下载接口获取安装包，保存配置后启动静默安装并正常退出。
+下载失败不退出，支持下载进度和重复更新保护。
+
 20260913 1.0.0.5
 启动自动更新由设置开关控制
 仅勾选启动时自动更新后检查新版本，保存并恢复设置，旧配置默认关闭。
@@ -50,5 +55,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.5";
+    public const string Current = "1.0.0.6";
 }

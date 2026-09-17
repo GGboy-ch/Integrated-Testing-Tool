@@ -17,6 +17,12 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260917 1.0.0.6
+新增手动更新按钮
+通过预留的 PersonalWeb GET 下载接口获取安装包，保存配置后启动静默安装并正常退出。
+下载失败不退出，支持下载进度和重复更新保护。
+修复 America 格口查询方法静态访问实例客户名称导致的编译错误，保留模板读取和格口筛选逻辑。
+
 20260917 1.0.0.5
 QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 保留按 ChuteCodeList 筛选及自定义响应模板覆盖。
@@ -53,5 +59,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.5";
+    public const string Current = "1.0.0.6";
 }

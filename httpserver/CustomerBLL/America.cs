@@ -147,7 +147,7 @@ namespace HTTPServer.CustomerBLL
                 : path;
         }
 
-        private static Dictionary<string, object?> CreateChuteInfoResponse(Dictionary<string, object?> request)
+        private Dictionary<string, object?> CreateChuteInfoResponse(Dictionary<string, object?> request)
         {
             if (!request.TryGetValue("MachineCode", out object? machineCode) ||
                 string.IsNullOrWhiteSpace(machineCode?.ToString()))

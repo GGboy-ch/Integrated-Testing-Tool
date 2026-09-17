@@ -1,17 +1,9 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using LogProfiler.ViewModels;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
+using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LogProfiler
 {
@@ -20,6 +12,9 @@ namespace LogProfiler
     /// </summary>
     public partial class MainWindow : Window
     {
+        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
+        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/LogProfiler-{Assembly.GetExecutingAssembly().GetName().Version}";
+        private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private MainViewModel _viewModel;
         private readonly Services.StartupUpdateService startupUpdate = new();
         private bool isExitingForUpdate;
@@ -32,6 +27,7 @@ namespace LogProfiler
             App.mTaskbarIcon.DataContext = _viewModel;
             this.Closing += MainWindow_Closing;
             ContentRendered += MainWindow_ContentRendered;
+            manualUpdate = new(this, () => ManualUpdateUrl, () => { _viewModel.SaveConfig(); return true; });
         }
 
         private async void MainWindow_ContentRendered(object? sender, EventArgs e)
@@ -81,6 +77,7 @@ namespace LogProfiler
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (manualUpdate?.IsExitingForUpdate == true) return;
             // 安装前已保存配置；更新退出不能被“关闭时隐藏到托盘”拦截。
             if (isExitingForUpdate) return;
             if (_viewModel.IsHideToTray)

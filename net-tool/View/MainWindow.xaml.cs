@@ -1,16 +1,6 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using NetTool.ViewModuel;
-using System.Diagnostics;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Reflection;
 using Timer = System.Timers.Timer;
 
 namespace NetTool
@@ -20,6 +10,9 @@ namespace NetTool
     /// </summary>
     public partial class MainWindow : HandyControl.Controls.Window
     {
+        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
+        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/NetTool-{Assembly.GetExecutingAssembly().GetName().Version}";
+        private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private Timer? timer;
         private MainViewModuel mainViewModuel;
         public MainWindow()
@@ -30,6 +23,7 @@ namespace NetTool
             this.DataContext = mainViewModuel;
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = mainViewModuel;
+            manualUpdate = new(this, () => ManualUpdateUrl, () => { mainViewModuel.SaveConfig(); return true; });
             if (mainViewModuel.IsAutoClosedApp)
             {
                 timer = new Timer(mainViewModuel.DelayTime * 1000) { Enabled = true };
@@ -40,12 +34,14 @@ namespace NetTool
 
         private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
+            if (manualUpdate.IsUpdating) return;
             mainViewModuel.SaveConfig();
             System.Environment.Exit(0);
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (manualUpdate?.IsExitingForUpdate == true) return;
             if (mainViewModuel.IsHideToTray)
             {
                 this.Hide();

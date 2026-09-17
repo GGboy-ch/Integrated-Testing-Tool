@@ -9,5 +9,6 @@
     <Compile Include="../../general-library/GeneralLibrary/AutoUpdateHelper.cs" Link="AutoUpdateHelper.cs" />
     <Compile Include="../../log-profiler/Services/StartupUpdateService.cs" Link="StartupUpdateService.cs" />
     <Compile Include="../../log-profiler/Services/AutoUpdatePreference.cs" Link="AutoUpdatePreference.cs" />
+    <Compile Include="../../general-library/GeneralLibrary/AutoUpdateHelper.DirectDownload.cs" Link="AutoUpdateHelper.DirectDownload.cs" />
   </ItemGroup>
 </Project>

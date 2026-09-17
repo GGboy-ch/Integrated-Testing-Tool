@@ -2,6 +2,7 @@
 using DeviceEmulator.ViewModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,10 +21,14 @@ namespace DeviceEmulator
     /// </summary>
     public partial class MainWindow : Window
     {
+        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
+        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/DeviceEmulator-{Assembly.GetExecutingAssembly().GetName().Version}";
+        private readonly ToolUpdates.ManualUpdateController manualUpdate;
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = new MainViewModel();
+            manualUpdate = new(this, () => ManualUpdateUrl, () => true);
         }
 
         private void richTextBox_TextChanged(object sender, TextChangedEventArgs e)

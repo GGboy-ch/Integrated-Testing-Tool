@@ -74,12 +74,22 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 [Code]
 var IsFirstinstall: Boolean;
 
+function SetupShowMode: Integer;
+begin
+  if WizardSilent then Result := SW_HIDE else Result := SW_SHOW;
+end;
+
+function DotNetInstallArguments: String;
+begin
+  if WizardSilent then Result := '/quiet /norestart' else Result := '/passive /norestart';
+end;
+
 function IsAdmin: Boolean;
 begin
   Result := IsAdminLoggedOn;
   if not Result then
   begin
-    MsgBox('此安装程序需要管理员权限。请以管理员身份重新运行。', mbError, MB_OK);
+    SuppressibleMsgBox('此安装程序需要管理员权限。请以管理员身份重新运行。', mbError, MB_OK, IDOK);
   end;
 end;
 
@@ -157,13 +167,13 @@ begin
   DotNetVersion := Copy(DotNetVersion, 1, 3)
   if not (CompareVersion(DotNetVersion, '4.8') = 0) then
   begin
-    MsgBox('当前安装的Framework不是4.8，点击确定后下载并安装4.8', mbInformation, MB_OK);
+    SuppressibleMsgBox('当前安装的Framework不是4.8，点击确定后下载并安装4.8', mbInformation, MB_OK, IDOK);
     Result := false;
-    if Exec('curl.exe', ' -L -o "' +InstallerPath+'" {#DotNetFrameworkLoadUrl}','', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+    if Exec('curl.exe', ' -L -o "' +InstallerPath+'" {#DotNetFrameworkLoadUrl}','', SetupShowMode, ewWaitUntilTerminated, ResultCode) then
     begin
-      if Exec(InstallerPath, '/passive /norestart', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+      if Exec(InstallerPath, DotNetInstallArguments, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
       begin
-        MsgBox('安装成功!', mbInformation, MB_OK);
+        SuppressibleMsgBox('安装成功!', mbInformation, MB_OK, IDOK);
         DeleteFile(InstallerPath);
       end;
     end;
@@ -202,12 +212,12 @@ begin
     end
     else
     begin
-      MsgBox('提取MySQL版本失败，没有找到导入文件。', mbError, MB_OK);
+      SuppressibleMsgBox('提取MySQL版本失败，没有找到导入文件。', mbError, MB_OK, IDOK);
     end;
   end
   else
   begin
-    MsgBox('执行MySQL指令失败。', mbError, MB_OK);
+    SuppressibleMsgBox('执行MySQL指令失败。', mbError, MB_OK, IDOK);
   end;
   
   // 清理临时文件
@@ -261,12 +271,12 @@ begin
     // 确保 MSI 文件已复制到临时目录
     if not FileExists(InstallerPath) then
     begin
-      MsgBox('MySQL 安装软件未找到，即将开始自动下载。。。 ', mbError, MB_OK)
-      if not Exec('curl.exe', ' -L -o "' +InstallerPath+'" {#MySQLDownLoadUrl}','', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+      SuppressibleMsgBox('MySQL 安装软件未找到，即将开始自动下载。。。 ', mbError, MB_OK, IDOK)
+      if not Exec('curl.exe', ' -L -o "' +InstallerPath+'" {#MySQLDownLoadUrl}','', SetupShowMode, ewWaitUntilTerminated, ResultCode) then
         Result := False;
     end;
     // 执行 MSI 安装程序
-    if Exec('msiexec.exe', '/i "' + InstallerPath + '" /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+    if Exec('msiexec.exe', '/i "' + InstallerPath + '" /quiet /norestart', '', SetupShowMode, ewWaitUntilTerminated, ResultCode) then
     begin
       if ResultCode = 0 then
       begin
@@ -275,13 +285,13 @@ begin
       end
       else
       begin
-        MsgBox('MySQL 数据库安装失败。异常码：' + IntToStr(ResultCode), mbError, MB_OK);
+        SuppressibleMsgBox('MySQL 数据库安装失败。异常码：' + IntToStr(ResultCode), mbError, MB_OK, IDOK);
         Result := False;
       end;
     end
     else
     begin
-      MsgBox('MySQL 安装路径查找失败!', mbError, MB_OK);
+      SuppressibleMsgBox('MySQL 安装路径查找失败!', mbError, MB_OK, IDOK);
       Result := False;
     end;
   end;
@@ -303,12 +313,12 @@ begin
   if Result and (InstallPath <> '') then
   begin
     IsFirstinstall := true
-    MsgBox('检测到现有安装，此次为升级安装。', mbInformation, MB_OK);
+    SuppressibleMsgBox('检测到现有安装，此次为升级安装。', mbInformation, MB_OK, IDOK);
   end
   else
   begin
     IsFirstinstall := false
-    MsgBox('此次为全新安装。', mbInformation, MB_OK);
+    SuppressibleMsgBox('此次为全新安装。', mbInformation, MB_OK, IDOK);
   end;
 end;
 
@@ -317,7 +327,7 @@ var
   ResultCode: Integer;
 
 begin
-  MsgBox('MySQL 数据库安装需要一段时间，请耐心等待。', mbInformation, MB_OK);
+  SuppressibleMsgBox('MySQL 数据库安装需要一段时间，请耐心等待。', mbInformation, MB_OK, IDOK);
   // 初始化 MySQL 数据目录
   if Exec(
     ExpandConstant('C:\Program Files (x86)\MySQL\MySQL Installer for Windows\MySQLInstallerConsole.exe'),
@@ -328,10 +338,10 @@ begin
     ResultCode
   ) then
   begin
-    MsgBox('MySQL 数据库安装成功！', mbInformation, MB_OK);
+    SuppressibleMsgBox('MySQL 数据库安装成功！', mbInformation, MB_OK, IDOK);
   end
   else
-    MsgBox('MySQL 安装失败！错误代码：' + IntToStr(ResultCode), mbError, MB_OK);
+    SuppressibleMsgBox('MySQL 安装失败！错误代码：' + IntToStr(ResultCode), mbError, MB_OK, IDOK);
 end;
 
 procedure InitializeWizard();

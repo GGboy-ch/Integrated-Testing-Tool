@@ -12,8 +12,6 @@ namespace LogProfiler
     /// </summary>
     public partial class MainWindow : Window
     {
-        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
-        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/LogProfiler-{Assembly.GetExecutingAssembly().GetName().Version}";
         private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private MainViewModel _viewModel;
         private readonly Services.StartupUpdateService startupUpdate = new();
@@ -27,7 +25,7 @@ namespace LogProfiler
             App.mTaskbarIcon.DataContext = _viewModel;
             this.Closing += MainWindow_Closing;
             ContentRendered += MainWindow_ContentRendered;
-            manualUpdate = new(this, () => ManualUpdateUrl, () => { _viewModel.SaveConfig(); return true; });
+            manualUpdate = new(this, "LogProfiler", () => { _viewModel.SaveConfig(); return true; });
         }
 
         private async void MainWindow_ContentRendered(object? sender, EventArgs e)

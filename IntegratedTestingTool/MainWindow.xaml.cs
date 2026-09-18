@@ -16,13 +16,11 @@ namespace IntegratedTestingTool
     /// </summary>
     public partial class MainWindow : Window
     {
-        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
-        private static readonly string ManualUpdateUrl = string.Empty;
         private readonly ToolUpdates.ManualUpdateController manualUpdate;
         public MainWindow()
         {
             InitializeComponent();
-            manualUpdate = new(this, () => ManualUpdateUrl, () => true);
+            manualUpdate = new(this, "IntegratedTestingTool", () => true);
         }
     }
 }

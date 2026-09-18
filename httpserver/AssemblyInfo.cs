@@ -17,6 +17,10 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260918 1.0.0.7
+手动更新改用 PersonalWeb 版本检查接口
+通过 POST 检查新版本，再校验安装包大小和 SHA-256 后静默安装。
+
 20260917 1.0.0.6
 新增手动更新按钮
 通过预留的 PersonalWeb GET 下载接口获取安装包，保存配置后启动静默安装并正常退出。
@@ -59,5 +63,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.6";
+    public const string Current = "1.0.0.7";
 }

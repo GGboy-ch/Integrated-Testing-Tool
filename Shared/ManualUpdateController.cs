@@ -11,7 +11,7 @@ namespace ToolUpdates
     internal sealed class ManualUpdateController
     {
         private readonly Window window;
-        private readonly Func<string> getUrl;
+        private readonly string softwareName;
         private readonly Func<bool> save;
         private readonly Button button = new() { Content = "更新", Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
         private readonly TextBlock status = new() { VerticalAlignment = VerticalAlignment.Center, MaxWidth = 320, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -19,10 +19,10 @@ namespace ToolUpdates
         public bool IsUpdating { get; private set; }
         public bool IsExitingForUpdate { get; private set; }
 
-        public ManualUpdateController(Window window, Func<string> getUrl, Func<bool> save)
+        public ManualUpdateController(Window window, string softwareName, Func<bool> save)
         {
             this.window = window;
-            this.getUrl = getUrl;
+            this.softwareName = softwareName;
             this.save = save;
             // 独立 Auto 高度工具栏，不覆盖原有控件或改变原有 Grid 行列。
             var original = (UIElement)window.Content;
@@ -45,14 +45,11 @@ namespace ToolUpdates
         private async void Update_Click(object sender, RoutedEventArgs e)
         {
             if (IsUpdating) return;
-            if (string.IsNullOrWhiteSpace(getUrl()))
-            {
-                MessageBox.Show(window, "请先在本工具 MainWindow.xaml.cs 的 ManualUpdateUrl 字段填写 PersonalWeb 下载文件接口地址。", "未配置更新地址");
-                return;
-            }
+            Version version = window.GetType().Assembly.GetName().Version
+                ?? throw new InvalidOperationException("无法读取当前工具版本。");
             IsUpdating = true;
             button.IsEnabled = false;
-            status.Text = "正在下载…";
+            status.Text = "正在检查更新…";
             try
             {
                 var progress = new Progress<AutoUpdateProgress>(p =>
@@ -60,7 +57,7 @@ namespace ToolUpdates
                     if (!IsUpdating) return;
                     status.Text = p.TotalBytes > 0 ? $"下载 {p.Percentage:F0}%" : $"已下载 {p.DownloadedBytes / 1048576.0:F1} MB";
                 });
-                var result = await new AutoUpdateHelper().DownloadAndInstallAsync(getUrl(), progress,
+                var result = await new AutoUpdateHelper(new AutoUpdateOptions { SilentInstall = true }).CheckAndUpdateAsync(softwareName, version, progress,
                     async token => await window.Dispatcher.InvokeAsync(() =>
                     {
                         token.ThrowIfCancellationRequested();

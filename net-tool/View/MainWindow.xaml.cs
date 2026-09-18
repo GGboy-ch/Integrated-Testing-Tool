@@ -10,8 +10,6 @@ namespace NetTool
     /// </summary>
     public partial class MainWindow : HandyControl.Controls.Window
     {
-        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
-        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/NetTool-{Assembly.GetExecutingAssembly().GetName().Version}";
         private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private Timer? timer;
         private MainViewModuel mainViewModuel;
@@ -23,7 +21,7 @@ namespace NetTool
             this.DataContext = mainViewModuel;
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = mainViewModuel;
-            manualUpdate = new(this, () => ManualUpdateUrl, () => { mainViewModuel.SaveConfig(); return true; });
+            manualUpdate = new(this, "NetTool", () => { mainViewModuel.SaveConfig(); return true; });
             if (mainViewModuel.IsAutoClosedApp)
             {
                 timer = new Timer(mainViewModuel.DelayTime * 1000) { Enabled = true };

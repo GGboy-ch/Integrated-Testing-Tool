@@ -9,8 +9,6 @@ namespace HTTPServer
 {
     public partial class MainWindow : HandyControl.Controls.Window
     {
-        // PersonalWeb 中本工具的 HTTPS 安装包 GET 下载地址，未填写时不发送请求。
-        private static readonly string ManualUpdateUrl = $"https://www.dickred.cn/update/HTTPServer-{Assembly.GetExecutingAssembly().GetName().Version}";
         private readonly ToolUpdates.ManualUpdateController manualUpdate;
         private bool isJsonFormatPending;
         private bool isWindowClosed;
@@ -24,7 +22,7 @@ namespace HTTPServer
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = MainViewModel;
             this.Closing += MainWindow_Closing;
-            manualUpdate = new(this, () => ManualUpdateUrl, () =>
+            manualUpdate = new(this, "HTTPServer", () =>
             {
                 ParticularTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
                 if (!MainViewModel.TrySaveCurrentTemplate()) return false;

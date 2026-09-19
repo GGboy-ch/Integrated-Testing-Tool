@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace ToolUpdates
 {
-    /// <summary>五个 WPF 工具共享的手动更新栏，不依赖具体工具的 ViewModel。</summary>
+    /// <summary>五个 WPF 工具共享的更新栏，不依赖具体工具的 ViewModel。</summary>
     internal sealed class ManualUpdateController
     {
         private readonly Window window;
@@ -16,6 +16,7 @@ namespace ToolUpdates
         private readonly Button button = new() { Content = "更新", Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(8, 0, 0, 0) };
         private readonly TextBlock status = new() { VerticalAlignment = VerticalAlignment.Center, MaxWidth = 320, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly CancellationTokenSource cancellation = new();
+        private readonly StackPanel bar;
         public bool IsUpdating { get; private set; }
         public bool IsExitingForUpdate { get; private set; }
 
@@ -28,18 +29,38 @@ namespace ToolUpdates
             var original = (UIElement)window.Content;
             window.Content = null;
             var root = new DockPanel();
-            var bar = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(8) };
+            bar = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(8), Visibility = Visibility.Collapsed };
             bar.Children.Add(status);
             bar.Children.Add(button);
             DockPanel.SetDock(bar, Dock.Top);
             root.Children.Add(bar);
             root.Children.Add(original);
             window.Content = root;
-            if (!double.IsNaN(window.Height)) window.Height += 48;
-            window.MinHeight += 48;
             button.Click += Update_Click;
+            window.Loaded += CheckOnStartup;
             window.Closed += (_, _) => cancellation.Cancel();
             Application.Current.Exit += (_, _) => cancellation.Cancel();
+        }
+
+        private async void CheckOnStartup(object sender, RoutedEventArgs e)
+        {
+            window.Loaded -= CheckOnStartup;
+            try
+            {
+                Version version = window.GetType().Assembly.GetName().Version
+                    ?? throw new InvalidOperationException("无法读取当前工具版本。");
+                var result = await new AutoUpdateHelper().CheckForUpdateAsync(softwareName, version, cancellation.Token);
+                if (!cancellation.IsCancellationRequested && result.Status == AutoUpdateStatus.UpdateAvailable)
+                {
+                    button.Content = $"更新至 {result.ServerVersion}";
+                    bar.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"启动检查更新失败：{ex}");
+            }
         }
 
         private async void Update_Click(object sender, RoutedEventArgs e)
@@ -70,6 +91,10 @@ namespace ToolUpdates
                 {
                     IsExitingForUpdate = true;
                     Application.Current.Shutdown();
+                }
+                else if (result.Status == AutoUpdateStatus.NoUpdate)
+                {
+                    bar.Visibility = Visibility.Collapsed;
                 }
                 else if (!cancellation.IsCancellationRequested)
                     MessageBox.Show(window, result.Message, "更新");

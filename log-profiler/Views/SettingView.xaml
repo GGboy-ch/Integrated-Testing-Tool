@@ -23,7 +23,6 @@
         <StackPanel Margin="8">
             <CheckBox Content="是否开机自启" Foreground="White" IsChecked="{Binding IsAutoStart}" Margin="8"/>
             <CheckBox Grid.Row="1" Content="关闭时隐藏到托盘" Foreground="White" IsChecked="{Binding IsHideToTray}" Margin="8"/>
-            <CheckBox Grid.Row="2" Content="启动时自动更新" ToolTip="关闭设置窗口后保存，下次启动生效" Foreground="White" IsChecked="{Binding IsAutoUpdate}" Margin="8"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <TextBlock Text="下载日志的域名：" Foreground="White" VerticalAlignment="Center" Margin="8"/>

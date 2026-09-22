@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:LogProfiler"
+        xmlns:views="clr-namespace:LogProfiler.Views"
         xmlns:prop="clr-namespace:LogProfiler.Res"
         xmlns:viewmodels="clr-namespace:LogProfiler.ViewModels"
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
@@ -15,6 +16,8 @@
     <Window.Resources>
         <local:DateTimeConverter x:Key="DateTimeConverter"/>
         <local:IntDataConverter x:Key="IntDataConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <views:SimulationButtonStyleConverter x:Key="SimulationButtonStyleConverter"/>
         <ContextMenu x:Key="ListBoxConteMenu">
             <MenuItem Header="查看相邻日志" Command="{Binding SearchContiguousCmd}"/>
             <MenuItem Header="复制" Command="{Binding CopyLogCmd}"/>
@@ -100,6 +103,10 @@
             <Button Content="导入日志" Style="{StaticResource ButtonPrimary}" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
             <Button Content="清空日志缓存" Style="{StaticResource ButtonDanger}" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
             <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
+            <Button Content="模拟" Style="{StaticResource ButtonInfo}" Command="{Binding Simulation.ConfigureCommand}" Margin="4"/>
+            <Button Content="{Binding Simulation.StartStopText}" Command="{Binding Simulation.StartStopCommand}"
+                    Style="{Binding Simulation.IsRunning, Converter={StaticResource SimulationButtonStyleConverter}}"
+                    Visibility="{Binding Simulation.IsConfigured, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="4"/>
         </StackPanel>
 
         <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="White" HorizontalAlignment="Center"/>

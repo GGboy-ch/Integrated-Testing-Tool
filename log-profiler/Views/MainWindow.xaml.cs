@@ -1,5 +1,6 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using LogProfiler.ViewModels;
+using LogProfiler.Views;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
@@ -18,10 +19,13 @@ namespace LogProfiler
         {
             InitializeComponent();
             _viewModel = new MainViewModel();
+            _viewModel.Simulation = new SimulationViewModel(_viewModel.GetSimulationEntries,
+                new SimulationDialogService(this));
             this.DataContext = _viewModel;
             App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
             App.mTaskbarIcon.DataContext = _viewModel;
             this.Closing += MainWindow_Closing;
+            Closed += (_, _) => _viewModel.Simulation?.Stop();
             manualUpdate = new(this, "LogProfiler", () => { _viewModel.SaveConfig(); return true; });
         }
 

@@ -17,6 +17,13 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260923 1.0.0.11
+模拟发送界面改用 MVVM 命令和状态绑定，配置输入由视图模型校验并保存。
+
+20260922 1.0.0.10
+新增按所选设备的 Receive Debug 日志时间间隔进行 UDP/TCP 模拟发送。
+支持保存本地及目标端点配置，并随时停止发送。
+
 20260922 1.0.0.9
 调整日志查询界面布局，将查询按钮移至导入和清空操作旁。
 
@@ -65,5 +72,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.9";
+    public const string Current = "1.0.0.11";
 }

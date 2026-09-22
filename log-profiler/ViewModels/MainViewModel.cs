@@ -39,6 +39,8 @@ namespace LogProfiler.ViewModels
         private CancellationTokenSource? selectCancellationTokenSource;
         private IReadOnlyList<Regex> compiledRegexes = Array.Empty<Regex>();
 
+        public SimulationViewModel? Simulation { get; internal set; }
+
         #region 属性
 
         private DateTime startTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);//使用当前月份的第一天作为开始时间
@@ -617,6 +619,22 @@ namespace LogProfiler.ViewModels
         }
 
         private AsyncRelayCommand? selectCmd;
+
+        internal IReadOnlyList<Services.SimulationEntry> GetSimulationEntries()
+        {
+            if (string.IsNullOrWhiteSpace(DeviceName))
+                throw new InvalidOperationException("请先选择设备并查询 Debug 日志。");
+
+            return currentdebugLogDatas
+                .Where(log => log.LogTip == DeviceName && log.LogDatetime != default &&
+                    log.LogContent.Contains("Receive", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(log => log.LogDatetime)
+                .Select(log => Services.SimulationReplayService.TryGetPayload(log.LogContent, out byte[] data)
+                    ? new Services.SimulationEntry(log.LogDatetime, data) : null)
+                .OfType<Services.SimulationEntry>()
+                .ToArray();
+        }
+
         public AsyncRelayCommand SelectCmd
         {
             get => selectCmd ?? new AsyncRelayCommand(SelectCmdExdAsync);

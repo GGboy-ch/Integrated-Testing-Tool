@@ -90,18 +90,18 @@
             <Button Content="正则" Foreground="White" Style="{StaticResource ButtonWarning}" Command="{Binding RegexCmd}" Margin="4"/>
             <TextBlock Text="超时阈值(/ms):" Foreground="White" VerticalAlignment="Center" Margin="4"/>
             <TextBox Text="{Binding TimeoutThreshold, Converter={StaticResource IntDataConverter}}" HorizontalContentAlignment="Center" Width="50" Height="20" Margin="4"/>
-            <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
-        </StackPanel>
-        <Grid Grid.Row="1">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="下载最新日志" Style="{StaticResource ButtonInfo}" Command="{Binding OpenDownloadLogWindowCmd}" Margin="16,4,8,4"/>
-                <Button Content="导入日志" Style="{StaticResource ButtonPrimary}" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
-                <Button Content="清空日志缓存" Style="{StaticResource ButtonDanger}" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
-            </StackPanel>
-            <Button Grid.Column="1" Height="24" Style="{StaticResource ButtonCustom}" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0">
+            <Button Height="24" Style="{StaticResource ButtonCustom}" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0">
                 <Image Source="pack://application:,,,/LogProfiler;component/Images/Setting.ico"/>
             </Button>
-        </Grid>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Button Content="下载最新日志" Style="{StaticResource ButtonInfo}" Command="{Binding OpenDownloadLogWindowCmd}" Margin="16,4,8,4"/>
+            <Button Content="导入日志" Style="{StaticResource ButtonPrimary}" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
+            <Button Content="清空日志缓存" Style="{StaticResource ButtonDanger}" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
+            <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
+        </StackPanel>
+
         <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="White" HorizontalAlignment="Center"/>
         <Slider x:Name="slider" Grid.Row="3" Maximum="1" TickFrequency="0.1" SmallChange="0.01" TickPlacement="TopLeft" Value="{Binding SliderValue}"/>
         <TabControl Grid.Row="4" Margin="8" Background="Transparent" Style="{StaticResource TabControlCapsule}" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">

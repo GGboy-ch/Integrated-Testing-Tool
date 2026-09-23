@@ -1,4 +1,5 @@
 ﻿using LogProfiler.ViewModels;
+using GeneralLibrary.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace LogProfiler.Views
                 catch (Exception ex)
                 {
                     e.Cancel = true;
-                    System.Windows.MessageBox.Show(this, $"设置保存失败，请重试。\r\n{ex.Message}", "保存设置");
+                    GeneralMessageBox.Show($"设置保存失败，请重试。\r\n{ex.Message}", "保存设置", owner: this);
                 }
             };
         }

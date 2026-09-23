@@ -11,12 +11,33 @@ using System.Windows;
 [assembly: AssemblyTitle("日志查询工具")]
 
 // 程序集、文件和产品版本共用同一个值，发布时修改下方 ToolVersion.Current。
-[assembly: AssemblyVersion(ToolVersion.Current)]
-[assembly: AssemblyFileVersion(ToolVersion.Current)]
-[assembly: AssemblyInformationalVersion(ToolVersion.Current)]
+[assembly: AssemblyVersion(LogProfiler.ToolVersion.Current)]
+[assembly: AssemblyFileVersion(LogProfiler.ToolVersion.Current)]
+[assembly: AssemblyInformationalVersion(LogProfiler.ToolVersion.Current)]
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260923 1.0.0.18
+标题栏通过通用库版本属性显示 AssemblyInfo.cs 中的软件版本。
+
+20260923 1.0.0.17
+主窗口使用新的线条式功能按钮样式。
+
+20260923 1.0.0.16
+修复主窗口下方圆角出现浅色弧边的问题。
+
+20260923 1.0.0.15
+修复构建输出中通用库 DLL 版本滞后，确保运行时加载最新窗口样式。
+
+20260923 1.0.0.14
+主窗口采用圆角外观，并更新最小化、最大化和关闭按钮的视觉样式。
+
+20260923 1.0.0.13
+修复主窗口自定义标题栏的最小化、最大化、还原及关闭操作。
+
+20260923 1.0.0.12
+主窗口使用 GeneralLibrary 自定义标题栏，并统一日志分析工具的消息弹窗样式。
+
 20260923 1.0.0.11
 模拟发送界面改用 MVVM 命令和状态绑定，配置输入由视图模型校验并保存。
 
@@ -69,8 +90,10 @@ using System.Windows;
     ResourceDictionaryLocation.SourceAssembly
 )]
 
-internal static class ToolVersion
+namespace LogProfiler;
+
+public static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.11";
+    public const string Current = "1.0.0.18";
 }

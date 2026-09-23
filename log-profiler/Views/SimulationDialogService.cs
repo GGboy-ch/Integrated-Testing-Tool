@@ -1,5 +1,6 @@
 ﻿using LogProfiler.Services;
 using LogProfiler.ViewModels;
+using GeneralLibrary.Windows;
 using System.Windows;
 
 namespace LogProfiler.Views
@@ -13,6 +14,6 @@ namespace LogProfiler.Views
             return window.ShowDialog() == true ? viewModel.SavedOptions : null;
         }
 
-        public void ShowMessage(string message) => MessageBox.Show(owner, message, "模拟发送");
+        public void ShowMessage(string message) => GeneralMessageBox.Show(message, "模拟发送", owner: owner);
     }
 }

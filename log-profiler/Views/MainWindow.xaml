@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:LogProfiler"
+        xmlns:windows="clr-namespace:GeneralLibrary.Windows;assembly=GeneralLibrary"
         xmlns:views="clr-namespace:LogProfiler.Views"
         xmlns:prop="clr-namespace:LogProfiler.Res"
         xmlns:viewmodels="clr-namespace:LogProfiler.ViewModels"
@@ -12,6 +13,8 @@
         mc:Ignorable="d"
         Icon="pack://application:,,,/LogProfiler;component/images/logprofiler.ico"
         WindowStartupLocation="CenterScreen"
+        Style="{StaticResource GeneralWindowStyle}"
+        windows:WindowTitleVersionBehavior.Version="{x:Static local:ToolVersion.Current}"
         Title="{x:Static prop:Res.ProjectName}" Height="540" Width="900">
     <Window.Resources>
         <local:DateTimeConverter x:Key="DateTimeConverter"/>

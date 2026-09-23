@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260923 1.0.0.21
+日志下载完成弹窗改为非阻塞显示，进度条及时关闭。
+
 20260923 1.0.0.20
 查看相邻日志后自动选中并滚动到原日志。
 
@@ -101,5 +104,5 @@ namespace LogProfiler;
 public static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.20";
+    public const string Current = "1.0.0.21";
 }

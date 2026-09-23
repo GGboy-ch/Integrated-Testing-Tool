@@ -14,6 +14,6 @@ namespace LogProfiler.Views
             return window.ShowDialog() == true ? viewModel.SavedOptions : null;
         }
 
-        public void ShowMessage(string message) => GeneralMessageBox.Show(message, "模拟发送", owner: owner);
+        public void ShowMessage(string message) => GeneralMessageBox.ShowDialog(message, "模拟发送", owner: owner);
     }
 }

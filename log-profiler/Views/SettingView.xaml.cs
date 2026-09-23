@@ -35,7 +35,7 @@ namespace LogProfiler.Views
                 catch (Exception ex)
                 {
                     e.Cancel = true;
-                    GeneralMessageBox.Show($"设置保存失败，请重试。\r\n{ex.Message}", "保存设置", owner: this);
+                    GeneralMessageBox.ShowDialog($"设置保存失败，请重试。\r\n{ex.Message}", "保存设置", owner: this);
                 }
             };
         }

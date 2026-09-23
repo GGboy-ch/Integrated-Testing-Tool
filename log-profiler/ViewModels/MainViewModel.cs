@@ -308,7 +308,7 @@ namespace LogProfiler.ViewModels
                     string str = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(str))
                     {
-                        GeneralMessageBox.Show("没有获取到日志列表，请检查网络连接或日志服务器地址是否正确。");
+                        GeneralMessageBox.ShowDialog("没有获取到日志列表，请检查网络连接或日志服务器地址是否正确。");
                         return;
                     }
                     else
@@ -434,7 +434,7 @@ namespace LogProfiler.ViewModels
                         }
                     }
 
-                    GeneralMessageBox.Show($"下载完成！保存路径为：{savePath}");
+                    GeneralMessageBox.Show($"下载完成！保存路径为：{savePath}", owner: ownerWindow);
                     LogHelper.Info($"{fileName}下载完成，耗时：{(DateTime.Now - starttime).TotalMilliseconds}ms");
                 }
                 catch (Exception ex)
@@ -1162,7 +1162,7 @@ namespace LogProfiler.ViewModels
             {
                 compiledRegexes = Array.Empty<Regex>();
                 LogHelper.Exception($"[正则表达式无效]:{ex}");
-                GeneralMessageBox.Show($"正则表达式无效：{ex.Message}");
+                GeneralMessageBox.ShowDialog($"正则表达式无效：{ex.Message}");
             }
         }
 

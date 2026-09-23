@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetupTool", "SetupTool\Setu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralLibrary", "general-library\GeneralLibrary\GeneralLibrary.csproj", "{B805D249-0CD0-5D29-CFB1-53C8803A34A9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageTransferService", "PackageTransferService\PackageTransferService.csproj", "{A3D71BE4-8E6C-4FE4-9C3B-1227921D5657}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageTransferService.Tests", "tests\PackageTransferService.Tests\PackageTransferService.Tests.csproj", "{36013DE2-570B-464B-8964-8FC774E2E7E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{B805D249-0CD0-5D29-CFB1-53C8803A34A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B805D249-0CD0-5D29-CFB1-53C8803A34A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B805D249-0CD0-5D29-CFB1-53C8803A34A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3D71BE4-8E6C-4FE4-9C3B-1227921D5657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3D71BE4-8E6C-4FE4-9C3B-1227921D5657}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3D71BE4-8E6C-4FE4-9C3B-1227921D5657}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3D71BE4-8E6C-4FE4-9C3B-1227921D5657}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36013DE2-570B-464B-8964-8FC774E2E7E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36013DE2-570B-464B-8964-8FC774E2E7E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36013DE2-570B-464B-8964-8FC774E2E7E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36013DE2-570B-464B-8964-8FC774E2E7E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

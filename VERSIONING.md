@@ -19,6 +19,7 @@ WPF ThemeInfo 保留；项目关闭标题、产品名称及上述三个版本属
 
 初始版本保留原值：LogProfiler 为 1.0.0.1，其余四个工具为 1.0.0.0。
 SetupTool 和 GeneralLibrary 分别在自身 AssemblyInfo.cs 中维护版本和日志；GeneralLibrary 初始版本为 1.0.0.0。GeneralLibrary 的程序集、文件和产品版本保持一致。
+PackageTransferService 同样在自身 AssemblyInfo.cs 中维护版本和日志，初始版本为 1.0.0.0。
 
 ## 构建与安装包
 

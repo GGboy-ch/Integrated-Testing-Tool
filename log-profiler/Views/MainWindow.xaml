@@ -60,6 +60,14 @@
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                         <Setter Property="Padding" Value="0,0.4"/>
                         <Setter Property="Margin" Value="0"/>
+                        <Setter Property="BorderThickness" Value="3,1,1,1"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="BorderBrush" Value="#FF174EA6"/>
+                                <Setter Property="Background" Value="#332F80ED"/>
+                            </Trigger>
+                        </Style.Triggers>
                     </Style>
                 </Setter.Value>
             </Setter>

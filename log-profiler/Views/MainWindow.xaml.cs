@@ -4,7 +4,9 @@ using LogProfiler.Views;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace LogProfiler
 {
@@ -27,6 +29,18 @@ namespace LogProfiler
             this.Closing += MainWindow_Closing;
             Closed += (_, _) => _viewModel.Simulation?.Stop();
             manualUpdate = new(this, "LogProfiler", () => { _viewModel.SaveConfig(); return true; });
+        }
+
+        private void LogList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ListBox listBox || listBox.SelectedItem is null)
+                return;
+
+            listBox.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                if (listBox.SelectedItem is not null)
+                    listBox.ScrollIntoView(listBox.SelectedItem);
+            });
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

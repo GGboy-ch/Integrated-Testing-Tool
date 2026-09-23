@@ -121,16 +121,16 @@
         </StackPanel>
 
         <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="White" HorizontalAlignment="Center"/>
-        <Slider x:Name="slider" Grid.Row="3" Maximum="1" TickFrequency="0.1" SmallChange="0.01" TickPlacement="TopLeft" Value="{Binding SliderValue}"/>
+        <Slider x:Name="slider" Grid.Row="3" Maximum="1" TickFrequency="0.1" SmallChange="0.01" TickPlacement="TopLeft" IsMoveToPointEnabled="True" Value="{Binding SliderValue}"/>
         <TabControl Grid.Row="4" Margin="8" Background="Transparent" Style="{StaticResource TabControlCapsule}" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">
             <TabItem Header="Debug日志" Foreground="White" Background="Transparent">
-                <ListBox ItemsSource="{Binding DebugLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
+                <ListBox ItemsSource="{Binding DebugLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
             <TabItem Header="Info日志" Foreground="White" Background="Transparent">
-                <ListBox ItemsSource="{Binding InfoLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
+                <ListBox ItemsSource="{Binding InfoLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
             <TabItem Header="Exception日志" Foreground="White" Background="Transparent">
-                <ListBox ItemsSource="{Binding ExceptionLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" ItemTemplate="{StaticResource ItemTemplate}"/>
+                <ListBox ItemsSource="{Binding ExceptionLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
         </TabControl>
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">

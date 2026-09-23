@@ -759,7 +759,9 @@ namespace LogProfiler.ViewModels
 
                 int selectedIndex = index - startIndex;
                 adjacentLogs[selectedIndex].IsBaseData = true;
+                SelectedLogIndex = -1;
                 DisplayLogDatas[SelectedTabIndex].ReplaceRange(adjacentLogs);
+                SelectedLogIndex = selectedIndex;
                 CurrentLogDataCount = adjacentLogs.Count;
                 LogDataCount = CurrentLogDatas.Values.Sum(logs => logs.Count);
             }

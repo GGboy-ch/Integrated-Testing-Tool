@@ -401,7 +401,7 @@
                                 <Button Content="新增模板"
                                         Command="{Binding OpenAddControlCmd}"
                                         Padding="14,5"
-                                        Margin="0,0,8,8"
+                                        Margin="8"
                                         Style="{StaticResource ButtonSuccess}"/>
                             </WrapPanel>
                         </Border>

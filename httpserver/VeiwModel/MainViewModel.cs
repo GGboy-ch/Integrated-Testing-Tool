@@ -5,6 +5,7 @@ using HTTPServer.CustomerBLL;
 using HTTPServer.Model;
 using HTTPServer.Veiw;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
@@ -652,7 +653,7 @@ namespace HTTPServer.VeiwModel
                 {
                     if (DisplayDatas.Count < 1000)
                     {
-                        displayData.RequestData = requestdata;
+                        displayData.RequestData = FormatRequestData(requestdata, customerBLL.ClientData, request.HttpMethod);
                         displayData.ResponseData = JsonConvert.SerializeObject(directory, Formatting.Indented);
                         DisplayDatas.Add(displayData);
                     }
@@ -670,6 +671,29 @@ namespace HTTPServer.VeiwModel
                 return JsonConvert.SerializeObject(directory);
             }
             return JsonConvert.SerializeObject(directory);
+        }
+
+        private static string FormatRequestData(string requestData, string? clientData, string httpMethod)
+        {
+            if (httpMethod != "POST" || string.IsNullOrWhiteSpace(clientData))
+            {
+                return requestData;
+            }
+
+            try
+            {
+                using StringReader input = new StringReader(clientData);
+                using JsonTextReader reader = new JsonTextReader(input)
+                {
+                    DateParseHandling = DateParseHandling.None
+                };
+                JToken token = JToken.Load(reader);
+                return token.ToString(Formatting.Indented);
+            }
+            catch (JsonException)
+            {
+                return clientData;
+            }
         }
 
         /// <summary>

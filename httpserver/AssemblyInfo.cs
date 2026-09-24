@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260924 1.0.0.9
+查看详情中的 JSON 请求参数保留结构并格式化显示。
+
 20260919 1.0.0.8
 启动时检查新版本，仅在有更新时显示按钮，点击后静默安装。
 
@@ -66,5 +69,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.8";
+    public const string Current = "1.0.0.9";
 }

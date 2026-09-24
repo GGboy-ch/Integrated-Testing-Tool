@@ -7,6 +7,8 @@
         xmlns:viewmodels="clr-namespace:LogProfiler.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:RegexMessageModel}"
         mc:Ignorable="d"
+        Icon="pack://application:,,,/LogProfiler;component/Images/Logprofiler.ico"
+        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner"
         Title="正则筛选" Height="300" Width="600">
     <Grid>

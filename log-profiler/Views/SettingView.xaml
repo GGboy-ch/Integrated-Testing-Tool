@@ -7,6 +7,8 @@
         xmlns:viewmodels="clr-namespace:LogProfiler.ViewModels" 
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
+        Icon="pack://application:,,,/LogProfiler;component/Images/Logprofiler.ico"
+        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner"
         Title="设置" Height="200" Width="400">
     <Grid>

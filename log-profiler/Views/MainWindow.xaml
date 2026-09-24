@@ -13,7 +13,7 @@
         mc:Ignorable="d"
         Icon="pack://application:,,,/LogProfiler;component/images/logprofiler.ico"
         WindowStartupLocation="CenterScreen"
-        Style="{StaticResource GeneralWindowStyle}"
+        Style="{StaticResource MainWindowStyle}"
         windows:WindowTitleVersionBehavior.Version="{x:Static local:ToolVersion.Current}"
         Title="{x:Static prop:Res.ProjectName}" Height="540" Width="900">
     <Window.Resources>

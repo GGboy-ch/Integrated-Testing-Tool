@@ -9,6 +9,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/DeviceEmulator;component/DeviceEmulator.ico"
+        Style="{StaticResource MainWindowStyle}"
         Title="下位机模拟助手" Height="600" Width="980">
     <Window.Resources>
         <!--快捷命令区内容样式-->

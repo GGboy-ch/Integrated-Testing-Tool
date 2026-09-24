@@ -7,6 +7,8 @@
         xmlns:local="clr-namespace:DeviceEmulator.View" 
         xmlns:viewmodel="clr-namespace:DeviceEmulator.ViewModel" 
         d:DataContext="{d:DesignInstance Type=viewmodel:QuickSetingVM}"
+        Icon="pack://application:,,,/DeviceEmulator;component/DeviceEmulator.ico"
+        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
         Title="快捷命令设置界面" Height="360" Width="600">

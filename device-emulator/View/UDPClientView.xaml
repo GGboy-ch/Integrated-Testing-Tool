@@ -6,6 +6,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DeviceEmulator.View" xmlns:viewmodel="clr-namespace:DeviceEmulator.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
         mc:Ignorable="d"
+        Icon="pack://application:,,,/DeviceEmulator;component/DeviceEmulator.ico"
+        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterScreen"
         Title="默认设备IP" Height="280" Width="820">
     <Grid>

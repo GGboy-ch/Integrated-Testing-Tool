@@ -21,19 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="DeviceEmulator.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Log4net.config">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="DeviceEmulator.ico">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <Resource Include="DeviceEmulator.ico" />
   </ItemGroup>
 
   <ItemGroup>

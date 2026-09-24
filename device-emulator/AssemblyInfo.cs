@@ -17,6 +17,18 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260924 1.0.0.9
+修复图标资源重复声明导致窗口启动失败。
+
+20260924 1.0.0.8
+修复自定义标题栏的软件图标显示。
+
+20260924 1.0.0.7
+主窗口与辅助弹窗分别使用对应样式，仅主窗口显示版本号。
+
+20260924 1.0.0.6
+主窗口及辅助窗口统一使用通用库窗口样式。
+
 20260919 1.0.0.5
 启动时检查新版本，仅在有更新时显示按钮，点击后静默安装。
 
@@ -52,5 +64,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.5";
+    public const string Current = "1.0.0.9";
 }

@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260924 1.0.0.11
+在客户选择旁新增HTTP响应状态码下拉框，支持保存并恢复所选状态码。
+
 20260924 1.0.0.10
 调整新增模板按钮的外边距。
 
@@ -72,5 +75,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.10";
+    public const string Current = "1.0.0.11";
 }

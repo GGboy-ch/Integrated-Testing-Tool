@@ -44,6 +44,10 @@ namespace HTTPServer.VeiwModel
         /// </summary>
         public ObservableCollection<string> ContentTypeList { get; set; } = new ObservableCollection<string> { "Json", "Text" };
         /// <summary>
+        /// 可选的HTTP响应状态码
+        /// </summary>
+        public ObservableCollection<HttpStatusCodeOption> StatusCodeList { get; set; } = new ObservableCollection<HttpStatusCodeOption>();
+        /// <summary>
         /// 返回内容列表
         /// </summary>
         public ObservableCollection<string> ContentList { get; set; } = new ObservableCollection<string>();
@@ -59,6 +63,16 @@ namespace HTTPServer.VeiwModel
         /// HTTP服务端监听器
         /// </summary>
         public HttpListener _HttpListener { get; set; } = new HttpListener();
+
+        private int selectedStatusCode = (int)HttpStatusCode.OK;
+        /// <summary>
+        /// 当前HTTP响应状态码
+        /// </summary>
+        public int SelectedStatusCode
+        {
+            get => selectedStatusCode;
+            set { selectedStatusCode = value; MyPropertyChanged(); }
+        }
 
         private string selectedRawUrl = string.Empty;
         /// <summary>
@@ -492,6 +506,10 @@ namespace HTTPServer.VeiwModel
             {
                 CustomerList.Add(customer);
             }
+            foreach (HttpStatusCode statusCode in Enum.GetValues<HttpStatusCode>().DistinctBy(value => (int)value))
+            {
+                StatusCodeList.Add(new HttpStatusCodeOption((int)statusCode, $"{(int)statusCode} {statusCode}"));
+            }
             IPAddress[] iPAddresses = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (IPAddress iPAddress in iPAddresses)
             {
@@ -506,6 +524,12 @@ namespace HTTPServer.VeiwModel
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
+            XElement? statusCodeElement = xmlDoc.Descendants("StatusCode").FirstOrDefault();
+            if (statusCodeElement != null && int.TryParse(statusCodeElement.Value, out int configuredStatusCode) &&
+                StatusCodeList.Any(option => option.Code == configuredStatusCode))
+            {
+                SelectedStatusCode = configuredStatusCode;
+            }
             TryChangeCustomer(_SelectedCustomer);
         }
 
@@ -528,6 +552,7 @@ namespace HTTPServer.VeiwModel
             }
             context.Response.ContentType = "application/json";
             context.Response.ContentEncoding = Encoding.UTF8;
+            context.Response.StatusCode = SelectedStatusCode;
             string? returnObj = null;
             if (request!.InputStream != Stream.Null)
             {
@@ -572,7 +597,6 @@ namespace HTTPServer.VeiwModel
                 {"success", "true" },
                 {"Message", "请求成功，服务器正常" }
             };
-            response.StatusCode = (int)HttpStatusCode.OK;
             try
             {
                 //需要注意：request中的请求参数被获取过一次之后就会丢失，请避免重复调用带request的构造函数
@@ -805,6 +829,15 @@ namespace HTTPServer.VeiwModel
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             ishidetoTray.SetValue(IsHideToTray);
+            XElement? statusCode = xmlDoc.Descendants("StatusCode").FirstOrDefault();
+            if (statusCode == null)
+            {
+                xmlDoc.Root!.Add(new XElement("StatusCode", SelectedStatusCode));
+            }
+            else
+            {
+                statusCode.SetValue(SelectedStatusCode);
+            }
             xmlDoc.Save(configpath);
         }
 
@@ -822,6 +855,8 @@ namespace HTTPServer.VeiwModel
                 set { _address = value; MyPropertyChanged(); }
             }
         }
+
+        public sealed record HttpStatusCodeOption(int Code, string DisplayName);
     }
 
     public class NotifyBase : INotifyPropertyChanged

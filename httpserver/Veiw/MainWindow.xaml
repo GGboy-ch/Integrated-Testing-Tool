@@ -131,7 +131,15 @@
                     <ComboBox Width="150"
                               Height="32"
                               ItemsSource="{Binding CustomerList}"
-                              SelectedItem="{Binding SelectedCustomer}"/>
+                              SelectedItem="{Binding SelectedCustomer}"
+                              Margin="0,0,8,0"/>
+                    <TextBlock Text="状态码" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding StatusCodeList}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Code"
+                              SelectedValue="{Binding SelectedStatusCode}"
+                              Width="170"
+                              Height="32"/>
                     <Border Background="#F4F7FB" CornerRadius="7" Padding="10,5" Margin="8,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <CheckBox x:Name="checkBox"

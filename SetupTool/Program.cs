@@ -36,6 +36,12 @@ namespace SetupTool
                     : Environment.CurrentDirectory;
                 Console.WriteLine($"需要打包项目所在的路径：{rootpath}");
                 string projectName = Path.GetFileNameWithoutExtension(new DirectoryInfo(rootpath).GetFiles().Where(file => file.Name.EndsWith(".csproj")).FirstOrDefault()!.FullName);
+                string applicationIconPath = Path.Combine(rootpath, $"{projectName}.ico");
+                if (!File.Exists(applicationIconPath))
+                {
+                    throw new FileNotFoundException("未找到程序图标文件。", applicationIconPath);
+                }
+
                 string scriptPath = AppDomain.CurrentDomain.BaseDirectory + "PackTool.iss";
                 Console.WriteLine($"开始打包。。。");
                 List<string> specialFiles = new List<string>();
@@ -142,7 +148,7 @@ namespace SetupTool
                     }
                     if (iss[i].StartsWith("SetupIconFile"))
                     {
-                        iss[i] = $"SetupIconFile={rootpath}\\{projectName}.ico";//使用项目根目录下的icon.ico作为安装包图标
+                        iss[i] = $"SetupIconFile=\"{applicationIconPath}\"";//使用项目根目录下的程序图标作为安装包图标
                     }
                     i++;
                 }
@@ -197,7 +203,9 @@ namespace SetupTool
                     throw new FileNotFoundException("打包完成后未找到安装包。", installerPath);
                 }
 
-                UploadInstallerToFtp(installerPath);
+                string installerIconPath = Path.ChangeExtension(installerPath, ".ico");
+                File.Copy(applicationIconPath, installerIconPath, true);
+                UploadInstallerToFtp(installerPath, installerIconPath);
                 return 0;
             }
             catch (Exception ex)
@@ -358,10 +366,11 @@ namespace SetupTool
         }
 
         /// <summary>
-        /// 将安装包上传到FTP服务器。
+        /// 将与安装包同名的图标和安装包上传到FTP服务器。
         /// </summary>
         /// <param name="installerPath">本地安装包路径</param>
-        private static void UploadInstallerToFtp(string installerPath)
+        /// <param name="iconPath">本地安装包图标路径</param>
+        private static void UploadInstallerToFtp(string installerPath, string iconPath)
         {
             if (string.IsNullOrWhiteSpace(FtpUri))
             {
@@ -380,10 +389,24 @@ namespace SetupTool
             }
 
             NetworkCredential credential = new NetworkCredential(FtpUserName, FtpPassword);
-            Uri remoteFileUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(installerPath));
+            Uri remoteInstallerUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(installerPath));
+            Uri remoteIconUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(iconPath));
 
-            Console.WriteLine($"开始上传安装包：{remoteFileUri}");
-            EnsureFtpDirectoryExists(remoteFileUri, credential, FtpEnableSsl);
+            EnsureFtpDirectoryExists(remoteInstallerUri, credential, FtpEnableSsl);
+            // 先上传图标，再上传安装包，供转移服务以安装包作为完整上传标记。
+            UploadFileToFtp(remoteIconUri, iconPath, credential);
+            UploadFileToFtp(remoteInstallerUri, installerPath, credential);
+
+            File.Delete(iconPath);
+            Console.WriteLine($"已删除本地安装包图标：{iconPath}");
+        }
+
+        /// <summary>
+        /// 上传单个文件到FTP服务器。
+        /// </summary>
+        private static void UploadFileToFtp(Uri remoteFileUri, string localPath, NetworkCredential credential)
+        {
+            Console.WriteLine($"开始上传文件：{remoteFileUri}");
 
 #pragma warning disable SYSLIB0014
             FtpWebRequest request = (FtpWebRequest)WebRequest.Create(remoteFileUri);
@@ -396,7 +419,7 @@ namespace SetupTool
             request.Timeout = 60000;
             request.ReadWriteTimeout = 60000;
 
-            using FileStream input = File.OpenRead(installerPath);
+            using FileStream input = File.OpenRead(localPath);
             request.ContentLength = input.Length;
             using (Stream output = request.GetRequestStream())
             {
@@ -404,7 +427,7 @@ namespace SetupTool
             }
 
             using FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-            Console.WriteLine($"FTP上传成功：{response.StatusDescription?.Trim()}");
+            Console.WriteLine($"FTP上传成功：{Path.GetFileName(localPath)}，{response.StatusDescription?.Trim()}");
         }
 
         /// <summary>

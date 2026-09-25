@@ -5,6 +5,11 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260925 1.0.0.5
+图标和安装包均上传成功后删除本地安装包图标文件。
+
+20260925 1.0.0.4
+生成并上传与安装包同名的独立程序图标文件。
 20260917 1.0.0.3
 支持工具静默更新安装
 将安装脚本提示改为可抑制提示，避免静默安装等待点击。
@@ -21,5 +26,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.3";
+    public const string Current = "1.0.0.5";
 }

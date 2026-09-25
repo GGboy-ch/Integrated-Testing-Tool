@@ -100,6 +100,34 @@ public sealed class FileTransferProcessor
             return;
         }
 
+        string sourceIconPath = Path.ChangeExtension(sourcePath, ".ico");
+        string destinationIconPath = Path.ChangeExtension(destinationPath, ".ico");
+        bool hasIcon = File.Exists(sourceIconPath);
+
+        // 先原子发布图标，最后发布安装包；安装包出现时，图标已完整可用。
+        if (hasIcon)
+        {
+            await CopyFileAtomicallyAsync(sourceIconPath, destinationIconPath, cancellationToken);
+        }
+
+        await CopyFileAtomicallyAsync(sourcePath, destinationPath, cancellationToken);
+        File.Delete(sourcePath);
+        if (hasIcon)
+        {
+            File.Delete(sourceIconPath);
+        }
+
+        _logger.LogInformation(
+            hasIcon ? "安装包及配套图标已转移：{FileName}" : "安装包已转移：{FileName}",
+            fileName);
+    }
+
+    private async Task CopyFileAtomicallyAsync(
+        string sourcePath,
+        string destinationPath,
+        CancellationToken cancellationToken)
+    {
+        string fileName = Path.GetFileName(destinationPath);
         string temporaryPath = Path.Combine(
             _options.DestinationDirectory,
             $".{fileName}.{Guid.NewGuid():N}.partial");
@@ -125,9 +153,7 @@ public sealed class FileTransferProcessor
                 await destination.FlushAsync(cancellationToken);
             }
 
-            File.Move(temporaryPath, destinationPath);
-            File.Delete(sourcePath);
-            _logger.LogInformation("安装包已转移：{FileName}", fileName);
+            File.Move(temporaryPath, destinationPath, overwrite: true);
         }
         finally
         {
@@ -165,6 +191,13 @@ public sealed class FileTransferProcessor
                 }
 
                 File.Delete(path);
+                string iconPath = Path.ChangeExtension(path, ".ico");
+                if (File.Exists(iconPath))
+                {
+                    File.Delete(iconPath);
+                    _logger.LogInformation("已删除过期安装包图标：{FileName}", Path.GetFileName(iconPath));
+                }
+
                 _logger.LogInformation(
                     "已删除 {ProductName} 的过期安装包：{FileName}",
                     package.ProductName,

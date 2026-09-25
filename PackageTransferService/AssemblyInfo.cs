@@ -4,6 +4,9 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260925 1.0.0.2
+同程序同版本只转移最新上传的安装包及其图标，删除旧上传并清理重复版本文件。
+
 20260925 1.0.0.1
 转移安装包时同步发布同名图标，并在清理过期版本时删除配套图标。
 
@@ -14,5 +17,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.1";
+    public const string Current = "1.0.0.2";
 }

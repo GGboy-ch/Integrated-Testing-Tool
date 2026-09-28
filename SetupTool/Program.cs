@@ -203,9 +203,7 @@ namespace SetupTool
                     throw new FileNotFoundException("打包完成后未找到安装包。", installerPath);
                 }
 
-                string installerIconPath = Path.ChangeExtension(installerPath, ".ico");
-                File.Copy(applicationIconPath, installerIconPath, true);
-                UploadInstallerToFtp(installerPath, installerIconPath);
+                UploadInstallerToFtp(installerPath, applicationIconPath);
                 return 0;
             }
             catch (Exception ex)
@@ -379,10 +377,10 @@ namespace SetupTool
         }
 
         /// <summary>
-        /// 将与安装包同名的图标和安装包上传到FTP服务器。
+        /// 将程序名图标和安装包上传到FTP服务器。
         /// </summary>
         /// <param name="installerPath">本地安装包路径</param>
-        /// <param name="iconPath">本地安装包图标路径</param>
+        /// <param name="iconPath">项目中的程序图标路径</param>
         private static void UploadInstallerToFtp(string installerPath, string iconPath)
         {
             if (string.IsNullOrWhiteSpace(FtpUri))
@@ -409,9 +407,6 @@ namespace SetupTool
             // 先上传图标，再上传安装包，供转移服务以安装包作为完整上传标记。
             UploadFileToFtp(remoteIconUri, iconPath, credential);
             UploadFileToFtp(remoteInstallerUri, installerPath, credential);
-
-            File.Delete(iconPath);
-            Console.WriteLine($"已删除本地安装包图标：{iconPath}");
         }
 
         /// <summary>

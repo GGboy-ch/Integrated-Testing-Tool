@@ -9,7 +9,10 @@ List<(string Name, Func<Task> Test)> tests =
     ("程序名允许连字符", () => Run(ParseProductNameWithHyphen)),
     ("拒绝三段版本号", () => Run(RejectThreePartVersion)),
     ("拒绝非安装包", () => Run(RejectOtherFile)),
-    ("转移安装包并只保留一个旧版本", TransferAndRetainOneOldVersion)
+    ("转移安装包并保留程序名图标", TransferAndRetainOneOldVersion),
+    ("同版本重复上传保留程序名图标", DuplicateUploadKeepsSharedIcon),
+    ("旧版上传图标发布为程序名图标", TransferLegacyIcon),
+    ("旧版网站图标迁移为程序名图标", MigrateLegacyIcons)
 ];
 
 int failures = 0;
@@ -78,6 +81,7 @@ static async Task TransferAndRetainOneOldVersion()
         {
             await File.WriteAllTextAsync(Path.Combine(sourceDirectory, fileName), fileName);
         }
+        await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "HTTPServer.ico"), "program icon");
 
         PackageTransferOptions options = new()
         {
@@ -90,16 +94,142 @@ static async Task TransferAndRetainOneOldVersion()
             NullLogger<FileTransferProcessor>.Instance);
 
         await processor.ProcessOnceAsync(CancellationToken.None);
-        Assert(Directory.GetFiles(sourceDirectory).Length == 3);
+        Assert(Directory.GetFiles(sourceDirectory).Length == 4);
 
         await processor.ProcessOnceAsync(CancellationToken.None);
-        Assert(Directory.GetFiles(sourceDirectory).Length == 0);
+        Assert(Directory.GetFiles(sourceDirectory).Select(Path.GetFileName).Single() == "HTTPServer.ico");
 
         string[] retainedFiles = Directory.GetFiles(destinationDirectory)
             .Select(Path.GetFileName)
             .OrderBy(fileName => fileName, StringComparer.Ordinal)
             .ToArray()!;
-        Assert(retainedFiles.SequenceEqual(fileNames[1..]));
+        Assert(retainedFiles.SequenceEqual([fileNames[1], fileNames[2], "HTTPServer.ico"]));
+        Assert(await File.ReadAllTextAsync(Path.Combine(destinationDirectory, "HTTPServer.ico")) == "program icon");
+    }
+    finally
+    {
+        if (Directory.Exists(rootDirectory))
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+}
+
+static async Task DuplicateUploadKeepsSharedIcon()
+{
+    string rootDirectory = Path.Combine(Path.GetTempPath(), $"PackageTransferService.Tests-{Guid.NewGuid():N}");
+    string sourceDirectory = Path.Combine(rootDirectory, "source");
+    string destinationDirectory = Path.Combine(rootDirectory, "destination");
+    Directory.CreateDirectory(sourceDirectory);
+
+    try
+    {
+        string oldPath = Path.Combine(sourceDirectory, "HTTPServer-1.0.0.4-旧说明.exe");
+        string newPath = Path.Combine(sourceDirectory, "HTTPServer-1.0.0.4-新说明.exe");
+        await File.WriteAllTextAsync(oldPath, "old package");
+        await File.WriteAllTextAsync(newPath, "new package");
+        await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "HTTPServer.ico"), "shared icon");
+        File.SetLastWriteTimeUtc(oldPath, DateTime.UtcNow.AddMinutes(-2));
+        File.SetLastWriteTimeUtc(newPath, DateTime.UtcNow.AddMinutes(-1));
+
+        FileTransferProcessor processor = new(
+            Options.Create(new PackageTransferOptions
+            {
+                SourceDirectory = sourceDirectory,
+                DestinationDirectory = destinationDirectory
+            }),
+            NullLogger<FileTransferProcessor>.Instance);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+
+        Assert(!File.Exists(oldPath));
+        Assert(!File.Exists(newPath));
+        Assert(File.Exists(Path.Combine(sourceDirectory, "HTTPServer.ico")));
+        Assert(!File.Exists(Path.Combine(destinationDirectory, Path.GetFileName(oldPath))));
+        Assert(File.Exists(Path.Combine(destinationDirectory, Path.GetFileName(newPath))));
+        Assert(await File.ReadAllTextAsync(Path.Combine(destinationDirectory, "HTTPServer.ico")) == "shared icon");
+    }
+    finally
+    {
+        if (Directory.Exists(rootDirectory))
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+}
+
+static async Task TransferLegacyIcon()
+{
+    string rootDirectory = Path.Combine(Path.GetTempPath(), $"PackageTransferService.Tests-{Guid.NewGuid():N}");
+    string sourceDirectory = Path.Combine(rootDirectory, "source");
+    string destinationDirectory = Path.Combine(rootDirectory, "destination");
+    Directory.CreateDirectory(sourceDirectory);
+
+    try
+    {
+        string packagePath = Path.Combine(sourceDirectory, "HTTPServer-1.0.0.5-旧格式.exe");
+        string legacyIconPath = Path.ChangeExtension(packagePath, ".ico");
+        await File.WriteAllTextAsync(packagePath, "package");
+        await File.WriteAllTextAsync(legacyIconPath, "legacy icon");
+        await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "HTTPServer.ico"), "shared icon");
+
+        FileTransferProcessor processor = new(
+            Options.Create(new PackageTransferOptions
+            {
+                SourceDirectory = sourceDirectory,
+                DestinationDirectory = destinationDirectory
+            }),
+            NullLogger<FileTransferProcessor>.Instance);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+
+        Assert(!File.Exists(packagePath));
+        Assert(!File.Exists(legacyIconPath));
+        Assert(File.Exists(Path.Combine(sourceDirectory, "HTTPServer.ico")));
+        Assert(File.Exists(Path.Combine(destinationDirectory, Path.GetFileName(packagePath))));
+        Assert(await File.ReadAllTextAsync(Path.Combine(destinationDirectory, "HTTPServer.ico")) == "legacy icon");
+        Assert(!File.Exists(Path.Combine(destinationDirectory, Path.GetFileName(legacyIconPath))));
+    }
+    finally
+    {
+        if (Directory.Exists(rootDirectory))
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+}
+
+static async Task MigrateLegacyIcons()
+{
+    string rootDirectory = Path.Combine(Path.GetTempPath(), $"PackageTransferService.Tests-{Guid.NewGuid():N}");
+    string sourceDirectory = Path.Combine(rootDirectory, "source");
+    string destinationDirectory = Path.Combine(rootDirectory, "destination");
+    Directory.CreateDirectory(destinationDirectory);
+
+    try
+    {
+        for (int version = 1; version <= 3; version++)
+        {
+            string packagePath = Path.Combine(destinationDirectory, $"HTTPServer-1.0.0.{version}-旧格式.exe");
+            await File.WriteAllTextAsync(packagePath, $"package {version}");
+            await File.WriteAllTextAsync(Path.ChangeExtension(packagePath, ".ico"), $"icon {version}");
+        }
+
+        FileTransferProcessor processor = new(
+            Options.Create(new PackageTransferOptions
+            {
+                SourceDirectory = sourceDirectory,
+                DestinationDirectory = destinationDirectory,
+                OldVersionsToKeep = 1
+            }),
+            NullLogger<FileTransferProcessor>.Instance);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+
+        Assert(!File.Exists(Path.Combine(destinationDirectory, "HTTPServer-1.0.0.1-旧格式.exe")));
+        Assert(File.Exists(Path.Combine(destinationDirectory, "HTTPServer-1.0.0.2-旧格式.exe")));
+        Assert(File.Exists(Path.Combine(destinationDirectory, "HTTPServer-1.0.0.3-旧格式.exe")));
+        Assert(await File.ReadAllTextAsync(Path.Combine(destinationDirectory, "HTTPServer.ico")) == "icon 3");
+        Assert(Directory.GetFiles(destinationDirectory, "*.ico").Length == 1);
     }
     finally
     {

@@ -28,7 +28,7 @@ SetupTool 从打包输出目录的主程序集读取 AssemblyVersion，填入安
 MyAppVersion；不再解析 AssemblyInfo.cs 文本或 csproj 的 AssemblyVersion。
 编译产物不存在时会报错，不回退到默认版本。
 
-现有 Release 构建会调用 SetupTool，随后自动上传 FTP。SetupTool 会生成与安装包同名的 .ico 文件并先上传图标、后上传安装包；两者均成功后删除本地安装包图标文件。
+现有 Release 构建会调用 SetupTool，随后自动上传 FTP。SetupTool 先上传项目中的“程序名.ico”，再上传安装包；项目中的原始图标保持不变。
 日常仅验证编译和版本时使用 Debug 构建；确认发布时再执行 Release。
 修改版本后必须重新编译，旧产物不会自动更新。
 

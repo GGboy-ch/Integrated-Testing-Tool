@@ -85,10 +85,10 @@ public sealed class FileTransferProcessor
                     _previousSnapshots.TryGetValue(newestUpload.Path, out FileSnapshot previousNewestSnapshot) &&
                     previousNewestSnapshot == newestUpload.Snapshot &&
                     CanOpenExclusively(newestUpload.Path);
-                string oldIconPath = Path.ChangeExtension(path, ".ico");
+                string legacyIconPath = Path.ChangeExtension(path, ".ico");
 
                 if (!newestUploadIsStable ||
-                    (File.Exists(oldIconPath) && !CanOpenExclusively(oldIconPath)))
+                    (File.Exists(legacyIconPath) && !CanOpenExclusively(legacyIconPath)))
                 {
                     _logger.LogInformation(
                         "发现同程序同版本的较新上传，等待上传完成：{FileName}",
@@ -98,7 +98,7 @@ public sealed class FileTransferProcessor
 
                 try
                 {
-                    DeletePackageFiles(path);
+                    DeletePackageAndLegacyIcon(path);
                     _logger.LogInformation(
                         "同程序同版本存在较新上传，旧文件已删除且不会转移：{FileName}",
                         Path.GetFileName(path));
@@ -128,7 +128,7 @@ public sealed class FileTransferProcessor
 
             try
             {
-                await TransferAsync(path, cancellationToken);
+                await TransferAsync(path, package, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -165,7 +165,7 @@ public sealed class FileTransferProcessor
         }
     }
 
-    private async Task TransferAsync(string sourcePath, CancellationToken cancellationToken)
+    private async Task TransferAsync(string sourcePath, PackageFileName package, CancellationToken cancellationToken)
     {
         string fileName = Path.GetFileName(sourcePath);
         string destinationPath = Path.Combine(_options.DestinationDirectory, fileName);
@@ -174,25 +174,28 @@ public sealed class FileTransferProcessor
             _logger.LogInformation("网站目录存在同名安装包，将替换为最新上传文件：{FileName}", fileName);
         }
 
-        string sourceIconPath = Path.ChangeExtension(sourcePath, ".ico");
-        string destinationIconPath = Path.ChangeExtension(destinationPath, ".ico");
-        bool hasIcon = File.Exists(sourceIconPath);
+        string sharedSourceIconPath = Path.Combine(Path.GetDirectoryName(sourcePath)!, $"{package.ProductName}.ico");
+        string legacySourceIconPath = Path.ChangeExtension(sourcePath, ".ico");
+        string? sourceIconPath = File.Exists(legacySourceIconPath)
+            ? legacySourceIconPath
+            : File.Exists(sharedSourceIconPath) ? sharedSourceIconPath : null;
+        string destinationIconPath = Path.Combine(_options.DestinationDirectory, $"{package.ProductName}.ico");
 
-        // 先原子发布图标，最后发布安装包；安装包出现时，图标已完整可用。
-        if (hasIcon)
+        // 先原子发布程序图标，最后发布安装包；安装包出现时，图标已完整可用。
+        if (sourceIconPath is not null)
         {
             await CopyFileAtomicallyAsync(sourceIconPath, destinationIconPath, cancellationToken);
         }
 
         await CopyFileAtomicallyAsync(sourcePath, destinationPath, cancellationToken);
-        File.Delete(sourcePath);
-        if (hasIcon)
+        if (File.Exists(legacySourceIconPath))
         {
-            File.Delete(sourceIconPath);
+            File.Delete(legacySourceIconPath);
         }
+        File.Delete(sourcePath);
 
         _logger.LogInformation(
-            hasIcon ? "最新安装包及配套图标已转移：{FileName}" : "最新安装包已转移：{FileName}",
+            sourceIconPath is not null ? "最新安装包及程序图标已转移：{FileName}" : "最新安装包已转移：{FileName}",
             fileName);
     }
 
@@ -275,22 +278,41 @@ public sealed class FileTransferProcessor
                 .Select(item => item.Path)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+            string productIconPath = Path.Combine(_options.DestinationDirectory, $"{productGroup.Key}.ico");
+            if (!File.Exists(productIconPath))
+            {
+                string? legacyIconToMigrate = productGroup
+                    .Where(item => retainedPackages.Contains(item.Path))
+                    .OrderByDescending(item => item.Package.Version)
+                    .ThenByDescending(item => item.LastWriteTimeUtc)
+                    .Select(item => Path.ChangeExtension(item.Path, ".ico"))
+                    .FirstOrDefault(File.Exists);
+                if (legacyIconToMigrate is not null)
+                {
+                    File.Move(legacyIconToMigrate, productIconPath);
+                }
+            }
+
             foreach (var packageFile in productGroup)
             {
                 string path = packageFile.Path;
                 PackageFileName package = packageFile.Package;
+                string legacyIconPath = Path.ChangeExtension(path, ".ico");
                 if (retainedPackages.Contains(path))
                 {
+                    if (File.Exists(legacyIconPath))
+                    {
+                        File.Delete(legacyIconPath);
+                    }
                     continue;
                 }
 
-                string iconPath = Path.ChangeExtension(path, ".ico");
-                bool hadIcon = File.Exists(iconPath);
-                DeletePackageFiles(path);
+                bool hadLegacyIcon = File.Exists(legacyIconPath);
+                DeletePackageAndLegacyIcon(path);
 
-                if (hadIcon)
+                if (hadLegacyIcon)
                 {
-                    _logger.LogInformation("已删除重复或过期安装包图标：{FileName}", Path.GetFileName(iconPath));
+                    _logger.LogInformation("已删除重复或过期安装包图标：{FileName}", Path.GetFileName(legacyIconPath));
                 }
 
                 _logger.LogInformation(
@@ -321,7 +343,7 @@ public sealed class FileTransferProcessor
             .ThenByDescending(candidate => candidate.Path, StringComparer.OrdinalIgnoreCase)
             .First();
 
-    private static void DeletePackageFiles(string packagePath)
+    private static void DeletePackageAndLegacyIcon(string packagePath)
     {
         string iconPath = Path.ChangeExtension(packagePath, ".ico");
         if (File.Exists(iconPath))

@@ -282,20 +282,33 @@ namespace SetupTool
                 invalidChars.Contains(character) || character == '{' || character == '}'
                     ? '_'
                     : character).ToArray());
-            summary = summary.Trim().TrimEnd('.');
-            if (string.IsNullOrWhiteSpace(summary))
-            {
-                summary = "更新";
-            }
+            summary = TrimTrailingPunctuation(summary);
 
             // 限制简介长度，避免安装包文件名过长；保留完整工具名和版本号。
             if (summary.Length > 60)
             {
                 int length = char.IsHighSurrogate(summary[59]) ? 59 : 60;
-                summary = summary[..length].TrimEnd(' ', '.');
+                summary = TrimTrailingPunctuation(summary[..length]);
+            }
+
+            if (string.IsNullOrWhiteSpace(summary))
+            {
+                summary = "更新";
             }
 
             return $"{projectName}-{version}-{summary}";
+        }
+
+        private static string TrimTrailingPunctuation(string value)
+        {
+            int length = value.Length;
+            while (length > 0 && (char.IsWhiteSpace(value[length - 1]) ||
+                char.IsPunctuation(value[length - 1]) || char.IsSymbol(value[length - 1])))
+            {
+                length--;
+            }
+
+            return value[..length].Trim();
         }
 
         /// <summary>

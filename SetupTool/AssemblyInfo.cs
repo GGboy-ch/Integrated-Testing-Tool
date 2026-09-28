@@ -5,11 +5,15 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20260928 1.0.0.6
+更新日志末行及安装包简介末尾去除多余标点
+
 20260925 1.0.0.5
 图标和安装包均上传成功后删除本地安装包图标文件。
 
 20260925 1.0.0.4
 生成并上传与安装包同名的独立程序图标文件。
+
 20260917 1.0.0.3
 支持工具静默更新安装
 将安装脚本提示改为可抑制提示，避免静默安装等待点击。
@@ -21,10 +25,10 @@
 20260911 1.0.0.1
 安装包名称附带版本号和更新简介
 读取目标程序集中的 AssemblyInfo.cs 版本和 ChangeLog，校验最新日志版本。
-安装包生成、查找和上传统一使用新文件名，处理简介中的非法字符及过长内容。
+安装包生成、查找和上传统一使用新文件名，处理简介中的非法字符及过长内容
 ")]
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.5";
+    public const string Current = "1.0.0.6";
 }

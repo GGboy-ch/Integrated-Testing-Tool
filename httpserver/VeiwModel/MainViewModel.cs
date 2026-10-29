@@ -64,9 +64,10 @@ namespace HTTPServer.VeiwModel
         /// </summary>
         public HttpListener _HttpListener { get; set; } = new HttpListener();
 
+        private const int AutomaticStatusCode = 0;
         private int selectedStatusCode = (int)HttpStatusCode.OK;
         /// <summary>
-        /// 当前HTTP响应状态码
+        /// 当前HTTP响应状态码，0表示不覆盖接口实际状态码
         /// </summary>
         public int SelectedStatusCode
         {
@@ -506,6 +507,7 @@ namespace HTTPServer.VeiwModel
             {
                 CustomerList.Add(customer);
             }
+            StatusCodeList.Add(new HttpStatusCodeOption(AutomaticStatusCode, string.Empty));
             foreach (HttpStatusCode statusCode in Enum.GetValues<HttpStatusCode>().DistinctBy(value => (int)value))
             {
                 StatusCodeList.Add(new HttpStatusCodeOption((int)statusCode, $"{(int)statusCode} {statusCode}"));
@@ -525,7 +527,11 @@ namespace HTTPServer.VeiwModel
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             XElement? statusCodeElement = xmlDoc.Descendants("StatusCode").FirstOrDefault();
-            if (statusCodeElement != null && int.TryParse(statusCodeElement.Value, out int configuredStatusCode) &&
+            if (statusCodeElement != null && string.IsNullOrWhiteSpace(statusCodeElement.Value))
+            {
+                SelectedStatusCode = AutomaticStatusCode;
+            }
+            else if (statusCodeElement != null && int.TryParse(statusCodeElement.Value, out int configuredStatusCode) &&
                 StatusCodeList.Any(option => option.Code == configuredStatusCode))
             {
                 SelectedStatusCode = configuredStatusCode;
@@ -552,7 +558,10 @@ namespace HTTPServer.VeiwModel
             }
             context.Response.ContentType = "application/json";
             context.Response.ContentEncoding = Encoding.UTF8;
-            context.Response.StatusCode = SelectedStatusCode;
+            if (SelectedStatusCode != AutomaticStatusCode)
+            {
+                context.Response.StatusCode = SelectedStatusCode;
+            }
             string? returnObj = null;
             if (request!.InputStream != Stream.Null)
             {
@@ -829,14 +838,15 @@ namespace HTTPServer.VeiwModel
             XDocument xmlDoc = XDocument.Load(configpath);
             XElement ishidetoTray = xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;
             ishidetoTray.SetValue(IsHideToTray);
+            string statusCodeValue = SelectedStatusCode == AutomaticStatusCode ? string.Empty : SelectedStatusCode.ToString();
             XElement? statusCode = xmlDoc.Descendants("StatusCode").FirstOrDefault();
             if (statusCode == null)
             {
-                xmlDoc.Root!.Add(new XElement("StatusCode", SelectedStatusCode));
+                xmlDoc.Root!.Add(new XElement("StatusCode", statusCodeValue));
             }
             else
             {
-                statusCode.SetValue(SelectedStatusCode);
+                statusCode.SetValue(statusCodeValue);
             }
             xmlDoc.Save(configpath);
         }

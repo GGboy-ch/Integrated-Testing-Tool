@@ -61,6 +61,39 @@ namespace DeviceEmulator.ViewModel
             set { isLoopSend = value; MyPropertyChanged(); }
         }
 
+        private readonly BalanceWheelProtocol balanceWheelProtocol = new();
+        /// <summary>
+        /// 自动回复摆轮分拣结果，并同步最新分拣命令的包裹ID。
+        /// </summary>
+        public bool IsBalanceWheelAutoReplyEnabled
+        {
+            get { return balanceWheelProtocol.AutoReplyEnabled; }
+            set
+            {
+                balanceWheelProtocol.AutoReplyEnabled = value;
+                MyPropertyChanged();
+                LogHelper.Debug($"[BalanceWheel] 自动回复: {(value ? "开启" : "关闭")}");
+            }
+        }
+
+        public IReadOnlyDictionary<byte, string> BalanceWheelAutoReplyResults { get; } = new Dictionary<byte, string>
+        {
+            [0] = "0 - 正常分拣",
+            [1] = "1 - 叠件回流",
+            [2] = "2 - 不允许供包回流"
+        };
+
+        public byte BalanceWheelAutoReplyResultType
+        {
+            get { return balanceWheelProtocol.AutoReplyResultType; }
+            set
+            {
+                balanceWheelProtocol.AutoReplyResultType = value;
+                MyPropertyChanged();
+                LogHelper.Debug($"[BalanceWheel] 自动回复结果类型: {value}");
+            }
+        }
+
         private string ipcIP = string.Empty;
         /// <summary>
         /// 上位机IP
@@ -209,6 +242,7 @@ namespace DeviceEmulator.ViewModel
         /// </summary>
         private void Connect()
         {
+            balanceWheelProtocol.ClearLatestCommand();
             if (stopcancellationToken.IsCancellationRequested)//判断令牌是否已经取消，如果取消则重新创建一个令牌
             {
                 stopcancellationToken = new CancellationTokenSource();
@@ -325,6 +359,7 @@ namespace DeviceEmulator.ViewModel
                     disconnectComExd = new RelayCommand(() =>
                     {
                         stopcancellationToken.Cancel();
+                        balanceWheelProtocol.ClearLatestCommand();
                         udpClient?.Dispose();
                         RunningDeviceList?.Clear();
                     });
@@ -386,6 +421,10 @@ namespace DeviceEmulator.ViewModel
             if (client?.DeviceName == Properties.Res.Camera)//相机数据的
             {
                 data = ChangeCameraArrivedTime(o?.CommandText);
+            }
+            else if (client?.DeviceName == Properties.Res.BalanceWheel && o?.CommandText != null)
+            {
+                data = balanceWheelProtocol.PrepareResult(o.CommandText);
             }
             else
             {
@@ -636,16 +675,7 @@ namespace DeviceEmulator.ViewModel
         {
             foreach (BalanceWheel bw in e)
             {
-                byte[] basedata = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0xDC, 0x06, 0x1B, 0x01 };
-                byte[] data = new byte[17];
-                basedata.CopyTo(data, 0);
-                data[12] = Convert.ToByte(bw.ResultType);
-                data[13] = Convert.ToByte(bw.SortPort);
-                data[14] = 0x00;
-                data[15] = 0xCB;
-                data[16] = 0x0A;
-                data[6] = (byte)(data.Length); //设置数据长度
-                XORTools.Xor(ref data);
+                byte[] data = BalanceWheelProtocol.CreateResult(Convert.ToByte(bw.ResultType), Convert.ToUInt16(bw.SortPort));
 
                 if (BalanceWheelButtonList?.Where(balance => balance.Content == $"结果类型{bw.ResultType},分拣口{bw.SortPort}").Count() == 0)//判断是否已经存在该按钮
                 {
@@ -853,6 +883,23 @@ namespace DeviceEmulator.ViewModel
             {
                 return;
             }
+            if (cmd == 0x1B01)
+            {
+                if (balanceWheelProtocol.TryHandleSortCommand(data!, out byte[] acknowledgement, out byte[]? result))
+                {
+                    LogHelper.Debug($"[BalanceWheel] 1B01 msg_id={BitConverter.ToUInt32(data!, 11)}，自动回复={IsBalanceWheelAutoReplyEnabled}");
+                    SendBalanceWheelReply(acknowledgement, client, remotePoint);
+                    if (result != null)
+                    {
+                        SendBalanceWheelReply(result, client, remotePoint);
+                    }
+                }
+                else
+                {
+                    LogHelper.Debug("[BalanceWheel] 忽略1B01：帧头、长度或非零校验值无效。");
+                }
+                return;
+            }
             byte[] args = { 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x0B, 0x00, 0xDC, 0x00, 0x9A };
             switch (cmd)
             {
@@ -874,6 +921,14 @@ namespace DeviceEmulator.ViewModel
             }
             client?.Send(args, args.Length, remotePoint);
             LogHelper.Debug($"'Send' {BitConverter.ToString(args).Replace('-', ' ')}");
+        }
+
+        private void SendBalanceWheelReply(byte[] data, UdpClient? client, IPEndPoint remotePoint)
+        {
+            client?.Send(data, data.Length, remotePoint);
+            string message = $"[{DateTime.Now}] Send to {remotePoint} :摆轮\n{BitConverter.ToString(data).Replace('-', ' ')}\n";
+            AddRichTextBox("#E5BC1E", message);
+            LogHelper.Debug($"'Send' [BalanceWheel]:{BitConverter.ToString(data).Replace('-', ' ')}");
         }
 
         /// <summary>
@@ -913,4 +968,3 @@ namespace DeviceEmulator.ViewModel
         }
     }
 }
- 

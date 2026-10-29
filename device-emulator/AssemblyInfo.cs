@@ -17,6 +17,11 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261029 1.0.0.11
+相机Tab新增摆轮自动回复开关，支持选择正常分拣、叠件回流和不允许供包回流。
+1B06包裹ID同步最新1B01的msg_id，修正4字节包裹ID及报文校验。
+兼容上位机校验字段为00的分拣命令，增加自动回复诊断日志。
+
 20260928 1.0.0.10
 规范更新日志末行标点
 
@@ -67,5 +72,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.10";
+    public const string Current = "1.0.0.11";
 }

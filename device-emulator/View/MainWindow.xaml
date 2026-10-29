@@ -134,9 +134,22 @@
                         </hc:ScrollViewer>
                     </hc:TabItem>
                     <hc:TabItem Header="相机" Background="Transparent" Foreground="White">
-                        <hc:ScrollViewer VerticalScrollBarVisibility="Visible">
-                            <ItemsControl ItemsSource="{Binding CameraButtonList}"/>
-                        </hc:ScrollViewer>
+                        <DockPanel>
+                            <WrapPanel DockPanel.Dock="Top" Margin="0,4">
+                                <CheckBox Content="自动回复摆轮数据" Foreground="White" Margin="4" VerticalAlignment="Center"
+                                          IsChecked="{Binding IsBalanceWheelAutoReplyEnabled}"
+                                          ToolTip="收到1B01后按所选结果回复1B06；package_id使用最新1B01的msg_id。"/>
+                                <StackPanel Orientation="Horizontal" Margin="4">
+                                    <TextBlock Text="自动回复结果：" Foreground="White" VerticalAlignment="Center"/>
+                                    <ComboBox Width="180" ItemsSource="{Binding BalanceWheelAutoReplyResults}"
+                                              DisplayMemberPath="Value" SelectedValuePath="Key"
+                                              SelectedValue="{Binding BalanceWheelAutoReplyResultType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <hc:ScrollViewer VerticalScrollBarVisibility="Visible">
+                                <ItemsControl ItemsSource="{Binding CameraButtonList}"/>
+                            </hc:ScrollViewer>
+                        </DockPanel>
                     </hc:TabItem>
                     <hc:TabItem Header="摆轮" Background="Transparent" Foreground="White">
                         <hc:ScrollViewer VerticalScrollBarVisibility="Visible">

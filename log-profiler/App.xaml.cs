@@ -6,7 +6,7 @@ namespace LogProfiler
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : GeneralLibrary.Windows.GeneralApplication
     {
         public static TaskbarIcon? mTaskbarIcon;
         private readonly CancellationTokenSource updateCancellation = new();

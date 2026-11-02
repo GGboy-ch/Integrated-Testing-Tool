@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using GeneralLibrary.Windows;
 
 namespace ToolUpdates
 {
@@ -97,11 +98,11 @@ namespace ToolUpdates
                     bar.Visibility = Visibility.Collapsed;
                 }
                 else if (!cancellation.IsCancellationRequested)
-                    MessageBox.Show(window, result.Message, "更新");
+                    GeneralMessageBox.ShowDialog(result.Message, "更新", owner: window);
             }
             catch (Exception ex)
             {
-                if (!cancellation.IsCancellationRequested) MessageBox.Show(window, ex.Message, "更新失败");
+                if (!cancellation.IsCancellationRequested) GeneralMessageBox.ShowDialog(ex.Message, "更新失败", owner: window);
             }
             finally
             {

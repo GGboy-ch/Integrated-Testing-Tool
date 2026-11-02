@@ -15,7 +15,7 @@ internal static class Program
             var input = new TextBox { Text = "preserved", Height = 28, VerticalAlignment = VerticalAlignment.Top };
             content.Children.Add(input);
             var window = new Window { Content = content, Width = dimensions.Item1, Height = dimensions.Item2 };
-            var controller = new ManualUpdateController(window, () => "", () => true);
+            var controller = new ManualUpdateController(window, "TestTool", () => true);
             var panel = (DockPanel)window.Content;
             panel.Measure(new Size(window.Width, window.Height));
             panel.Arrange(new Rect(0, 0, window.Width, window.Height));
@@ -24,7 +24,7 @@ internal static class Program
             var button = (Button)toolbar.Children[1];
             if (!ReferenceEquals(panel.Children[1], content) || input.Text != "preserved" ||
                 !button.IsEnabled || (string)button.Content != "更新" ||
-                content.ActualHeight < dimensions.Item2 || window.Height != dimensions.Item2 + 48)
+                toolbar.Visibility != Visibility.Collapsed || content.ActualHeight < dimensions.Item2 || window.Height != dimensions.Item2)
                 throw new Exception("Update toolbar layout regression");
             if (controller.IsUpdating || controller.IsExitingForUpdate) throw new Exception("Unexpected startup state");
             window.Close();

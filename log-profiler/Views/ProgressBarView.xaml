@@ -21,6 +21,6 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <ProgressBar x:Name="progressBar" Style="{StaticResource ProgressBarSuccess}" Maximum="100" Margin="8"/>
-        <TextBlock x:Name="textblock" Grid.Row="1" FontSize="14" Foreground="OrangeRed" HorizontalAlignment="Center" Margin="8"/>
+        <TextBlock x:Name="textblock" Grid.Row="1" FontSize="14" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" Margin="8"/>
     </Grid>
 </Window>

@@ -13,10 +13,10 @@
         MinHeight="240"
         SizeToContent="Height"
         Width="560"
-        Background="#F4F7FB">
+        Background="{DynamicResource Theme.SecondaryBackgroundBrush}">
     <Grid Margin="8">
-        <Border Background="White"
-                BorderBrush="#E4E9F2"
+        <Border Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource Theme.BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 Padding="22">
@@ -28,25 +28,25 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="应用设置" FontSize="18" FontWeight="SemiBold" Foreground="#172033"/>
+                    <TextBlock Text="应用设置" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
                     <TextBlock Text="配置窗口关闭行为"
                                Margin="0,8,0,0"
                                FontSize="12"
-                               Foreground="#667085"/>
+                               Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
                 </StackPanel>
 
-                <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="7" Padding="12">
+                <Border Grid.Row="2" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="7" Padding="12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="关闭时隐藏到托盘" FontWeight="SemiBold" Foreground="#344054"/>
+                            <TextBlock Text="关闭时隐藏到托盘" FontWeight="SemiBold" Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
                             <TextBlock Text="关闭主窗口后，服务仍在后台运行"
                                        Margin="0,8,0,0"
                                        FontSize="12"
-                                       Foreground="#667085"/>
+                                       Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
                         </StackPanel>
                         <CheckBox Grid.Column="1"
                                   IsChecked="{Binding IsHideToTray}"

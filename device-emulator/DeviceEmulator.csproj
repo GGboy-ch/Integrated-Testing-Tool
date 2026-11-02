@@ -35,7 +35,6 @@
     <PackageReference Include="Costura.Fody" Version="6.2.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="HandyControl" Version="3.6.0-rc2" />
     <PackageReference Include="log4net" Version="3.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>

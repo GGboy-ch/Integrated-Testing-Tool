@@ -10,6 +10,6 @@
     <Using Include="System.Net.Http" />
     <Using Include="System.IO" />
     <Compile Include="../../Shared/ManualUpdateController.cs" Link="ManualUpdateController.cs" />
-    <Compile Include="../../general-library/GeneralLibrary/AutoUpdateHelper*.cs" Link="%(Filename)%(Extension)" />
+    <ProjectReference Include="../../general-library/GeneralLibrary/GeneralLibrary.csproj" />
   </ItemGroup>
 </Project>

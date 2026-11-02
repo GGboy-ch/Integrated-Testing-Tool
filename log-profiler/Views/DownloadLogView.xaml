@@ -8,26 +8,19 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Icon="pack://application:,,,/LogProfiler;component/Images/Logprofiler.ico"
-        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner"
-        Title="日志下载界面" Height="320" Width="600">
+        Title="日志下载界面" Height="320" Width="600" ResizeMode="NoResize">
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#62DDFD" Offset="0"/>
-                <GradientStop Color="#8662FD" Offset="1"/>
-            </LinearGradientBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="4">
-            <Button Content="获取服务器日志列表" Command="{Binding GetLogNameListCmd}" Style="{StaticResource ButtonDanger}" Margin="8"/>
+            <Button Content="获取服务器日志列表" Command="{Binding GetLogNameListCmd}" Margin="8"/>
             <TextBox MinHeight="30" MinWidth="240" Margin="8"/>
-            <Button Content="下载" Style="{StaticResource ButtonPrimary}" Command="{Binding GetNewLogsCmd}" Margin="8"/>
+            <Button Content="下载" Command="{Binding GetNewLogsCmd}" Margin="8"/>
         </StackPanel>
-        <GroupBox Grid.Row="1" Header="日志列表" Foreground="White" Style="{StaticResource BaseStyle}" Margin="8">
+        <GroupBox Grid.Row="1" Header="日志列表" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Style="{StaticResource BaseStyle}" Margin="8">
             <ListBox ItemsSource="{Binding LogNameList}" SelectedItem="{Binding SelectedLog}"/>
         </GroupBox>
     </Grid>

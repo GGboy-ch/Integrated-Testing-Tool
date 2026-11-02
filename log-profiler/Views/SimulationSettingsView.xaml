@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="模拟发送配置" Width="390" SizeToContent="Height"
         Icon="pack://application:,,,/LogProfiler;component/Images/Logprofiler.ico"
-        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -33,7 +32,7 @@
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RemoteIp, UpdateSourceTrigger=PropertyChanged}" Margin="4"/>
         <TextBlock Grid.Row="2" Grid.Column="2" Text="端口" VerticalAlignment="Center" Margin="4"/>
         <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding RemotePort, UpdateSourceTrigger=PropertyChanged}" Margin="4"/>
-        <TextBlock Grid.Row="3" Grid.ColumnSpan="4" Text="{Binding ErrorMessage}" Foreground="DarkRed"
+        <TextBlock Grid.Row="3" Grid.ColumnSpan="4" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}"
                    TextWrapping="Wrap" Margin="4,8,4,0"/>
         <StackPanel Grid.Row="4" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="4,12,4,0">
             <Button Content="保存" Width="70" IsDefault="True" Command="{Binding SaveCommand}" Margin="4"/>

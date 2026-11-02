@@ -14,16 +14,12 @@
            Height="680"
            MinWidth="900"
            MinHeight="560"
-           Background="#F4F7FB">
+           Background="{DynamicResource Theme.WindowBackgroundBrush}">
     <Window.Resources>
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#667085"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#E4E9F2"/>
 
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource Theme.WindowBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="20"/>
@@ -32,13 +28,13 @@
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style x:Key="CaptionStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
@@ -47,7 +43,7 @@
             <Setter Property="Margin" Value="0,8"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -63,11 +59,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EAF1FF"/>
-                                <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource Theme.SecondaryBackgroundBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#DBE8FF"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource Theme.SecondaryBackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -106,8 +102,8 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Background="White"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1">
             <Grid Margin="8,0">
                 <Grid.ColumnDefinitions>
@@ -120,7 +116,7 @@
                     <TextBlock Text="HTTP Server"
                                FontSize="22"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <TextBlock Text="本地请求模拟与响应调试"
                                Style="{StaticResource CaptionStyle}"
                                Margin="0,8,0,0"/>
@@ -140,7 +136,7 @@
                               SelectedValue="{Binding SelectedStatusCode}"
                               Width="170"
                               Height="32"/>
-                    <Border Background="#F4F7FB" CornerRadius="7" Padding="10,5" Margin="8,0,0,0">
+                    <Border Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="7" Padding="10,5" Margin="8,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <CheckBox x:Name="checkBox"
                                       IsChecked="{Binding IsTimeout}"
@@ -161,7 +157,6 @@
                             Margin="8,0,0,0"
                             Padding="8"
                             ToolTip="设置"
-                            Style="{StaticResource ButtonCustom}"
                             Command="{Binding NotifyCommand}"
                             CommandParameter="1">
                         <Image Source="{StaticResource SettingIcon}"/>
@@ -188,7 +183,7 @@
                                Margin="8,8,8,8"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
                     <StackPanel Grid.Row="1">
                         <Button Content="请求记录"
                                 Command="{Binding ShowRecievedListCmd}"
@@ -200,14 +195,14 @@
                                 Command="{Binding ShowSettingCmd}"
                                 Style="{StaticResource NavigationButtonStyle}"/>
                     </StackPanel>
-                    <Border Grid.Row="2" Background="#F4F7FB" CornerRadius="7" Padding="12" Margin="0,8,0,0">
+                    <Border Grid.Row="2" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="7" Padding="12" Margin="0,8,0,0">
                         <StackPanel>
                             <TextBlock Text="当前请求数" Style="{StaticResource CaptionStyle}"/>
                             <TextBlock Text="{Binding RequestDatasCount}"
                                        Margin="0,8,0,0"
                                        FontSize="24"
                                        FontWeight="Bold"
-                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                       Foreground="{DynamicResource PrimaryBrush}"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -232,8 +227,8 @@
                                            Style="{StaticResource CaptionStyle}"
                                            Margin="0,8,0,0"/>
                             </StackPanel>
-                            <Border Grid.Column="1" Background="#EFF6FF" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
-                                <TextBlock Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold">
+                            <Border Grid.Column="1" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
+                                <TextBlock Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold">
                                     <Run Text="{Binding RequestDatasCount}"/>
                                     <Run Text=" 条记录"/>
                                 </TextBlock>
@@ -243,8 +238,8 @@
                         <ListBox Grid.Row="2" ItemsSource="{Binding DisplayDatas}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#FAFBFD"
-                                            BorderBrush="{StaticResource BorderBrush}"
+                                    <Border Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="8"
                                             Padding="14">
@@ -256,7 +251,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Title}"
                                                            FontWeight="SemiBold"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                                            TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Text="{Binding TriggerTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss.fff}}"
                                                            Style="{StaticResource CaptionStyle}"
@@ -267,7 +262,6 @@
                                                     Margin="8,0,0,0"
                                                     Padding="14,5"
                                                     VerticalAlignment="Center"
-                                                    Style="{StaticResource ButtonSuccess}"
                                                     Command="{Binding DataContext.DisplayMessageCmd, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                                     CommandParameter="{Binding TriggerTime}"/>
                                             <Popup IsOpen="{Binding IsOpen}"
@@ -276,8 +270,8 @@
                                                    AllowsTransparency="True">
                                                 <Border Width="720"
                                                         MaxHeight="460"
-                                                        Background="White"
-                                                        BorderBrush="{StaticResource BorderBrush}"
+                                                        Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                                                        BorderBrush="{DynamicResource BorderBrush}"
                                                         BorderThickness="1"
                                                         CornerRadius="10"
                                                         Padding="18">
@@ -294,21 +288,21 @@
                                                         </Grid.RowDefinitions>
                                                         <TextBlock Text="请求参数" Style="{StaticResource SectionTitleStyle}" FontSize="15"/>
                                                         <TextBlock Grid.Column="2" Text="响应参数" Style="{StaticResource SectionTitleStyle}" FontSize="15"/>
-                                                        <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="7" Padding="12">
+                                                        <Border Grid.Row="2" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="7" Padding="12">
                                                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                                 <TextBlock Text="{Binding RequestData}"
                                                                            FontFamily="Consolas"
                                                                            FontSize="12"
-                                                                           Foreground="Black"
+                                                                           Foreground="{DynamicResource Theme.WindowForegroundBrush}"
                                                                            TextWrapping="Wrap"/>
                                                             </ScrollViewer>
                                                         </Border>
-                                                        <Border Grid.Row="2" Grid.Column="2" Background="#F8FAFC" CornerRadius="7" Padding="12">
+                                                        <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="7" Padding="12">
                                                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                                 <TextBlock Text="{Binding ResponseData}"
                                                                            FontFamily="Consolas"
                                                                            FontSize="12"
-                                                                           Foreground="Black"
+                                                                           Foreground="{DynamicResource Theme.WindowForegroundBrush}"
                                                                            TextWrapping="Wrap"/>
                                                             </ScrollViewer>
                                                         </Border>
@@ -339,8 +333,8 @@
                         <ListBox Grid.Row="2" ItemsSource="{Binding IPList}" SelectedItem="{Binding SelectedURL}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#FAFBFD"
-                                            BorderBrush="{StaticResource BorderBrush}"
+                                    <Border Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="8"
                                             Padding="12">
@@ -356,7 +350,6 @@
                                             <Button Grid.Column="1"
                                                     Content="开始监听"
                                                     Padding="16,5"
-                                                    Style="{StaticResource ButtonSuccess}"
                                                     Command="{Binding DataContext.StartListenCmd, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"/>
                                         </Grid>
                                     </Border>
@@ -382,7 +375,7 @@
                                        Margin="0,8,0,0"/>
                         </StackPanel>
 
-                        <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="8" Padding="12">
+                        <Border Grid.Row="2" Background="{DynamicResource Theme.SecondaryBackgroundBrush}" CornerRadius="8" Padding="12">
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="格式" Style="{StaticResource CaptionStyle}" Margin="0,0,8,0"/>
                                 <hc:ComboBox ItemsSource="{Binding ContentTypeList}"
@@ -409,8 +402,7 @@
                                 <Button Content="新增模板"
                                         Command="{Binding OpenAddControlCmd}"
                                         Padding="14,5"
-                                        Margin="8"
-                                        Style="{StaticResource ButtonSuccess}"/>
+                                        Margin="8"/>
                             </WrapPanel>
                         </Border>
 
@@ -425,8 +417,8 @@
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Text="指定响应内容" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBlock Grid.Column="2" Text="实际响应预览" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="指定响应内容" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Grid.Column="2" Text="实际响应预览" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
                             <TextBox x:Name="ParticularTextBox" Grid.Row="2"
                                      TextChanged="ParticularTextBox_TextChanged"
                                      IsKeyboardFocusWithinChanged="ParticularTextBox_IsKeyboardFocusWithinChanged"
@@ -448,7 +440,7 @@
                                      FontFamily="Consolas"
                                      FontSize="12"
                                      Padding="10"
-                                     Background="#F8FAFC"
+                                     Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
                                      VerticalScrollBarVisibility="Auto"
                                      HorizontalScrollBarVisibility="Auto"/>
                         </Grid>
@@ -458,8 +450,8 @@
         </Grid>
 
         <Border Grid.Row="2"
-                Background="White"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Theme.SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0">
             <Grid Margin="8,0">
                 <Grid.ColumnDefinitions>
@@ -467,17 +459,16 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" Fill="#22C55E" Margin="0,0,8,0"/>
+                    <Ellipse Width="8" Height="8" Fill="{DynamicResource SuccessBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="服务控制台就绪" Style="{StaticResource CaptionStyle}"/>
                     <TextBlock Text=" · 已记录 " Style="{StaticResource CaptionStyle}" Margin="8,0,0,0"/>
-                    <TextBlock Text="{Binding RequestDatasCount}" Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding RequestDatasCount}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <TextBlock Text=" 个请求" Style="{StaticResource CaptionStyle}"/>
                 </StackPanel>
                 <Button Grid.Column="1"
                         Content="清空记录"
                         Padding="16,5"
                         VerticalAlignment="Center"
-                        Style="{StaticResource ButtonDanger}"
                         Command="{Binding ClearCmd}"/>
             </Grid>
         </Border>

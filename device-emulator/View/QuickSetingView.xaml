@@ -8,29 +8,22 @@
         xmlns:viewmodel="clr-namespace:DeviceEmulator.ViewModel" 
         d:DataContext="{d:DesignInstance Type=viewmodel:QuickSetingVM}"
         Icon="pack://application:,,,/DeviceEmulator;component/DeviceEmulator.ico"
-        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
-        Title="快捷命令设置界面" Height="360" Width="600">
+        Title="快捷命令设置界面" Height="360" Width="600" ResizeMode="NoResize">
     <Window.Resources>
         <Style TargetType="GroupBox" BasedOn="{StaticResource BaseStyle}">
             <Setter Property="Margin" Value="4"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.WindowForegroundBrush}"/>
         </Style>
         <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource ButtonBaseBaseStyle}">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.WindowForegroundBrush}"/>
         </Style>
         <local:DateTimeConvert x:Key="DateTimeConvert"/>
     </Window.Resources>
-    <Window.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FD6B62" Offset="0"/>
-            <GradientStop Color="#1890FF" Offset="1"/>
-        </LinearGradientBrush>
-    </Window.Background>
-    <TabControl SelectedIndex="{Binding SelectedIndex}" Style="{StaticResource TabControlCapsule}" Margin="4" Background="Transparent" Foreground="White">
-        <hc:TabItem Header="自动供包PLC" Background="Transparent" Foreground="White">
+    <TabControl SelectedIndex="{Binding SelectedIndex}" Margin="4" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
+        <hc:TabItem Header="自动供包PLC" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="63*"/>
@@ -42,13 +35,13 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4,2" Background="Transparent" Grid.ColumnSpan="3">
-                    <Label Content="PLC协议版本:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4" Background="Transparent" Foreground="White"/>
+                    <Label Content="PLC协议版本:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
                     <ComboBox Width="60" Height="20" Margin="4,2" ItemsSource="{Binding PLCTypes}" SelectedItem="{Binding PlcType}"/>
-                    <Label Content="单件线数:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,2" Background="Transparent"/>
+                    <Label Content="单件线数:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,2" Background="Transparent"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LineNumbers}" SelectedItem="{Binding LineNumber}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4,2" Command="{Binding PLCCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Margin="4,2" Command="{Binding PLCCreateQuickCommandExd}"/>
                 </StackPanel>
-                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4" BorderBrush="White">
+                <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4" BorderBrush="{DynamicResource Theme.BorderBrush}">
                     <DataGrid ItemsSource="{Binding PLCList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="线号" Binding="{Binding LineNo}"/>
@@ -62,7 +55,7 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Header="相机" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="相机" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="16*"/>
@@ -74,9 +67,9 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4" Background="Transparent" Grid.ColumnSpan="3">
-                    <TextBlock Text="相机数量:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <TextBlock Text="相机数量:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding CameraNums}" SelectedItem="{Binding CameraNum}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding CameraCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Margin="4" Command="{Binding CameraCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
                     <DataGrid ItemsSource="{Binding CameraList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
@@ -116,7 +109,7 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Header="摆轮" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="摆轮" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="16*"/>
@@ -128,9 +121,9 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4" Background="Transparent" Grid.ColumnSpan="3">
-                    <TextBlock Text="摆轮数量:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <TextBlock Text="摆轮数量:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding BalanceWheelNums}" SelectedItem="{Binding BalanceWheelNum}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding BalanceWheelCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Margin="4" Command="{Binding BalanceWheelCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
                     <DataGrid ItemsSource="{Binding BalanceWheelList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
@@ -152,7 +145,7 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Header="格口控制器" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="格口控制器" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="16*"/>
@@ -164,9 +157,9 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4" Background="Transparent" Grid.ColumnSpan="3">
-                    <TextBlock Text="格口数量:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <TextBlock Text="格口数量:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding SortPortNums}" SelectedItem="{Binding SortPortNum}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding SortPortCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Margin="4" Command="{Binding SortPortCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
                     <DataGrid ItemsSource="{Binding SortPortsList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">
@@ -194,7 +187,7 @@
                 </GroupBox>
             </Grid>
         </hc:TabItem>
-        <hc:TabItem Header="光电" Background="Transparent" Foreground="White">
+        <hc:TabItem Header="光电" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="16*"/>
@@ -206,9 +199,9 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="4" Background="Transparent" Grid.ColumnSpan="3">
-                    <TextBlock Text="光电数量:" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
+                    <TextBlock Text="光电数量:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"/>
                     <ComboBox Width="100" Height="20" Margin="4,2" ItemsSource="{Binding LightNums}" SelectedItem="{Binding LightNum}" IsEditable="True"/>
-                    <Button Content="生成快捷命令" Style="{StaticResource ButtonSuccess}" Margin="4" Command="{Binding LightCreateQuickCommandExd}"/>
+                    <Button Content="生成快捷命令" Margin="4" Command="{Binding LightCreateQuickCommandExd}"/>
                 </StackPanel>
                 <GroupBox Grid.Row="1" Header="选择区" Grid.ColumnSpan="3" Margin="4">
                     <DataGrid ItemsSource="{Binding LightList}" BorderThickness="0" AutoGenerateColumns="False" Background="Transparent">

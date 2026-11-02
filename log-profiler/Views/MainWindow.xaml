@@ -13,7 +13,6 @@
         mc:Ignorable="d"
         Icon="pack://application:,,,/LogProfiler;component/images/logprofiler.ico"
         WindowStartupLocation="CenterScreen"
-        Style="{StaticResource MainWindowStyle}"
         windows:WindowTitleVersionBehavior.Version="{x:Static local:ToolVersion.Current}"
         Title="{x:Static prop:Res.ProjectName}" Height="540" Width="900">
     <Window.Resources>
@@ -32,22 +31,22 @@
                         <Setter Property="Background" Value="Transparent"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsTimeout}" Value="True">
-                                <Setter Property="Background" Value="#CD97F9"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.TimeoutBackgroundBrush}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsTimeout}" Value="False">
-                                <Setter Property="Background" Value="#74D46E"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.NormalBackgroundBrush}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsBaseData}" Value="True">
-                                <Setter Property="Background" Value="#68E7FF"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.BaseDataBackgroundBrush}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
-                <TextBlock Text="{Binding LogDatetime, Converter={StaticResource DateTimeConverter}}" Foreground="#1F37ED" VerticalAlignment="Center" Margin="10,0"/>
+                <TextBlock Text="{Binding LogDatetime, Converter={StaticResource DateTimeConverter}}" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="10,0"/>
                 <Canvas Margin="10,0">
-                    <Line X1="5" Y1="0" X2="5" Y2="{Binding TopofHalfRealLogDataLength}" Stroke="Black"/>
-                    <Ellipse Height="10" Width="10" StrokeThickness="2" Stroke="#FE5C20" Canvas.Top="{Binding TopofHalfRealLogDataLength}"/>
-                    <Line X1="5" Y1="{Binding BottomofHalfRealLogDataLength}" X2="5" Y2="{Binding RealLogDataLength}" Stroke="Black"/>
+                    <Line X1="5" Y1="0" X2="5" Y2="{Binding TopofHalfRealLogDataLength}" Stroke="{DynamicResource Theme.WindowForegroundBrush}"/>
+                    <Ellipse Height="10" Width="10" StrokeThickness="2" Stroke="{DynamicResource WarningBrush}" Canvas.Top="{Binding TopofHalfRealLogDataLength}"/>
+                    <Line X1="5" Y1="{Binding BottomofHalfRealLogDataLength}" X2="5" Y2="{Binding RealLogDataLength}" Stroke="{DynamicResource Theme.WindowForegroundBrush}"/>
                 </Canvas>
                 <Label Content="{Binding LogContent}"  VerticalAlignment="Center" Margin="10,0"/>
             </StackPanel>
@@ -67,8 +66,8 @@
                         <Setter Property="BorderBrush" Value="Transparent"/>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="BorderBrush" Value="#FF174EA6"/>
-                                <Setter Property="Background" Value="#332F80ED"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.SecondaryBackgroundBrush}"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -78,12 +77,6 @@
             <Setter Property="ContextMenu" Value="{StaticResource ListBoxConteMenu}"/>
         </Style>
     </Window.Resources>
-    <Window.Background>
-        <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
-            <GradientStop Color="#62DDFD" Offset="0"/>
-            <GradientStop Color="#8662FD" Offset="1"/>
-        </LinearGradientBrush>
-    </Window.Background>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -95,58 +88,58 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="开始时间:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="开始时间:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <hc:DateTimePicker SelectedDateTime="{Binding StartTime, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" Height="20" Margin="4"/>
-            <TextBlock Text="结束时间:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="结束时间:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <hc:DateTimePicker SelectedDateTime="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" Height="20" Margin="4"/>
-            <TextBlock Text="设备:" Foreground="White" VerticalAlignment="Center" Margin="4"/>
+            <TextBlock Text="设备:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <ComboBox ItemsSource="{Binding DeviceNameList}" SelectedItem="{Binding DeviceName}" Width="120" Height="20" Margin="4"/>
-            <Button Content="正则" Foreground="White" Style="{StaticResource ButtonWarning}" Command="{Binding RegexCmd}" Margin="4"/>
-            <TextBlock Text="超时阈值(/ms):" Foreground="White" VerticalAlignment="Center" Margin="4"/>
+            <Button Content="正则" Command="{Binding RegexCmd}" Height="20" Margin="4"/>
+            <TextBlock Text="超时阈值(/ms):" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <TextBox Text="{Binding TimeoutThreshold, Converter={StaticResource IntDataConverter}}" HorizontalContentAlignment="Center" Width="50" Height="20" Margin="4"/>
-            <Button Height="24" Style="{StaticResource ButtonCustom}" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0">
+            <Button Height="24" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0" Padding="0">
                 <Image Source="pack://application:,,,/LogProfiler;component/Images/Setting.ico"/>
             </Button>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <Button Content="下载最新日志" Style="{StaticResource ButtonInfo}" Command="{Binding OpenDownloadLogWindowCmd}" Margin="16,4,8,4"/>
-            <Button Content="导入日志" Style="{StaticResource ButtonPrimary}" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
-            <Button Content="清空日志缓存" Style="{StaticResource ButtonDanger}" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
-            <Button Content="查询" Style="{StaticResource ButtonSuccess}" Command="{Binding SelectCmd}" Margin="4"/>
-            <Button Content="模拟" Style="{StaticResource ButtonInfo}" Command="{Binding Simulation.ConfigureCommand}" Margin="4"/>
+            <Button Content="下载最新日志" Command="{Binding OpenDownloadLogWindowCmd}" Margin="16,4,8,4"/>
+            <Button Content="导入日志" Command="{Binding GetLogCmd}" Margin="8,4,8,4"/>
+            <Button Content="清空日志缓存" Command="{Binding ClearLogCmd}" Margin="8,4,8,4"/>
+            <Button Content="查询" Command="{Binding SelectCmd}" Margin="4"/>
+            <Button Content="模拟" Command="{Binding Simulation.ConfigureCommand}" Margin="4"/>
             <Button Content="{Binding Simulation.StartStopText}" Command="{Binding Simulation.StartStopCommand}"
                     Style="{Binding Simulation.IsRunning, Converter={StaticResource SimulationButtonStyleConverter}}"
                     Visibility="{Binding Simulation.IsConfigured, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="4"/>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="White" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="占比宽度调整" Foreground="{DynamicResource Theme.WindowForegroundBrush}" HorizontalAlignment="Center"/>
         <Slider x:Name="slider" Grid.Row="3" Maximum="1" TickFrequency="0.1" SmallChange="0.01" TickPlacement="TopLeft" IsMoveToPointEnabled="True" Value="{Binding SliderValue}"/>
-        <TabControl Grid.Row="4" Margin="8" Background="Transparent" Style="{StaticResource TabControlCapsule}" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">
-            <TabItem Header="Debug日志" Foreground="White" Background="Transparent">
+        <TabControl Grid.Row="4" Margin="8" Background="Transparent" SelectedIndex="{Binding SelectedTabIndex}" BorderThickness="0">
+            <TabItem Header="Debug日志" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent">
                 <ListBox ItemsSource="{Binding DebugLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
-            <TabItem Header="Info日志" Foreground="White" Background="Transparent">
+            <TabItem Header="Info日志" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent">
                 <ListBox ItemsSource="{Binding InfoLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
-            <TabItem Header="Exception日志" Foreground="White" Background="Transparent">
+            <TabItem Header="Exception日志" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent">
                 <ListBox ItemsSource="{Binding ExceptionLogDatas}" SelectedIndex="{Binding SelectedLogIndex}" SelectionChanged="LogList_SelectionChanged" ItemTemplate="{StaticResource ItemTemplate}"/>
             </TabItem>
         </TabControl>
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="上一页" Command="{Binding PreviewPageCmd}" Style="{StaticResource ButtonPrimary}" Margin="16,4,4,4"/>
+            <Button Content="上一页" Command="{Binding PreviewPageCmd}" Margin="16,4,4,4"/>
             <TextBox x:Name="page" Text="{Binding Page}" HorizontalContentAlignment="Center" MinWidth="40" MaxHeight="30" Margin="4"/>
-            <Button Content="下一页" Command="{Binding NextPageCmd}" Style="{StaticResource ButtonPrimary}" Margin="4"/>
+            <Button Content="下一页" Command="{Binding NextPageCmd}" Margin="4"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="6">
-            <Label Content="当前展示数量:" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
-            <Label Content="{Binding CurrentLogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
-            <Label Content="(单页面最多显示:)" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="当前展示数量:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding CurrentLogDataCount}" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
+            <Label Content="(单页面最多显示:)" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
             <Label Content="{Binding PageSize}" HorizontalContentAlignment="Center" Width="50" Margin="4"/>
-            <Label Content="筛选结果：" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
-            <Label Content="{Binding LogDataCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
-            <Label Content="超时数量：" Foreground="White" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
-            <Label Content="{Binding TimeoutCount}" Foreground="OrangeRed" VerticalAlignment="Center"/>
+            <Label Content="筛选结果：" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding LogDataCount}" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
+            <Label Content="超时数量：" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Background="Transparent" VerticalAlignment="Center" Margin="16,0"/>
+            <Label Content="{Binding TimeoutCount}" Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>

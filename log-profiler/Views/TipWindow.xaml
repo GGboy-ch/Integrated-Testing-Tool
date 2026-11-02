@@ -24,7 +24,7 @@
                 <Style x:Key="rec" TargetType="Rectangle">
                     <Setter Property="Width" Value="20"/>
                     <Setter Property="Height" Value="90"/>
-                    <Setter Property="Fill" Value="#f1404b"/>
+                    <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
                 </Style>
                 <PowerEase x:Key="powerEase" Power="3" EasingMode="EaseInOut"/>
             </Grid.Resources>

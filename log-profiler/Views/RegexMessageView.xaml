@@ -8,25 +8,18 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:RegexMessageModel}"
         mc:Ignorable="d"
         Icon="pack://application:,,,/LogProfiler;component/Images/Logprofiler.ico"
-        Style="{StaticResource DialogWindowStyle}"
         WindowStartupLocation="CenterOwner"
-        Title="正则筛选" Height="300" Width="600">
+        Title="正则筛选" Height="300" Width="600" ResizeMode="NoResize">
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
-                <GradientStop Color="#62DDFD" Offset="0"/>
-                <GradientStop Color="#8662FD" Offset="1"/>
-            </LinearGradientBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <Button Content="添加" Style="{StaticResource ButtonInfo}" Command="{Binding AddRegexCmd}" Margin="8"/>
-            <Button Content="{Binding DeleteButtonName}" Style="{StaticResource ButtonDanger}" Command="{Binding DeleteRegexCmd}" Margin="8"/>
-            <Button Content="确定" Style="{StaticResource ButtonSuccess}" Command="{Binding SaveRegexCmd }" Margin="8"/>
-            <TextBlock Text="{Binding TextBlockText}" Foreground="White" Style="{StaticResource TextBlockSubTitleBold}" Margin="8"/>
+            <Button Content="添加" Command="{Binding AddRegexCmd}" Margin="8"/>
+            <Button Content="{Binding DeleteButtonName}" Command="{Binding DeleteRegexCmd}" Margin="8"/>
+            <Button Content="确定" Command="{Binding SaveRegexCmd }" Margin="8"/>
+            <TextBlock Text="{Binding TextBlockText}" Foreground="{DynamicResource Theme.WindowForegroundBrush}" Style="{StaticResource TextBlockSubTitleBold}" Margin="8"/>
         </StackPanel>
         <ListBox 
             x:Name="listbox" 
@@ -43,10 +36,10 @@
                         <CheckBox IsChecked="{Binding IsChecked}" Content="使用" Margin="4">
                             <CheckBox.Style>
                                 <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.WindowForegroundBrush}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
-                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.WindowForegroundBrush}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>

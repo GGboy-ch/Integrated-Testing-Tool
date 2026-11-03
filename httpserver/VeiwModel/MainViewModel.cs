@@ -344,17 +344,7 @@ namespace HTTPServer.VeiwModel
 
         private void ShowAddressCmdCxd()
         {
-            if (IPListVisibility == Visibility.Visible)
-            {
-                IPListVisibility = Visibility.Collapsed;
-                RecieveVisibility = Visibility.Visible;
-            }
-            else
-            {
-                IPListVisibility = Visibility.Visible;
-                SettingVisibility = Visibility.Collapsed;
-                RecieveVisibility = Visibility.Collapsed;
-            }
+            ShowWorkspacePage(WorkspacePage.ListenAddresses);
         }
 
         private RelayCommand? _ShowRecievedListCmd;
@@ -369,14 +359,7 @@ namespace HTTPServer.VeiwModel
 
         private void ShowRecievedListCmdCxd()
         {
-            if (RecieveVisibility == Visibility.Visible)
-            {
-                RecieveVisibility = Visibility.Collapsed;
-            }
-            else
-            {
-                RecieveVisibility = Visibility.Visible;
-            }
+            ShowWorkspacePage(WorkspacePage.RequestRecords);
         }
 
         private RelayCommand? _ShowSettingCmd;
@@ -391,17 +374,24 @@ namespace HTTPServer.VeiwModel
 
         private void ShowSettingCmdCxd()
         {
-            if (SettingVisibility == Visibility.Visible)
-            {
-                SettingVisibility = Visibility.Collapsed;
-                RecieveVisibility = Visibility.Visible;
-            }
-            else
-            {
-                SettingVisibility = Visibility.Visible;
-                IPListVisibility = Visibility.Collapsed;
-                RecieveVisibility = Visibility.Collapsed;
-            }
+            ShowWorkspacePage(WorkspacePage.ResponseContent);
+        }
+
+        private enum WorkspacePage
+        {
+            RequestRecords,
+            ListenAddresses,
+            ResponseContent
+        }
+
+        /// <summary>
+        /// 切换工作区页面，始终只显示选中的页面。
+        /// </summary>
+        private void ShowWorkspacePage(WorkspacePage page)
+        {
+            RecieveVisibility = page == WorkspacePage.RequestRecords ? Visibility.Visible : Visibility.Collapsed;
+            IPListVisibility = page == WorkspacePage.ListenAddresses ? Visibility.Visible : Visibility.Collapsed;
+            SettingVisibility = page == WorkspacePage.ResponseContent ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private RelayCommand? _StartListenCmd;
@@ -439,8 +429,7 @@ namespace HTTPServer.VeiwModel
                     }
                 }
             }
-            IPListVisibility = Visibility.Collapsed;
-            RecieveVisibility = Visibility.Visible;
+            ShowWorkspacePage(WorkspacePage.RequestRecords);
         }
 
         private RelayCommand? _CreateNewPlanCmd;

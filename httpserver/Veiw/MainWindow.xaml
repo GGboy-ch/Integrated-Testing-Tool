@@ -155,8 +155,10 @@
                     <Button Width="34"
                             Height="34"
                             Margin="8,0,0,0"
-                            Padding="8"
+                            Padding="4"
                             ToolTip="设置"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
                             Command="{Binding NotifyCommand}"
                             CommandParameter="1">
                         <Image Source="{StaticResource SettingIcon}"/>

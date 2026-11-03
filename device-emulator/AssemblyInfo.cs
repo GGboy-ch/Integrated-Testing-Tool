@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261103 1.0.0.15
+调整报文信息区域布局，移除多余行并统一左右区域高度比例。
+
 20261102 1.0.0.14
 修复通用库被嵌入后启动时无法加载App基类的问题，补充启动日志及未处理异常诊断日志。
 
@@ -81,5 +84,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.14";
+    public const string Current = "1.0.0.15";
 }

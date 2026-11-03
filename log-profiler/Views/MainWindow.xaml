@@ -94,10 +94,10 @@
             <hc:DateTimePicker SelectedDateTime="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" Height="20" Margin="4"/>
             <TextBlock Text="设备:" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <ComboBox ItemsSource="{Binding DeviceNameList}" SelectedItem="{Binding DeviceName}" Width="120" Height="20" Margin="4"/>
-            <Button Content="正则" Command="{Binding RegexCmd}" Height="20" Margin="4"/>
+            <Button Content="正则" Command="{Binding RegexCmd}" MaxHeight="30" Margin="4"/>
             <TextBlock Text="超时阈值(/ms):" Foreground="{DynamicResource Theme.WindowForegroundBrush}" VerticalAlignment="Center" Margin="4"/>
             <TextBox Text="{Binding TimeoutThreshold, Converter={StaticResource IntDataConverter}}" HorizontalContentAlignment="Center" Width="50" Height="20" Margin="4"/>
-            <Button Height="24" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0" Padding="0">
+            <Button Height="24" Command="{Binding NotifyCommand}" CommandParameter="1" HorizontalAlignment="Right" Margin="8,0" Padding="0" Background="Transparent" BorderThickness="0">
                 <Image Source="pack://application:,,,/LogProfiler;component/Images/Setting.ico"/>
             </Button>
         </StackPanel>

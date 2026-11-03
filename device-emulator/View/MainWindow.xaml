@@ -94,7 +94,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="9*"/>
-                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <RichTextBox Grid.Row="1" x:Name="richTextBox" local:RichTextBoxHelper.BoundDocument="{Binding RichTextBoxDocument}" Margin="4" Foreground="{DynamicResource Theme.WindowForegroundBrush}" TextChanged="richTextBox_TextChanged"/>
                 <Button Grid.Row="0" HorizontalAlignment="Right" Content="清空报文信息" Command="{Binding ClearRichTextDocumentExd}" Margin="4"/>
@@ -104,7 +103,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="9*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal" Background="Transparent">
                     <Label Content="PLC协议版本:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>

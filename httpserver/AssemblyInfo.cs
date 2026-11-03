@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261103 1.0.0.16
+修复请求记录、监听地址和返回内容页面切换，保持页面互斥显示，重复点击当前页面不再隐藏。调整设置按钮内边距并使用透明背景和边框。
+
 20261029 1.0.0.15
 主题切换统一同步所有子窗口和弹窗，更新提示使用通用主题消息框。
 
@@ -87,5 +90,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.15";
+    public const string Current = "1.0.0.16";
 }

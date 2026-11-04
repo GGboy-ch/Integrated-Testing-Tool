@@ -1,3 +1,4 @@
 ﻿<Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
-  <Costura />
+  <!-- App 的基类位于 GeneralLibrary，必须在 Costura 初始化前可供 CLR 加载，并随安装包独立分发。 -->
+  <Costura ExcludeAssemblies="GeneralLibrary" />
 </Weavers>

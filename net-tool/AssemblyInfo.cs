@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261104 1.0.0.9
+修复Release安装包缺少GeneralLibrary.dll，启动依赖改为独立分发并在打包前保留
+
 20261029 1.0.0.8
 主题切换统一同步所有子窗口和弹窗，更新提示使用通用主题消息框。
 
@@ -61,5 +64,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.8";
+    public const string Current = "1.0.0.9";
 }

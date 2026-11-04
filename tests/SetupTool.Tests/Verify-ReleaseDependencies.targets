@@ -1,0 +1,9 @@
+﻿<Project>
+  <!-- 使用 /p:CustomAfterMicrosoftCommonTargets=此文件的绝对路径进行 Release Rebuild。
+       替换真实 PackProject，在同一 AfterBuild 时点验证依赖，不生成或上传正式安装包。 -->
+  <Target Name="PackProject" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    <Error Condition="!Exists('$(TargetPath)')" Text="打包前缺少主程序集：$(TargetPath)" />
+    <Error Condition="!Exists('$(TargetDir)GeneralLibrary.dll')" Text="打包前缺少启动依赖：$(TargetDir)GeneralLibrary.dll" />
+    <Message Importance="high" Text="PASS: $(MSBuildProjectName) Release 打包时点已包含 GeneralLibrary.dll；已替换正式打包和上传操作。" />
+  </Target>
+</Project>

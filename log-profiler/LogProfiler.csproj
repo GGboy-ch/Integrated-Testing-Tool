@@ -70,14 +70,6 @@
     <ProjectReference Include="..\general-library\GeneralLibrary\GeneralLibrary.csproj" />
   </ItemGroup>
 
-  <Target Name="CopyGeneralLibraryToOutput" AfterTargets="Build">
-    <ItemGroup>
-      <GeneralLibraryOutput Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'GeneralLibrary'" />
-    </ItemGroup>
-    <Copy SourceFiles="@(GeneralLibraryOutput)" DestinationFolder="$(TargetDir)"
-          SkipUnchangedFiles="true" Condition="'@(GeneralLibraryOutput)' != ''" />
-  </Target>
-
   <ItemGroup>
     <Compile Update="Res\Res.Designer.cs">
       <DesignTime>True</DesignTime>

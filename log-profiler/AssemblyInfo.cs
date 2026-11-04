@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261104 1.0.0.29
+修复Release安装包缺少GeneralLibrary.dll，启动依赖改为独立分发并在打包前保留
+
 20261103 1.0.0.28
 调整正则按钮高度限制，设置按钮改用透明背景并移除边框。
 
@@ -125,5 +128,5 @@ namespace LogProfiler;
 public static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.28";
+    public const string Current = "1.0.0.29";
 }

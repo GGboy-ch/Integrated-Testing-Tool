@@ -4,6 +4,9 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261110 1.0.0.5
+合并并发布项目版本历史供网站读取
+
 20260928 1.0.0.4
 程序图标统一按程序名发布并保留，兼容旧版图标文件
 
@@ -23,5 +26,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.4";
+    public const string Current = "1.0.0.5";
 }

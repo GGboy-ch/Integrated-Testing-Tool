@@ -218,7 +218,7 @@ namespace SetupTool
                 string historyPath = Path.Combine(rootpath, "bin", $"{projectName}.changelog.json");
                 WriteUpdateHistory(historyPath, updateHistory);
                 Console.WriteLine($"版本历史：{historyPath}");
-                UploadInstallerToFtp(installerPath, applicationIconPath);
+                UploadInstallerToFtp(installerPath, applicationIconPath, historyPath);
                 return 0;
             }
             catch (Exception ex)
@@ -378,11 +378,12 @@ namespace SetupTool
         }
 
         /// <summary>
-        /// 将程序名图标和安装包上传到FTP服务器。
+        /// 将程序名图标、版本历史和安装包上传到 FTP 服务器。
         /// </summary>
         /// <param name="installerPath">本地安装包路径</param>
         /// <param name="iconPath">项目中的程序图标路径</param>
-        private static void UploadInstallerToFtp(string installerPath, string iconPath)
+        /// <param name="historyPath">项目版本历史路径</param>
+        private static void UploadInstallerToFtp(string installerPath, string iconPath, string historyPath)
         {
             if (string.IsNullOrWhiteSpace(FtpUri))
             {
@@ -403,10 +404,13 @@ namespace SetupTool
             NetworkCredential credential = new NetworkCredential(FtpUserName, FtpPassword);
             Uri remoteInstallerUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(installerPath));
             Uri remoteIconUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, Path.GetFileName(iconPath));
+            string remoteHistoryName = Path.ChangeExtension(Path.GetFileName(installerPath), ".changelog.json");
+            Uri remoteHistoryUri = BuildRemoteFileUri(ftpUri, FtpRemoteDirectory, remoteHistoryName);
 
             EnsureFtpDirectoryExists(remoteInstallerUri, credential, FtpEnableSsl);
-            // 先上传图标，再上传安装包，供转移服务以安装包作为完整上传标记。
+            // 先上传图标和该安装包对应的历史快照，最后上传安装包作为完成标记。
             UploadFileToFtp(remoteIconUri, iconPath, credential);
+            UploadFileToFtp(remoteHistoryUri, historyPath, credential);
             UploadFileToFtp(remoteInstallerUri, installerPath, credential);
         }
 

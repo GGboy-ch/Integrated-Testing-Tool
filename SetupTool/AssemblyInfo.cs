@@ -5,6 +5,9 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261110 1.0.0.10
+随安装包上传项目版本历史快照
+
 20261110 1.0.0.9
 安装包名称改为项目名和版本号
 将目标项目各版本的完整更新信息生成独立的 JSON 文件
@@ -40,5 +43,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.9";
+    public const string Current = "1.0.0.10";
 }

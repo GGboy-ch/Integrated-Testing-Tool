@@ -1,9 +1,18 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
+using Microsoft.Extensions.Options;
 
 namespace PackageTransferService;
 
 public sealed class FileTransferProcessor
 {
+    private static readonly JsonSerializerOptions HistoryJsonOptions = new()
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+    };
+
     private readonly ILogger<FileTransferProcessor> _logger;
     private readonly PackageTransferOptions _options;
     private Dictionary<string, FileSnapshot> _previousSnapshots = new(StringComparer.OrdinalIgnoreCase);
@@ -98,6 +107,7 @@ public sealed class FileTransferProcessor
 
                 try
                 {
+                    File.Delete(GetUploadedHistoryPath(path));
                     DeletePackageAndLegacyIcon(path);
                     _logger.LogInformation(
                         "同程序同版本存在较新上传，旧文件已删除且不会转移：{FileName}",
@@ -181,13 +191,25 @@ public sealed class FileTransferProcessor
             : File.Exists(sharedSourceIconPath) ? sharedSourceIconPath : null;
         string destinationIconPath = Path.Combine(_options.DestinationDirectory, $"{package.ProductName}.ico");
 
-        // 先原子发布程序图标，最后发布安装包；安装包出现时，图标已完整可用。
+        string sourceHistoryPath = GetUploadedHistoryPath(sourcePath);
+        bool hasHistory = File.Exists(sourceHistoryPath);
+
+        // 先发布图标和历史记录，再发布安装包。
         if (sourceIconPath is not null)
         {
             await CopyFileAtomicallyAsync(sourceIconPath, destinationIconPath, cancellationToken);
         }
 
+        if (hasHistory)
+        {
+            await PublishHistoryAsync(sourceHistoryPath, package, cancellationToken);
+        }
+
         await CopyFileAtomicallyAsync(sourcePath, destinationPath, cancellationToken);
+        if (hasHistory)
+        {
+            File.Delete(sourceHistoryPath);
+        }
         if (File.Exists(legacySourceIconPath))
         {
             File.Delete(legacySourceIconPath);
@@ -199,9 +221,74 @@ public sealed class FileTransferProcessor
             fileName);
     }
 
+    private static string GetUploadedHistoryPath(string packagePath)
+    {
+        return Path.ChangeExtension(packagePath, ".changelog.json");
+    }
+
+    private async Task PublishHistoryAsync(
+        string sourcePath,
+        PackageFileName package,
+        CancellationToken cancellationToken)
+    {
+        Dictionary<string, string> incoming = await ReadHistoryAsync(sourcePath, FileShare.None, cancellationToken);
+        if (!incoming.TryGetValue(package.Version.ToString(), out string? description) || string.IsNullOrWhiteSpace(description))
+        {
+            throw new InvalidDataException($"版本历史缺少安装包版本 {package.Version} 的更新说明。");
+        }
+
+        string destinationPath = Path.Combine(_options.DestinationDirectory, $"{package.ProductName}.changelog.json");
+        Dictionary<string, string> history = File.Exists(destinationPath)
+            ? await ReadHistoryAsync(destinationPath, FileShare.Read, cancellationToken)
+            : new Dictionary<string, string>();
+        bool hasNewerHistory = history.Keys.Any(key => Version.TryParse(key, out Version? version) && version > package.Version);
+        foreach ((string version, string details) in incoming)
+        {
+            if (hasNewerHistory)
+            {
+                // 延迟到达的旧安装包可以补充历史，但不能覆盖较新快照中的记录。
+                history.TryAdd(version, details);
+            }
+            else
+            {
+                history[version] = details;
+            }
+        }
+
+        await PublishFileAtomicallyAsync(
+            destinationPath,
+            stream => JsonSerializer.SerializeAsync(stream, history, HistoryJsonOptions, cancellationToken),
+            cancellationToken);
+    }
+
+    private static async Task<Dictionary<string, string>> ReadHistoryAsync(
+        string path,
+        FileShare share,
+        CancellationToken cancellationToken)
+    {
+        await using FileStream stream = new(path, FileMode.Open, FileAccess.Read, share, 4096, FileOptions.Asynchronous);
+        return await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, cancellationToken: cancellationToken)
+            ?? throw new InvalidDataException($"版本历史内容为空：{Path.GetFileName(path)}");
+    }
+
     private async Task CopyFileAtomicallyAsync(
         string sourcePath,
         string destinationPath,
+        CancellationToken cancellationToken)
+    {
+        await using FileStream source = new(
+            sourcePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.None,
+            1024 * 128,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await PublishFileAtomicallyAsync(destinationPath, stream => source.CopyToAsync(stream, cancellationToken), cancellationToken);
+    }
+
+    private async Task PublishFileAtomicallyAsync(
+        string destinationPath,
+        Func<Stream, Task> write,
         CancellationToken cancellationToken)
     {
         string fileName = Path.GetFileName(destinationPath);
@@ -211,13 +298,7 @@ public sealed class FileTransferProcessor
 
         try
         {
-            await using (FileStream source = new(
-                sourcePath,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.None,
-                1024 * 128,
-                FileOptions.Asynchronous | FileOptions.SequentialScan))
+
             await using (FileStream destination = new(
                 temporaryPath,
                 FileMode.CreateNew,
@@ -226,7 +307,7 @@ public sealed class FileTransferProcessor
                 1024 * 128,
                 FileOptions.Asynchronous | FileOptions.SequentialScan))
             {
-                await source.CopyToAsync(destination, cancellationToken);
+                await write(destination);
                 await destination.FlushAsync(cancellationToken);
             }
 

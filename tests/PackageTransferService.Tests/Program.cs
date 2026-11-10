@@ -1,4 +1,5 @@
-﻿using PackageTransferService;
+﻿using System.Text.Json;
+using PackageTransferService;
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -10,6 +11,7 @@ List<(string Name, Func<Task> Test)> tests =
     ("拒绝三段版本号", () => Run(RejectThreePartVersion)),
     ("拒绝非安装包", () => Run(RejectOtherFile)),
     ("转移安装包并保留程序名图标", TransferAndRetainOneOldVersion),
+    ("合并各版本历史并处理晚到的旧安装包", PublishHistoryForOutOfOrderPackages),
     ("同版本重复上传保留程序名图标", DuplicateUploadKeepsSharedIcon),
     ("旧版上传图标发布为程序名图标", TransferLegacyIcon),
     ("旧版网站图标迁移为程序名图标", MigrateLegacyIcons)
@@ -112,6 +114,59 @@ static async Task TransferAndRetainOneOldVersion()
         {
             Directory.Delete(rootDirectory, recursive: true);
         }
+    }
+}
+
+static async Task PublishHistoryForOutOfOrderPackages()
+{
+    string rootDirectory = Path.Combine(Path.GetTempPath(), $"PackageTransferService.Tests-{Guid.NewGuid():N}");
+    string sourceDirectory = Path.Combine(rootDirectory, "source");
+    string destinationDirectory = Path.Combine(rootDirectory, "destination");
+    Directory.CreateDirectory(sourceDirectory);
+
+    try
+    {
+        FileTransferProcessor processor = new(
+            Options.Create(new PackageTransferOptions
+            {
+                SourceDirectory = sourceDirectory,
+                DestinationDirectory = destinationDirectory,
+                OldVersionsToKeep = 0
+            }),
+            NullLogger<FileTransferProcessor>.Instance);
+        string latestPath = Path.Combine(sourceDirectory, "My-Tool-1.2.3.4.exe");
+        string latestHistoryPath = Path.ChangeExtension(latestPath, ".changelog.json");
+        await File.WriteAllTextAsync(latestPath, "latest");
+        await File.WriteAllTextAsync(latestHistoryPath, """{"1.2.3.3":"修订后的旧版说明"}""");
+
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        Assert(File.Exists(latestPath));
+        Assert(!File.Exists(Path.Combine(destinationDirectory, Path.GetFileName(latestPath))));
+
+        await File.WriteAllTextAsync(latestHistoryPath, """{"1.2.3.4":"最新说明\n第二行","1.2.3.3":"修订后的旧版说明"}""");
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        Assert(!File.Exists(latestPath));
+        Assert(!File.Exists(latestHistoryPath));
+
+        string olderPath = Path.Combine(sourceDirectory, "My-Tool-1.2.3.3.exe");
+        string olderHistoryPath = Path.ChangeExtension(olderPath, ".changelog.json");
+        await File.WriteAllTextAsync(olderPath, "older");
+        await File.WriteAllTextAsync(olderHistoryPath, """{"1.2.3.3":"原始旧版说明","1.2.3.2":"补充更早版本"}""");
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+
+        string historyPath = Path.Combine(destinationDirectory, "My-Tool.changelog.json");
+        using JsonDocument history = JsonDocument.Parse(await File.ReadAllTextAsync(historyPath));
+        Assert(history.RootElement.GetProperty("1.2.3.4").GetString() == "最新说明\n第二行");
+        Assert(history.RootElement.GetProperty("1.2.3.3").GetString() == "修订后的旧版说明");
+        Assert(history.RootElement.GetProperty("1.2.3.2").GetString() == "补充更早版本");
+        Assert(Directory.GetFiles(destinationDirectory, "*.exe").Select(Path.GetFileName).Single() == "My-Tool-1.2.3.4.exe");
+        Assert(!File.Exists(olderHistoryPath));
+    }
+    finally
+    {
+        Directory.Delete(rootDirectory, recursive: true);
     }
 }
 

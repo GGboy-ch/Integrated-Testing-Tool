@@ -42,10 +42,10 @@ namespace SetupTool
                     throw new FileNotFoundException("未找到程序图标文件。", applicationIconPath);
                 }
 
-                string scriptPath = AppDomain.CurrentDomain.BaseDirectory + "PackTool.iss";
+                string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PackTool.iss");
                 Console.WriteLine($"开始打包。。。");
                 List<string> specialFiles = new List<string>();
-                List<string> iss = File.ReadAllLines(scriptPath).ToList();
+                List<string> iss = File.ReadAllLines(templatePath).ToList();
                 XDocument xmlDoc = XDocument.Load(rootpath + $"\\{projectName}.csproj");
                 XNamespace ns = xmlDoc.Root!.GetDefaultNamespace();
 
@@ -173,9 +173,17 @@ namespace SetupTool
                     }
                 }
 
-                //向iss脚本文件中写入信息
-                File.WriteAllText(scriptPath, string.Join("\r\n", iss), Encoding.UTF8);
-                UseInnoSetup(scriptPath, $"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe");
+                // 每次打包使用独立的脚本，避免并行构建覆盖模板和其他项目的脚本。
+                string scriptPath = Path.Combine(Path.GetTempPath(), $"SetupTool-{Guid.NewGuid():N}.iss");
+                try
+                {
+                    File.WriteAllText(scriptPath, string.Join("\r\n", iss), Encoding.UTF8);
+                    UseInnoSetup(scriptPath, @"C:\Program Files (x86)\Inno Setup 6\ISCC.exe");
+                }
+                finally
+                {
+                    File.Delete(scriptPath);
+                }
 
                 //打包完成之后将配置文件和分拣计划放回到原来位置
                 foreach (string file in specialFiles)

@@ -1,9 +1,12 @@
 ﻿<Project>
-  <!-- 使用 /p:CustomAfterMicrosoftCommonTargets=此文件的绝对路径进行 Release Rebuild。
+  <!-- 使用 /p:CustomAfterMicrosoftCommonTargets=此文件的绝对路径
+       和 /p:PackProjectUnderTest=被测 csproj 的绝对路径进行 Release Rebuild。
        替换真实 PackProject，在同一 AfterBuild 时点验证依赖，不生成或上传正式安装包。 -->
-  <Target Name="PackProject" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="PackProject" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release' And '$(MSBuildProjectFullPath)' == '$(PackProjectUnderTest)'">
     <Error Condition="!Exists('$(TargetPath)')" Text="打包前缺少主程序集：$(TargetPath)" />
     <Error Condition="!Exists('$(TargetDir)GeneralLibrary.dll')" Text="打包前缺少启动依赖：$(TargetDir)GeneralLibrary.dll" />
-    <Message Importance="high" Text="PASS: $(MSBuildProjectName) Release 打包时点已包含 GeneralLibrary.dll；已替换正式打包和上传操作。" />
+    <Error Condition="'@(SetupToolOutput)' == '' Or !Exists('@(SetupToolOutput)')" Text="打包前缺少 SetupTool 构建输出：@(SetupToolOutput)" />
+    <Error Condition="Exists('$(TargetDir)SetupTool.dll') Or Exists('$(TargetDir)PackTool.iss')" Text="SetupTool 及其模板不能复制到待打包项目的输出目录。" />
+    <Message Importance="high" Text="PASS: $(MSBuildProjectName) Release 打包时点已包含 GeneralLibrary.dll 并解析 SetupTool 输出 @(SetupToolOutput)，未生成或上传正式安装包。" />
   </Target>
 </Project>

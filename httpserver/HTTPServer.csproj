@@ -90,9 +90,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-<Target Name="PackProject" AfterTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
-    <Exec Command="&quot;..\SetupTool\bin\Debug\net8.0\SetupTool.exe&quot; $(ProjectDir)" />
-</Target>
+  <Import Project="..\Shared\PackProject.targets" />
   <ItemGroup>
     <Compile Include="..\Shared\ManualUpdateController.cs" Link="Updates\ManualUpdateController.cs" />
   </ItemGroup>

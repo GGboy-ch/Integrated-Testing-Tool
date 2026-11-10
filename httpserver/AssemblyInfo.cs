@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261110 1.0.0.18
+Release 构建自动生成并调用 SetupTool
+
 20261104 1.0.0.17
 修复Release安装包缺少GeneralLibrary.dll，启动依赖改为独立分发并在打包前保留
 
@@ -93,5 +96,5 @@ QueryChuteInfo 默认响应改为实际返回的 186 个格口信息。
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.17";
+    public const string Current = "1.0.0.18";
 }

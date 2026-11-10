@@ -1,0 +1,14 @@
+﻿<Project>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\SetupTool\SetupTool.csproj"
+                      ReferenceOutputAssembly="false"
+                      Private="false"
+                      ExcludeAssets="all"
+                      OutputItemType="SetupToolOutput" />
+  </ItemGroup>
+
+  <Target Name="PackProject" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    <Error Condition="'@(SetupToolOutput)' == ''" Text="未能解析 SetupTool 的构建输出。" />
+    <Exec Command="dotnet &quot;@(SetupToolOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot;" />
+  </Target>
+</Project>

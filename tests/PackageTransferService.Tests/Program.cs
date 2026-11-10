@@ -12,6 +12,7 @@ List<(string Name, Func<Task> Test)> tests =
     ("拒绝非安装包", () => Run(RejectOtherFile)),
     ("转移安装包并保留程序名图标", TransferAndRetainOneOldVersion),
     ("合并各版本历史并处理晚到的旧安装包", PublishHistoryForOutOfOrderPackages),
+    ("为已转移的安装包补发遗留版本历史", RecoverHistoryForExistingPackage),
     ("同版本重复上传保留程序名图标", DuplicateUploadKeepsSharedIcon),
     ("旧版上传图标发布为程序名图标", TransferLegacyIcon),
     ("旧版网站图标迁移为程序名图标", MigrateLegacyIcons)
@@ -163,6 +164,52 @@ static async Task PublishHistoryForOutOfOrderPackages()
         Assert(history.RootElement.GetProperty("1.2.3.2").GetString() == "补充更早版本");
         Assert(Directory.GetFiles(destinationDirectory, "*.exe").Select(Path.GetFileName).Single() == "My-Tool-1.2.3.4.exe");
         Assert(!File.Exists(olderHistoryPath));
+    }
+    finally
+    {
+        Directory.Delete(rootDirectory, recursive: true);
+    }
+}
+
+static async Task RecoverHistoryForExistingPackage()
+{
+    string rootDirectory = Path.Combine(Path.GetTempPath(), $"PackageTransferService.Tests-{Guid.NewGuid():N}");
+    string sourceDirectory = Path.Combine(rootDirectory, "source");
+    string destinationDirectory = Path.Combine(rootDirectory, "destination");
+    Directory.CreateDirectory(sourceDirectory);
+
+    try
+    {
+        const string installerName = "DeviceEmulator-1.0.0.16.exe";
+        string snapshotPath = Path.Combine(sourceDirectory, "DeviceEmulator-1.0.0.16.changelog.json");
+        string destinationHistoryPath = Path.Combine(destinationDirectory, "DeviceEmulator.changelog.json");
+        await File.WriteAllTextAsync(snapshotPath, """{"1.0.0.16":"当前版本说明","1.0.0.15":"历史版本说明"}""");
+        FileTransferProcessor processor = new(
+            Options.Create(new PackageTransferOptions
+            {
+                SourceDirectory = sourceDirectory,
+                DestinationDirectory = destinationDirectory
+            }),
+            NullLogger<FileTransferProcessor>.Instance);
+
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        Assert(File.Exists(snapshotPath));
+        Assert(!File.Exists(destinationHistoryPath));
+
+        string destinationInstallerPath = Path.Combine(destinationDirectory, installerName);
+        await File.WriteAllTextAsync(destinationInstallerPath, "已经转移的安装包");
+        File.SetLastWriteTimeUtc(snapshotPath, File.GetLastWriteTimeUtc(snapshotPath).AddSeconds(10));
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        Assert(File.Exists(snapshotPath));
+        Assert(!File.Exists(destinationHistoryPath));
+
+        await processor.ProcessOnceAsync(CancellationToken.None);
+        Assert(!File.Exists(snapshotPath));
+        using JsonDocument history = JsonDocument.Parse(await File.ReadAllTextAsync(destinationHistoryPath));
+        Assert(history.RootElement.GetProperty("1.0.0.16").GetString() == "当前版本说明");
+        Assert(history.RootElement.GetProperty("1.0.0.15").GetString() == "历史版本说明");
+        Assert(await File.ReadAllTextAsync(destinationInstallerPath) == "已经转移的安装包");
     }
     finally
     {

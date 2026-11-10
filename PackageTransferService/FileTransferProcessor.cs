@@ -7,6 +7,8 @@ namespace PackageTransferService;
 
 public sealed class FileTransferProcessor
 {
+    private const string HistorySuffix = ".changelog.json";
+
     private static readonly JsonSerializerOptions HistoryJsonOptions = new()
     {
         WriteIndented = true,
@@ -38,7 +40,8 @@ public sealed class FileTransferProcessor
         }
 
         Dictionary<string, FileSnapshot> currentSnapshots = GetCurrentSnapshots();
-        List<IncomingPackage> incomingPackages = currentSnapshots
+        var packageSnapshots = currentSnapshots.Where(entry => !IsHistoryFile(entry.Key)).ToList();
+        List<IncomingPackage> incomingPackages = packageSnapshots
             .Select(entry =>
             {
                 PackageFileName.TryParse(Path.GetFileName(entry.Key), out PackageFileName? package);
@@ -50,7 +53,7 @@ public sealed class FileTransferProcessor
             .Select(package => package!)
             .ToList();
 
-        IOrderedEnumerable<KeyValuePair<string, FileSnapshot>> orderedSnapshots = currentSnapshots
+        IOrderedEnumerable<KeyValuePair<string, FileSnapshot>> orderedSnapshots = packageSnapshots
             .OrderBy(entry =>
             {
                 if (!PackageFileName.TryParse(Path.GetFileName(entry.Key), out PackageFileName? package) ||
@@ -68,8 +71,7 @@ public sealed class FileTransferProcessor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!_previousSnapshots.TryGetValue(path, out FileSnapshot previousSnapshot) ||
-                previousSnapshot != snapshot)
+            if (!IsStable(path, snapshot))
             {
                 continue;
             }
@@ -91,8 +93,7 @@ public sealed class FileTransferProcessor
             if (!StringComparer.OrdinalIgnoreCase.Equals(path, newestUpload.Path))
             {
                 bool newestUploadIsStable =
-                    _previousSnapshots.TryGetValue(newestUpload.Path, out FileSnapshot previousNewestSnapshot) &&
-                    previousNewestSnapshot == newestUpload.Snapshot &&
+                    IsStable(newestUpload.Path, newestUpload.Snapshot) &&
                     CanOpenExclusively(newestUpload.Path);
                 string legacyIconPath = Path.ChangeExtension(path, ".ico");
 
@@ -153,6 +154,7 @@ public sealed class FileTransferProcessor
             }
         }
 
+        await RecoverPublishedPackageHistoriesAsync(currentSnapshots, cancellationToken);
         _previousSnapshots = GetCurrentSnapshots();
         RemoveExpiredPackages();
     }
@@ -163,6 +165,8 @@ public sealed class FileTransferProcessor
         {
             return Directory
                 .EnumerateFiles(_options.SourceDirectory, _options.SearchPattern, SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateFiles(_options.SourceDirectory, $"*{HistorySuffix}", SearchOption.TopDirectoryOnly))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(path => new FileInfo(path))
                 .ToDictionary(
                     file => file.FullName,
@@ -173,6 +177,48 @@ public sealed class FileTransferProcessor
         {
             return new Dictionary<string, FileSnapshot>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    private async Task RecoverPublishedPackageHistoriesAsync(
+        IReadOnlyDictionary<string, FileSnapshot> snapshots,
+        CancellationToken cancellationToken)
+    {
+        foreach ((string path, FileSnapshot snapshot) in snapshots)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!IsHistoryFile(path) || !IsStable(path, snapshot) || !File.Exists(path))
+            {
+                continue;
+            }
+
+            string sourcePackagePath = path[..^HistorySuffix.Length] + ".exe";
+            if (snapshots.ContainsKey(sourcePackagePath) || File.Exists(sourcePackagePath) ||
+                !File.Exists(Path.Combine(_options.DestinationDirectory, Path.GetFileName(sourcePackagePath))) ||
+                TryParse(sourcePackagePath) is not PackageFileName package)
+            {
+                continue;
+            }
+
+            try
+            {
+                await PublishHistoryAsync(path, package, cancellationToken);
+                File.Delete(path);
+                _logger.LogInformation("已为网站现有安装包补发版本历史：{FileName}", Path.GetFileName(path));
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "补发版本历史失败，下次扫描将重试：{FileName}", Path.GetFileName(path));
+            }
+        }
+    }
+
+    private bool IsStable(string path, FileSnapshot snapshot)
+    {
+        return _previousSnapshots.TryGetValue(path, out FileSnapshot previousSnapshot) && previousSnapshot == snapshot;
     }
 
     private async Task TransferAsync(string sourcePath, PackageFileName package, CancellationToken cancellationToken)
@@ -221,9 +267,14 @@ public sealed class FileTransferProcessor
             fileName);
     }
 
+    private static bool IsHistoryFile(string path)
+    {
+        return path.EndsWith(HistorySuffix, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string GetUploadedHistoryPath(string packagePath)
     {
-        return Path.ChangeExtension(packagePath, ".changelog.json");
+        return Path.ChangeExtension(packagePath, HistorySuffix);
     }
 
     private async Task PublishHistoryAsync(
@@ -237,7 +288,7 @@ public sealed class FileTransferProcessor
             throw new InvalidDataException($"版本历史缺少安装包版本 {package.Version} 的更新说明。");
         }
 
-        string destinationPath = Path.Combine(_options.DestinationDirectory, $"{package.ProductName}.changelog.json");
+        string destinationPath = Path.Combine(_options.DestinationDirectory, $"{package.ProductName}{HistorySuffix}");
         Dictionary<string, string> history = File.Exists(destinationPath)
             ? await ReadHistoryAsync(destinationPath, FileShare.Read, cancellationToken)
             : new Dictionary<string, string>();

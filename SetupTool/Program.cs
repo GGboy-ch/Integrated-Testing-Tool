@@ -8,8 +8,11 @@ using System.Net;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -81,9 +84,10 @@ namespace SetupTool
 
                 string version = AssemblyName.GetAssemblyName(assemblyPath).Version?.ToString()
                     ?? throw new InvalidOperationException("编译产物缺少程序集版本。");
-                string uploadMessage = ReadUpdateSummary(assemblyPath, version);
-                Console.WriteLine($"安装包版本：{version}，更新简介：{uploadMessage}");
-                string installerBaseName = BuildInstallerBaseName(projectName, version, uploadMessage);
+                IReadOnlyDictionary<string, string> updateHistory = ReadUpdateHistory(assemblyPath, version);
+                string updateSummary = updateHistory[version].Split('\n', 2)[0].TrimEnd();
+                Console.WriteLine($"安装包版本：{version}，更新简介：{updateSummary}");
+                string installerBaseName = $"{projectName}-{version}";
                 int i = 0;
 
                 //编辑[Files]段
@@ -137,7 +141,7 @@ namespace SetupTool
                             case "MyOutputDir":
                                 iss[i] = $"#define MyOutputDir \"{rootpath}\""; break;
                             case "MyUpdateMessage":
-                                iss[i] = $"#define MyUpdateMessage \"{uploadMessage.Replace("\"", "\"\"")}\""; break;
+                                iss[i] = $"#define MyUpdateMessage \"{updateSummary.Replace("\"", "\"\"")}\""; break;
                             default:
                                 break;
                         }
@@ -211,6 +215,9 @@ namespace SetupTool
                     throw new FileNotFoundException("打包完成后未找到安装包。", installerPath);
                 }
 
+                string historyPath = Path.Combine(rootpath, "bin", $"{projectName}.changelog.json");
+                WriteUpdateHistory(historyPath, updateHistory);
+                Console.WriteLine($"版本历史：{historyPath}");
                 UploadInstallerToFtp(installerPath, applicationIconPath);
                 return 0;
             }
@@ -223,9 +230,9 @@ namespace SetupTool
 
         /// <summary>
         /// 读取 AssemblyInfo.cs 编译后的 ChangeLog，不加载或执行目标程序及其依赖。
-        /// 最新记录格式为：日期 版本，下一非空行为本次更新简介。
+        /// 每条记录以日期和版本号开头，后续行组成该版本的完整更新信息。
         /// </summary>
-        internal static string ReadUpdateSummary(string assemblyPath, string version)
+        internal static IReadOnlyDictionary<string, string> ReadUpdateHistory(string assemblyPath, string version)
         {
             using FileStream stream = File.OpenRead(assemblyPath);
             using PEReader pe = new PEReader(stream);
@@ -257,64 +264,50 @@ namespace SetupTool
                     continue;
                 }
 
-                string[] lines = (value.ReadSerializedString() ?? string.Empty)
-                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (lines.Length < 2)
+                string changeLog = (value.ReadSerializedString() ?? string.Empty).Trim().ReplaceLineEndings("\n");
+                MatchCollection headers = Regex.Matches(changeLog, @"(?m)^[^\S\n]*\d{4}-?\d{2}-?\d{2}[^\S\n]+(?<version>\d+\.\d+\.\d+\.\d+)[^\S\n]*$");
+                if (headers.Count == 0 || headers[0].Index != 0 || headers[0].Groups["version"].Value != version)
                 {
-                    throw new InvalidOperationException("AssemblyInfo.cs 的 ChangeLog 缺少版本或更新简介。");
+                    throw new InvalidOperationException("AssemblyInfo.cs 的最新 ChangeLog 版本必须与程序集版本一致。");
                 }
 
-                Match header = Regex.Match(lines[0], @"^\d{4}-?\d{2}-?\d{2}\s+(\d+\.\d+\.\d+\.\d+)$");
-                if (!header.Success || header.Groups[1].Value != version ||
-                    Regex.IsMatch(lines[1], @"^\d{4}-?\d{2}-?\d{2}\s+\d+\.\d+\.\d+\.\d+$"))
+                var history = new Dictionary<string, string>(StringComparer.Ordinal);
+                for (int index = 0; index < headers.Count; index++)
                 {
-                    throw new InvalidOperationException("AssemblyInfo.cs 的最新 ChangeLog 必须与当前版本一致，并包含更新简介。");
+                    Match header = headers[index];
+                    string entryVersion = header.Groups["version"].Value;
+                    int detailsStart = header.Index + header.Length;
+                    int detailsEnd = index + 1 < headers.Count ? headers[index + 1].Index : changeLog.Length;
+                    string details = changeLog[detailsStart..detailsEnd].Trim();
+                    if (details.Length == 0 || !history.TryAdd(entryVersion, details))
+                    {
+                        throw new InvalidOperationException($"AssemblyInfo.cs 的 ChangeLog 版本 {entryVersion} 重复或缺少更新信息。");
+                    }
                 }
 
-                return lines[1];
+                return history;
             }
 
             throw new InvalidOperationException("AssemblyInfo.cs 未定义 ChangeLog 更新日志。");
         }
 
-        /// <summary>
-        /// 生成工具名-版本号-更新简介格式的安装包名称（不含扩展名）。
-        /// </summary>
-        internal static string BuildInstallerBaseName(string projectName, string version, string? updateMessage)
+        internal static void WriteUpdateHistory(string historyPath, IReadOnlyDictionary<string, string> history)
         {
-            string summary = string.IsNullOrWhiteSpace(updateMessage) ? "更新" : updateMessage;
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-            summary = new string(summary.Select(character =>
-                invalidChars.Contains(character) || character == '{' || character == '}'
-                    ? '_'
-                    : character).ToArray());
-            summary = TrimTrailingPunctuation(summary);
-
-            // 限制简介长度，避免安装包文件名过长；保留完整工具名和版本号。
-            if (summary.Length > 60)
+            string json = JsonSerializer.Serialize(history, new JsonSerializerOptions
             {
-                int length = char.IsHighSurrogate(summary[59]) ? 59 : 60;
-                summary = TrimTrailingPunctuation(summary[..length]);
-            }
-
-            if (string.IsNullOrWhiteSpace(summary))
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            });
+            string temporaryPath = $"{historyPath}.{Guid.NewGuid():N}.tmp";
+            try
             {
-                summary = "更新";
+                File.WriteAllText(temporaryPath, json);
+                File.Move(temporaryPath, historyPath, overwrite: true);
             }
-
-            return $"{projectName}-{version}-{summary}";
-        }
-
-        private static string TrimTrailingPunctuation(string value)
-        {
-            int length = value.Length;
-            while (length > 0 && (char.IsWhiteSpace(value[length - 1]) ||
-                char.IsPunctuation(value[length - 1]) || char.IsSymbol(value[length - 1])))
+            finally
             {
-                length--;
+                File.Delete(temporaryPath);
             }
-
-            return value[..length].Trim();
         }
 
         /// <summary>

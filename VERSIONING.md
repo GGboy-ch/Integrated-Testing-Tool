@@ -40,9 +40,8 @@ AssemblyProduct 和 AssemblyTitle 分别维护产品名称和标题。
 AssemblyMetadata("ChangeLog", ...) 维护多行更新日志，最新记录放在最前面。
 每次发布时同时更新 ToolVersion.Current 和 ChangeLog 中的日期、版本及说明。
 SetupTool 读取 AssemblyInfo.cs 编译到主程序集中的版本及 ChangeLog，无需加载目标程序。
-ChangeLog 最新记录必须以“日期 四段版本号”开头，下一非空行为本次更新简介。
-最新日志版本必须与程序集版本一致，否则打包报错；历史记录不会用于本次简介。
-安装包命名为“工具名-版本号-更新简介.exe”，例如 HTTP.Server-1.0.0.0-修复登录问题.exe。
-更新简介末尾的标点和符号会被移除；工具名、版本号及简介内部的有效字符保持原样。
-简介最多保留 60 个 UTF-16 代码单元。
-本地生成和 FTP 上传使用同一文件名；csproj 不再维护 UploadMessage。
+ChangeLog 的每条记录以“日期 四段版本号”开头，直到下一条版本记录前的内容均为该版本的更新信息。
+最新日志版本必须与程序集版本一致，否则打包报错。最新记录的首行说明用于安装包内部的文件描述。
+安装包命名为“项目名-版本号.exe”，例如 HTTP.Server-1.0.0.0.exe，本地生成和 FTP 上传使用同一文件名。
+打包成功后，在目标项目的 bin 目录生成“项目名.changelog.json”，例如 HTTP.Server.changelog.json。
+JSON 以版本号为键、完整更新信息为值，按 ChangeLog 顺序保存。同一项目重新打包时，以本次编译产物中的 ChangeLog 刷新该文件。

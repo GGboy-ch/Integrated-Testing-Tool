@@ -4,6 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyVersion>1.2.3.4</AssemblyVersion>
     <StartupObject>SetupTool.Tests.TestRunner</StartupObject>
   </PropertyGroup>
   <ItemGroup>

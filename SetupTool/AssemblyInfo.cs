@@ -5,6 +5,10 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261110 1.0.0.9
+安装包名称改为项目名和版本号
+将目标项目各版本的完整更新信息生成独立的 JSON 文件
+
 20261110 1.0.0.8
 为每次打包生成独立的 Inno Setup 脚本
 
@@ -36,5 +40,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.0.8";
+    public const string Current = "1.0.0.9";
 }

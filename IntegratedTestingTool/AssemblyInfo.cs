@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261112 1.0.0.8
+退出时保存窗口主题并在下次启动时恢复
+
 20261029 1.0.0.7
 主题切换统一同步所有子窗口和弹窗，更新提示使用通用主题消息框。
 
@@ -57,5 +60,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.7";
+    public const string Current = "1.0.0.8";
 }

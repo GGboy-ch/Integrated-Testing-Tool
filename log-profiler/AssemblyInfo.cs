@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261112 1.0.0.32
+修复应用程序控制策略阻止加载快捷方式互操作程序集导致的构建失败
+
 20261112 1.0.0.31
 退出时保存窗口主题并在下次启动时恢复
 
@@ -134,5 +137,5 @@ namespace LogProfiler;
 public static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.31";
+    public const string Current = "1.0.0.32";
 }

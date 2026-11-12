@@ -41,9 +41,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\general-library\GeneralLibrary\GeneralLibrary.csproj" />
-    <Reference Include="Interop.IWshRuntimeLibrary">
-      <HintPath>..\httpserver\obj\Debug\net8.0-windows\Interop.IWshRuntimeLibrary.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

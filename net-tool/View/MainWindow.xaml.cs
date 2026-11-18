@@ -1,5 +1,4 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
-using NetTool.ViewModuel;
+﻿using NetTool.ViewModuel;
 using System.Reflection;
 using Timer = System.Timers.Timer;
 
@@ -19,8 +18,10 @@ namespace NetTool
             this.Closing += MainWindow_Closing;
             mainViewModuel = new MainViewModuel();
             this.DataContext = mainViewModuel;
-            App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
-            App.mTaskbarIcon.DataContext = mainViewModuel;
+            var tray = (ToolTray.ThemedTaskbarIcon)FindResource("Taskbar");
+            tray.DataContext = mainViewModuel;
+            tray.FollowWindowTheme(this);
+            App.mTaskbarIcon = tray;
             manualUpdate = new(this, "NetTool", () => { mainViewModuel.SaveConfig(); return true; });
             if (mainViewModuel.IsAutoClosedApp)
             {

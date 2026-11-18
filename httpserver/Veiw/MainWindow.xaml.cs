@@ -1,5 +1,4 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
-using HTTPServer.VeiwModel;
+﻿using HTTPServer.VeiwModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,8 +18,10 @@ namespace HTTPServer
             InitializeComponent();
             MainViewModel = new MainViewModel();
             this.DataContext = MainViewModel;
-            App.mTaskbarIcon = (TaskbarIcon)FindResource("Taskbar");
-            App.mTaskbarIcon.DataContext = MainViewModel;
+            var tray = (ToolTray.ThemedTaskbarIcon)FindResource("Taskbar");
+            tray.DataContext = MainViewModel;
+            tray.FollowWindowTheme(this);
+            App.mTaskbarIcon = tray;
             this.Closing += MainWindow_Closing;
             manualUpdate = new(this, "HTTPServer", () =>
             {

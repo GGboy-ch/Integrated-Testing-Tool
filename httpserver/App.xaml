@@ -2,24 +2,27 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:windows="clr-namespace:GeneralLibrary.Windows;assembly=GeneralLibrary"
-             xmlns:tb="http://www.hardcodet.net/taskbar"
+             xmlns:tray="clr-namespace:ToolTray"
              xmlns:local="clr-namespace:HTTPServer"
              StartupUri="Veiw/MainWindow.xaml">
     <windows:GeneralApplication.Resources>
         <ResourceDictionary>
-            <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
-                <MenuItem Height="26" Header="显示主界面" Width="100" Command="{Binding NotifyCommand}" CommandParameter="0" Padding="2" HorizontalContentAlignment="Center"/>
-                <MenuItem Height="26" Header="设置" Width="100" Command="{Binding NotifyCommand}" CommandParameter="1" Padding="2" HorizontalContentAlignment="Center"/>
-                <MenuItem Height="26" Header="退出" Width="100" Command="{Binding NotifyCommand}" CommandParameter="2" Padding="2" HorizontalContentAlignment="Center"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="TrayTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <ContextMenu x:Shared="false" x:Key="SysTrayMenu" Style="{StaticResource ToolTrayMenuStyle}">
+                <MenuItem Style="{StaticResource ToolTrayMenuItemStyle}" Header="显示主界面" Command="{Binding NotifyCommand}" CommandParameter="0"/>
+                <MenuItem Style="{StaticResource ToolTrayMenuItemStyle}" Header="设置" Command="{Binding NotifyCommand}" CommandParameter="1"/>
+                <MenuItem Style="{StaticResource ToolTrayMenuItemStyle}" Header="退出" Command="{Binding NotifyCommand}" CommandParameter="2"/>
             </ContextMenu>
-            <tb:TaskbarIcon 
-                    x:Key="Taskbar" 
-                    ToolTipText="HTTP服务器"            
-                    DoubleClickCommand="{Binding NotifyCommand}" 
-                    DoubleClickCommandParameter="0"            
-                    ContextMenu="{StaticResource SysTrayMenu}" 
-                    IconSource="pack://application:,,,/HTTPServer;component/Images/HTTPServer.ico">
-            </tb:TaskbarIcon>
+            <tray:ThemedTaskbarIcon
+                    x:Key="Taskbar"
+                    ToolTipText="HTTP服务器"
+                    DoubleClickCommand="{Binding NotifyCommand}"
+                    DoubleClickCommandParameter="0"
+                    ContextMenu="{StaticResource SysTrayMenu}"
+                    AppIconSource="pack://application:,,,/HTTPServer;component/Images/HTTPServer.ico">
+            </tray:ThemedTaskbarIcon>
             <DrawingImage x:Key="SettingIcon">
                 <DrawingImage.Drawing>
                     <DrawingGroup ClipGeometry="M0,0 V1024 H1024 V0 H0 Z">

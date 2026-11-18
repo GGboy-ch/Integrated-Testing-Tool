@@ -77,5 +77,6 @@
     <Page Include="..\Shared\TrayTheme.xaml" Link="TrayTheme.xaml" />
     <Compile Include="..\Shared\ThemedTaskbarIcon.cs" Link="ThemedTaskbarIcon.cs" />
     <Compile Include="..\Shared\ManualUpdateController.cs" Link="Updates\ManualUpdateController.cs" />
+    <Compile Include="..\Shared\DesktopShortcutPreference.cs" Link="Settings\DesktopShortcutPreference.cs" />
   </ItemGroup>
 </Project>

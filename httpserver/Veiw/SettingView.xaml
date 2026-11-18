@@ -25,11 +25,12 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="22"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel>
                     <TextBlock Text="应用设置" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
-                    <TextBlock Text="配置窗口关闭行为"
+                    <TextBlock Text="配置启动与窗口关闭行为"
                                Margin="0,8,0,0"
                                FontSize="12"
                                Foreground="{DynamicResource Theme.WindowForegroundBrush}"/>
@@ -54,6 +55,7 @@
                                   Margin="8,0,0,0"/>
                     </Grid>
                 </Border>
+                <CheckBox Content="启动时创建桌面快捷方式" Foreground="{DynamicResource Theme.WindowForegroundBrush}" IsChecked="{Binding ShortcutPreference.IsEnabled}" ToolTip="下次启动时生效" Grid.Row="3" Margin="12,12,12,0"/>
             </Grid>
         </Border>
     </Grid>

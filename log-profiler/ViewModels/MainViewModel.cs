@@ -19,6 +19,9 @@ namespace LogProfiler.ViewModels
 {
     public class MainViewModel : NotifyBase
     {
+        public ToolSettings.DesktopShortcutPreference ShortcutPreference { get; } = new(
+            Path.Combine(Environment.CurrentDirectory, "LogProfiler.config"), defaultEnabled: true);
+
         private static readonly HttpClient HttpClient = new HttpClient
         {
             Timeout = TimeSpan.FromMinutes(1)
@@ -1206,8 +1209,7 @@ namespace LogProfiler.ViewModels
             };
             regexMessageModel.RegexMessageEventHandler += RegexMessageModel_RegexMessageEventHandler;
             IsAutoStart = DesktopShortcut.IsAppInStartup(Path.GetFileName(Environment.ProcessPath) ?? string.Empty); // 检测是否开启了开机自启
-            string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            DesktopShortcut.CreateDesktopShortcut(assemblyName, "日志查询工具", "日志查询工具，用于便捷搜索基于log4net第三方库记录的日志");
+            ShortcutPreference.CreateOnStartup("LogProfiler.exe", "日志查询工具", "日志查询工具，用于便捷搜索基于log4net第三方库记录的日志");
             string configpath = Environment.CurrentDirectory + $"\\LogProfiler.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;

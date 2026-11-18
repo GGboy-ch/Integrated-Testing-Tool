@@ -24,6 +24,9 @@ namespace HTTPServer.VeiwModel
 {
     public class MainViewModel : NotifyBase
     {
+        public ToolSettings.DesktopShortcutPreference ShortcutPreference { get; } = new(
+            Path.Combine(Environment.CurrentDirectory, "HTTPServer.config"), defaultEnabled: true);
+
         #region 属性
 
         private static int index = 0;
@@ -510,8 +513,7 @@ namespace HTTPServer.VeiwModel
                 }
             }
             IPList.Add(new IPaddressMessage { Address = "127.0.0.1:6060" });
-            string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            DesktopShortcut.CreateDesktopShortcut(assemblyName, "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
+            ShortcutPreference.CreateOnStartup("HTTPServer.exe", "HTTP服务器", "HTTP服务器模拟器，用于本地测试");
             string configpath = Environment.CurrentDirectory + $"\\HTTPServer.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             isHideToTray = (bool)xmlDoc.Descendants("IsHideToTray").FirstOrDefault()!;

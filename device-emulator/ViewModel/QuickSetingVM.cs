@@ -143,7 +143,7 @@ namespace DeviceEmulator.ViewModel
         public ObservableCollection<int> CameraNums { get; set; } = new ObservableCollection<int>() { 1, 2 };
         public ObservableCollection<int> SortPortNums { get; set; } = new ObservableCollection<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         public ObservableCollection<int> BalanceWheelNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 ,4, 5, 6, 7};
-        public ObservableCollection<int> LightNums { get; set; } = new ObservableCollection<int>() { 1, 2, 3 };
+        public ObservableCollection<int> LightNums { get; set; } = new ObservableCollection<int>(Enumerable.Range(1, 20));
         public ObservableCollection<PLC> PLCList { get; set; } = new ObservableCollection<PLC>();
         public ObservableCollection<Camera> CameraList { get; set; } = new ObservableCollection<Camera>();
         public ObservableCollection<BalanceWheel> BalanceWheelList { get; set; } = new ObservableCollection<BalanceWheel>() { new BalanceWheel { Name = Properties.Res.BalanceWheel, ResultType = 0, SortPort = 2 } };

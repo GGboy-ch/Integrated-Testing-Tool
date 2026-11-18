@@ -1,5 +1,8 @@
-﻿using NetTool.ViewModuel;
-using System.Reflection;
+﻿using GeneralLibrary.Windows;
+using NetTool.ViewModuel;
+using System.IO;
+using System.Windows;
+using System.Xml;
 using Timer = System.Timers.Timer;
 
 namespace NetTool
@@ -28,6 +31,31 @@ namespace NetTool
                 timer = new Timer(mainViewModuel.DelayTime * 1000) { Enabled = true };
                 timer.Elapsed += Timer_Elapsed;
                 this.Hide();
+            }
+        }
+
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var previousSettings = (mainViewModuel.IsOpenStartup, mainViewModuel.IsAutoClosedApp, mainViewModuel.IsHideToTray);
+            var settings = new View.SettingView
+            {
+                Owner = this,
+                DataContext = mainViewModuel
+            };
+            settings.ShowDialog();
+
+            if (previousSettings == (mainViewModuel.IsOpenStartup, mainViewModuel.IsAutoClosedApp, mainViewModuel.IsHideToTray))
+            {
+                return;
+            }
+
+            try
+            {
+                mainViewModuel.SaveConfig();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or XmlException)
+            {
+                GeneralMessageBox.ShowDialog($"设置保存失败。{Environment.NewLine}{ex.Message}", "保存设置", owner: this);
             }
         }
 

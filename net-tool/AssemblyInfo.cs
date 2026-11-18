@@ -17,6 +17,10 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261118 1.0.2.11
+新增独立设置窗口，可控制启动时是否创建桌面快捷方式
+将开机自启、极简模式和托盘选项移到设置窗口。
+
 20261118 1.0.1.11
 让系统托盘图标、右键菜单和悬停提示跟随应用主题
 
@@ -73,5 +77,5 @@ Release 构建自动生成并调用 SetupTool
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.1.11";
+    public const string Current = "1.0.2.11";
 }

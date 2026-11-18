@@ -18,6 +18,9 @@ namespace NetTool.ViewModuel
 {
     public class MainViewModuel : NotifyBase
     {
+        public ToolSettings.DesktopShortcutPreference ShortcutPreference { get; } = new(
+            Path.Combine(AppContext.BaseDirectory, "NetTool.config"), defaultEnabled: false);
+
         private bool isAutoClosedApp;
         /// <summary>
         /// 是否自动关闭应用
@@ -250,6 +253,7 @@ namespace NetTool.ViewModuel
 
         public MainViewModuel()
         {
+            ShortcutPreference.CreateOnStartup("NetTool.exe", "IPv6 获取工具", "查看本机公网 IPv6 地址");
             string configpath = AppContext.BaseDirectory + $"\\NetTool.config";
             XDocument xmlDoc = XDocument.Load(configpath);
             IsAutoClosedApp = (bool)xmlDoc.Descendants("IsAutoClosedApp").FirstOrDefault()!;

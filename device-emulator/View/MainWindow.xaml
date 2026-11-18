@@ -96,7 +96,13 @@
                     <RowDefinition Height="9*"/>
                 </Grid.RowDefinitions>
                 <RichTextBox Grid.Row="1" x:Name="richTextBox" local:RichTextBoxHelper.BoundDocument="{Binding RichTextBoxDocument}" Margin="4" Foreground="{DynamicResource Theme.WindowForegroundBrush}" TextChanged="richTextBox_TextChanged"/>
-                <Button Grid.Row="0" HorizontalAlignment="Right" Content="清空报文信息" Command="{Binding ClearRichTextDocumentExd}" Margin="4"/>
+                <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button Click="OpenSettings_Click" AutomationProperties.Name="设置" ToolTip="设置"
+                            Width="28" Height="28" VerticalAlignment="Center" Background="Transparent" BorderThickness="0" Padding="0" Margin="4">
+                        <Image Source="/Images/Setting.ico" Width="20" Height="20"/>
+                    </Button>
+                    <Button Content="清空报文信息" Command="{Binding ClearRichTextDocumentExd}" Margin="4"/>
+                </StackPanel>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Grid.Column="1" Header="快捷命令" Background="Transparent" Foreground="{DynamicResource Theme.WindowForegroundBrush}">

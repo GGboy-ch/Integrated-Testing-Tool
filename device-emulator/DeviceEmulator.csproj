@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="DeviceEmulator.config" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Log4net.config">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <Resource Include="DeviceEmulator.ico" />
+    <Resource Include="..\net-tool\Images\Setting.ico" Link="Images\Setting.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,5 +62,6 @@
   <Import Project="..\Shared\PackProject.targets" />
   <ItemGroup>
     <Compile Include="..\Shared\ManualUpdateController.cs" Link="Updates\ManualUpdateController.cs" />
+    <Compile Include="..\Shared\DesktopShortcutPreference.cs" Link="Settings\DesktopShortcutPreference.cs" />
   </ItemGroup>
 </Project>

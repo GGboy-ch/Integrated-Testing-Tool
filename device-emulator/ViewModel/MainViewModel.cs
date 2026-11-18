@@ -19,6 +19,9 @@ namespace DeviceEmulator.ViewModel
 {
     public class MainViewModel : NotifyBase
     {
+        public ToolSettings.DesktopShortcutPreference ShortcutPreference { get; } = new(
+            Path.Combine(AppContext.BaseDirectory, "DeviceEmulator.config"), defaultEnabled: true);
+
         #region 属性
         private string textBoxData = string.Empty;
         /// <summary>
@@ -633,8 +636,7 @@ namespace DeviceEmulator.ViewModel
             {
                 IPList.Add(addr.ToString());
             }
-            string assemblyName = Path.Combine(Environment.CurrentDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            DesktopShortcut.CreateDesktopShortcut(assemblyName, "下位机模拟工具", "用于模拟摆轮、叠包相机设备发送进行通讯");
+            ShortcutPreference.CreateOnStartup("DeviceEmulator.exe", "下位机模拟工具", "用于模拟摆轮、叠包相机设备发送进行通讯");
         }
 
 

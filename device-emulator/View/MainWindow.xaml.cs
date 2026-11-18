@@ -29,6 +29,16 @@ namespace DeviceEmulator
             manualUpdate = new(this, "DeviceEmulator", () => true);
         }
 
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new View.SettingView
+            {
+                Owner = this,
+                DataContext = DataContext
+            };
+            settings.ShowDialog();
+        }
+
         private void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             richTextBox.ScrollToEnd();

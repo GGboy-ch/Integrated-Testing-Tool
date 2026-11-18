@@ -412,6 +412,10 @@ namespace SetupTool
             UploadFileToFtp(remoteIconUri, iconPath, credential);
             UploadFileToFtp(remoteHistoryUri, historyPath, credential);
             UploadFileToFtp(remoteInstallerUri, installerPath, credential);
+
+            File.Delete(installerPath);
+            File.Delete(historyPath);
+            Console.WriteLine("已清理本地安装包和版本历史文件。");
         }
 
         /// <summary>

@@ -44,5 +44,6 @@ SetupTool 读取 AssemblyInfo.cs 编译到主程序集中的版本及 ChangeLog�
 ChangeLog 的每条记录以“日期 四段版本号”开头，直到下一条版本记录前的内容均为该版本的更新信息。
 最新日志版本必须与程序集版本一致，否则打包报错。最新记录的首行说明用于安装包内部的文件描述。
 安装包命名为“项目名-版本号.exe”，例如 HTTP.Server-1.0.0.0.exe，本地生成和 FTP 上传使用同一文件名。
-打包成功后，在目标项目的 bin 目录生成“项目名.changelog.json”，例如 HTTP.Server.changelog.json。
+打包成功后，在目标项目的 bin 目录临时生成“项目名.changelog.json”，例如 HTTP.Server.changelog.json。
 JSON 以版本号为键、完整更新信息为值，按 ChangeLog 顺序保存。同一项目重新打包时，以本次编译产物中的 ChangeLog 刷新该文件。
+图标、版本历史快照和安装包全部上传成功后，删除本次在 bin 目录生成的安装包 EXE 和版本历史 JSON；上传失败或跳过时保留，便于重试。

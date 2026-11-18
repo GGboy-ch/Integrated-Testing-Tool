@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <ApplicationIcon>IntegratedTestingTool.ico</ApplicationIcon>
     <!-- 版本由 AssemblyInfo.cs 统一定义，避免 SDK 重复生成属性。 -->
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -16,6 +17,14 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="3.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="IntegratedTestingTool.ico" />
+    <Resource Include="..\device-emulator\DeviceEmulator.ico" Link="Icons\DeviceEmulator.ico" />
+    <Resource Include="..\httpserver\HTTPServer.ico" Link="Icons\HTTPServer.ico" />
+    <Resource Include="..\log-profiler\logprofiler.ico" Link="Icons\LogProfiler.ico" />
+    <Resource Include="..\net-tool\NetTool.ico" Link="Icons\NetTool.ico" />
   </ItemGroup>
 
   <ItemGroup>

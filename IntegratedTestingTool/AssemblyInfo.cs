@@ -17,6 +17,11 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261118 1.0.1.9
+将集成测试工具改为四个工具的启动器
+启动时检查本机和服务器版本，并提供启动、安装和更新入口。
+添加启动器应用图标，并在列表显示四个工具各自的图标。
+
 20261112 1.0.0.8
 退出时保存窗口主题并在下次启动时恢复
 
@@ -60,5 +65,5 @@ using System.Windows;
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.0.8";
+    public const string Current = "1.0.1.9";
 }

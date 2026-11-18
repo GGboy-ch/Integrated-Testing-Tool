@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>IntegratedTestingTool.ico</ApplicationIcon>
+    <ProjectGuid>{5CD74F31-5BD9-4BD2-9CE4-76EDADE629C4}</ProjectGuid>
     <!-- 版本由 AssemblyInfo.cs 统一定义，避免 SDK 重复生成属性。 -->
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -31,4 +32,6 @@
     <Compile Include="..\Shared\ManualUpdateController.cs" Link="Updates\ManualUpdateController.cs" />
     <ProjectReference Include="..\general-library\GeneralLibrary\GeneralLibrary.csproj" />
   </ItemGroup>
+
+  <Import Project="..\Shared\PackProject.targets" />
 </Project>

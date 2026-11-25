@@ -1,5 +1,6 @@
 ﻿using HTTPServer.Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -105,6 +106,10 @@ namespace HTTPServer.CustomerBLL
                 response.Add("Code", 200);
                 response.Add("Message", "成功");
             }
+            else if (GetRequestPath() == "/AutoSort/LockChuteBatch")
+            {
+                response = CreateLockChuteBatchResponse(requestDic);
+            }
             else if (GetRequestPath() == "/open-api/api/upload/image")
             {
                 // 只模拟图片信息登记，不访问对象存储或处理图片二进制。
@@ -145,6 +150,55 @@ namespace HTTPServer.CustomerBLL
             return path.StartsWith(prefix + "/", StringComparison.Ordinal)
                 ? path[prefix.Length..]
                 : path;
+        }
+
+        private static Dictionary<string, object?> CreateLockChuteBatchResponse(Dictionary<string, object?> request)
+        {
+            var results = new List<Dictionary<string, object?>>();
+            if (!request.TryGetValue("Item", out object? value) || value is not JArray items || items.Count == 0)
+            {
+                return new Dictionary<string, object?>
+                {
+                    { "Code", 400 },
+                    { "Message", "Item 必须为非空数组" },
+                    { "Results", results }
+                };
+            }
+
+            // 顶层 Code 表示批次已受理，每个格口的处理结果按请求顺序返回。
+            foreach (JToken token in items)
+            {
+                var item = token as JObject;
+                JToken? chuteCodeValue = item?["ChuteCode"];
+                string? chuteCode = chuteCodeValue is { Type: JTokenType.String or JTokenType.Integer }
+                    ? chuteCodeValue.ToString()
+                    : null;
+                JToken? status = item?["Status"];
+                string? error = null;
+                if (string.IsNullOrWhiteSpace(chuteCode))
+                {
+                    error = "ChuteCode 不能为空且必须为字符串或整数";
+                }
+                else if (status is not { Type: JTokenType.Integer or JTokenType.String } ||
+                    status.ToString() is not ("0" or "1"))
+                {
+                    error = "Status 必须为 0（解锁）或 1（锁格）";
+                }
+
+                results.Add(new Dictionary<string, object?>
+                {
+                    { "ChuteCode", chuteCode },
+                    { "Code", error == null ? 200 : 400 },
+                    { "Message", error ?? "成功" }
+                });
+            }
+
+            return new Dictionary<string, object?>
+            {
+                { "Code", 200 },
+                { "Message", "已处理" },
+                { "Results", results }
+            };
         }
 
         private Dictionary<string, object?> CreateChuteInfoResponse(Dictionary<string, object?> request)

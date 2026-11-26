@@ -17,6 +17,9 @@ using System.Windows;
 
 // 设置更新日志，最新记录放在最前面；发布时同时更新日期、版本和变更说明。
 [assembly: AssemblyMetadata("ChangeLog", @"
+20261126 1.0.4.9
+为桌面快捷方式添加用途说明
+
 20261118 1.0.3.9
 启动时自动创建桌面快捷方式
 
@@ -71,5 +74,5 @@ Release 构建自动打包并上传安装包
 internal static class ToolVersion
 {
     // 版本格式：主版本.次版本.修订版本.构建版本。
-    public const string Current = "1.0.3.9";
+    public const string Current = "1.0.4.9";
 }

@@ -5,7 +5,7 @@
 [assembly: AssemblyFileVersion(ToolVersion.Current)]
 [assembly: AssemblyInformationalVersion(ToolVersion.Current)]
 [assembly: AssemblyMetadata("ChangeLog", @"
-20261118 1.0.1.10
+20261118 1.0.1.0
 上传成功后清理本地安装包和版本历史文件
 
 20261110 1.0.0.10
@@ -46,5 +46,5 @@
 
 internal static class ToolVersion
 {
-    public const string Current = "1.0.1.10";
+    public const string Current = "1.0.1.0";
 }
